@@ -13,10 +13,11 @@ class WechatController extends Controller{
      */
     const API_WX_LOGIN = "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code";
 
-
     /**
      * @param Request $req
      * @throws \Exception
+     * @author shidatuo
+     * @description 微信小程序code换取session_key
      */
     public function wxLogin(Request $req){
         $d['id'] = decode($req->input("appId",""));
@@ -37,8 +38,9 @@ class WechatController extends Controller{
             $m['session_key'] = $result['session_key'];
         if(isset($result['unionid']) && NotEstr($result['unionid']))
             $m['unionid'] = $result['unionid'];
-        $s = save("users",$m);
-        if($s)
+        if(isset($m) && is_arr($m))
+            $s = save("users",$m);
+        if(isset($s) && $s)
             jsonReturn(1,"请求成功",$m);
         jsonReturn(-1,"保存失败");
     }

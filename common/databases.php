@@ -124,9 +124,7 @@ function save($table, $data = false){
     //>统一处理openid
     if (isset($data['openid']) && NotEstr($data['openid'])){
         $user_info = \App\Model\User::api_login($data['openid']);
-        if(!is_arr($user_info))
-            return false;
-        $data['uid'] = $user_info['id'];
+        $data['uid'] = isset($user_info['id']) ? $user_info['id'] : 0;
     }else{
         if(isset($data['uid']))
             $data['uid'] = $data['uid'];
@@ -141,20 +139,17 @@ function save($table, $data = false){
         $data['id'] = $data['app_id'];
         unset($data['app_id']);
     }
+    if(isset($data['uid']) && !isINT($data['uid'])){
+        unset($data['uid']);
+    }
     //>表里是否存在 user_ip 字段
-    Schema::table($table, function (Blueprint $table) {
-        if ($table->hasColumn('user_ip')) {
-            //> 用户表里存在 user_ip
-            $data['user_ip'] = USER_IP;
-        }
-    });
+    if(Schema::hasColumn($table, 'user_ip')){
+        $data['user_ip'] = USER_IP;
+    }
     //>表里是否存在 server_ip 字段
-    Schema::table($table, function (Blueprint $table) {
-        if ($table->hasColumn('server_ip')) {
-            //> 用户表里存在 user_ip
-            $data['server_ip'] = SERVE_IP;
-        }
-    });
+    if(Schema::hasColumn($table, 'server_ip')){
+        $data['server_ip'] = SERVE_IP;
+    }
     if(isset($data['id'])){
         //>update
         M($table)->where("id",$data['id'])->update($data);

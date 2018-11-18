@@ -34,7 +34,7 @@ class User extends Authenticatable
      * @author shidatuo
      * @description
      */
-    public function api_login($api_key = false){
+    public static function api_login($api_key = false){
         if ($api_key == false)
             return false;
         if (NotEstr($api_key))
