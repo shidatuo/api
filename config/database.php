@@ -1,5 +1,5 @@
 <?php
-//dd(database_path('database.sqlite'));
+
 return [
 
     /*
@@ -39,36 +39,21 @@ return [
             'prefix' => '',
         ],
 
+
         'mysql' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'xiao_txweb'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', 'root'),
+            'host' => env('DB_HOST'),
+            'port' => env('DB_PORT'),
+            'database' => env('DB_DATABASE'),
+            'username' => env('DB_USERNAME'),
+            'password' => env('DB_PASSWORD'),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => 'txweb_',
+            'prefix' => 'xiao_',
             'strict' => true,
             'engine' => null,
         ],
-
-
-//        'mysql' =>
-//            array (
-//                'driver' => 'mysql',
-//                'host' => '127.0.0.1',
-//                'database' => 'xiao_txweb',
-//                'username' => 'root',
-//                'password' => 'root',
-//                'charset' => 'utf8',
-//                'collation' => 'utf8_unicode_ci',
-////                'prefix' => 'txweb_',
-//                'strict' => false,
-//                'port' => 3306,
-//            ),
-
 
         'pgsql' => [
             'driver' => 'pgsql',

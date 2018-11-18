@@ -34,6 +34,9 @@ function get($table,$params = null){
     if(is_string($params)){
         $field = parse_params($params);
     }
+    if(is_arr($params)){
+        $field = parse_params($params);
+    }
     if(!isset($field['table'])){
         return false;
     }else{

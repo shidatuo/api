@@ -18,7 +18,6 @@ class ApiController extends Controller{
     }
 
     public function api(){
-//        dd(666);
         $params = false;
         $callback = isset($_GET['callback']) ? trim($_GET['callback']) : ''; //jsonp回调参数，必需
         if (!defined('API_CALL')) {
