@@ -19,8 +19,6 @@ class WechatController extends Controller{
      * @throws \Exception
      */
     public function wxLogin(Request $req){
-        jsonReturn(-1,"小程序不存在");
-
         $d['id'] = decode($req->input("appId",""));
         $d['fields'] = "appid,appSecret";
         $d['single'] = TRUE;
