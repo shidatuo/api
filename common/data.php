@@ -333,27 +333,18 @@ if(!function_exists("isINT")){
         return false;
     }
 }
-if(!function_exists("standard_json_decode")){
+if(!function_exists("is_arr")){
     /**
-     * @param $json
-     * @return string
+     * @param array $params
+     * @return bool
      * @author shidatuo
-     * @description 解析规格json字符串 0:{id: "10", name: "颜色", subModelId: "32", subModelName: "棕色"}
+     * @descripion 判断是否空数组
      */
-    function standard_json_decode($json = null , $type = 'array'){
-        if (isset($json) && NotEstr($json) && $json != '[]' && !empty($json)) {
-            $Arr = json_decode($json, true);
-            if($type === 'array')
-                return $Arr;
-            $modelIds = [];
-            foreach ($Arr as $value){
-                array_push($modelIds, $value['subModelId']);
-            }
-            sort($modelIds);
-            $modelIds = implode(',', $modelIds);
-            return $modelIds;
-        }
-        return '';
+    function is_arr($params = array()){
+        if (is_array($params) && !empty($params))
+            return true;
+        else
+            return false;
     }
 }
 if(!function_exists("convert_arr_key")){
@@ -370,5 +361,39 @@ if(!function_exists("convert_arr_key")){
             $arr2[$val[$key_name]] = $val;
         }
         return $arr2;
+    }
+}
+if(!function_exists("jsonReturn")){
+    /**
+     * @param int $status
+     * @param string $msg
+     * @param string $data
+     * @author shidatuo
+     * @description 返回json数据
+     */
+    function jsonReturn($status=0,$msg='',$data=''){
+        if(empty($data))
+            $data = '';
+        $info['status'] = $status;
+        $info['msg'] = $msg;
+        $info['result'] = $data;
+        exit(json_encode($info));
+    }
+}
+if(!function_exists("parse_params")){
+    /**
+     * @param $params
+     * @return array|void
+     * @author shidatuo
+     * @description 字符转换数组
+     */
+    function parse_params($params){
+        $params2 = array();
+        if (is_string($params)) {
+            $params = parse_str($params, $params2);
+            $params = $params2;
+            unset($params2);
+        }
+        return $params;
     }
 }

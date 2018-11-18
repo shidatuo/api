@@ -1,6 +1,25 @@
 <?php
-
-
+/**
+ * @param $table
+ * @return \Illuminate\Database\Eloquent\Builder
+ * @author shidatuo
+ * @description 实例化单个表
+ */
+function M($table){
+    if($table == 'app')
+        return App\Model\App::query();
+    elseif ($table == 'users')
+        return App\Model\User::query();
+    return DB::table($table);
+}
+/**
+ * @param $table
+ * @param null $params
+ * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]
+ * @throws Exception
+ * @author shidatuo
+ * @description 获取数据库数据
+ */
 function get($table,$params = null){
     if(is_null($params)){
         $params = $table;
@@ -26,20 +45,14 @@ function get($table,$params = null){
         throw new Exception("Table $table doesn't exist");
     }
     $query = M($table);
-
     $origin_params = $field;
-
 //    if(!isset($field['limit'])){
 //        $field['limit'] = LIMIT;
 //    }
-
-    if(isset($field['single'])){
+    if(isset($field['single']))
         unset($field['single']);
-    }
-
-    if (isset($field['no_limit'])) {
+    if (isset($field['no_limit']))
         unset($field['limit']);
-    }
     //>设置缓存时间
     if (isset($field['cache_ttl'])){
         $ttl = $field['cache_ttl'];
@@ -47,9 +60,6 @@ function get($table,$params = null){
         $ttl = CACHE_TTL;
     }
     fields_map_filters($query,$field,$table);
-
-//    dd($query);
-
     //>聚合
     if (isset($field['min']) && $field['min'])
         return $query->min($field['min']);
@@ -61,34 +71,105 @@ function get($table,$params = null){
         return $query->sum($field['sum']);
     if (isset($field['count']) && $field['count'])
         return $query->count($field['count']);
-
-    //>
+    //>组合where条件
     if (is_array($field) && !empty($field)) {
         foreach ($field as $k => $v) {
             $query = $query->where($table . '.' . $k, '=', $v);
         }
     }
+    //>获取数据
     $data = $query->get();
-    if(!$data){
+    if(!$data)
         return false;
-    }
+    //>转化成数组
     $data = $data->toArray();
     if (isset($origin_params['single'])) {
-        if (!isset($data[0])) {
+        if (!isset($data[0]))
             return false;
-        }
-        if (is_object($data[0]) && isset($data[0]->id)) {
+        if (is_object($data[0]) && isset($data[0]->id))
             return (array)$data[0];
-        }
         return $data[0];
     }
+    //>返回数据
     return $data;
 }
-function M($table){
-    if($table == 'app')
-        return App\App::query();
-    return DB::table($table);
+/**
+ * @param $table
+ * @param bool $data
+ * @return bool|int|String
+ * @throws Exception
+ * @author shidatuo
+ * @description 保存数据方法
+ */
+function save($table, $data = false){
+    if (is_string($data))
+        $data = parse_params($data);
+    if (is_arr($table) && isset($table['table'])){
+        $data = $table;
+        $table = $table['table'];
+        unset($data['table']);
+    }
+    if (!is_arr($data))
+        return false;
+    if (!Schema::hasTable($table)) {
+        //>抛出异常,该表不存在
+        throw new Exception("Table $table doesn't exist");
+    }
+    if(isset($data['appId']) && NotEstr($data['appId'])){
+        $data['app_id'] = decode($data['app_id']);
+    }
+    //>统一处理openid
+    if (isset($data['openid']) && NotEstr($data['openid'])){
+        $user_info = \App\Model\User::api_login($data['openid']);
+        if(!is_arr($user_info))
+            return false;
+        $data['uid'] = $user_info['id'];
+    }else{
+        if(isset($data['uid']))
+            $data['uid'] = $data['uid'];
+    }
+    //>users 表没有uid
+    if(in_array($table,['users']) && isset($data['uid'])){
+        $data['id'] = $data['uid'];
+        unset($data['uid']);
+    }
+    //>app 表没有app_id
+    if(in_array($table,['app']) && isset($data['app_id'])){
+        $data['id'] = $data['app_id'];
+        unset($data['app_id']);
+    }
+    //>表里是否存在 user_ip 字段
+    Schema::table($table, function (Blueprint $table) {
+        if ($table->hasColumn('user_ip')) {
+            //> 用户表里存在 user_ip
+            $data['user_ip'] = USER_IP;
+        }
+    });
+    //>表里是否存在 server_ip 字段
+    Schema::table($table, function (Blueprint $table) {
+        if ($table->hasColumn('server_ip')) {
+            //> 用户表里存在 user_ip
+            $data['server_ip'] = SERVE_IP;
+        }
+    });
+    if(isset($data['id'])){
+        //>update
+        M($table)->where("id",$data['id'])->update($data);
+        $rs_id = $data['id'];
+    }else{
+        //>insert
+        $rs_id = M($table)->insertGetId($data);
+    }
+    return $rs_id;
 }
+/**
+ * @param $query
+ * @param $params
+ * @param $table
+ * @return mixed
+ * @author shidatuo
+ * @description 过滤字段
+ */
 function fields_map_filters($query, &$params, $table){
     if(isset($params['count']) && $params['count'] === true){
         if(isset($params['current_page']))
@@ -348,21 +429,6 @@ function fields_map_filters($query, &$params, $table){
                 }
                 unset($params[$filter]);
                 break;
-
-//            case $this->_is_closure($params[$filter]):
-//
-//
-//                $query = $query->where(function ($query) use (&$params, $filter) {
-//                    $call = $params[$filter];
-//                    unset($params[$filter]);
-//                    //call_user_func_array($call, $params);
-//                    call_user_func($call, $query, $params);
-//
-//
-//                });
-//
-//
-//                break;
             default:
                 if ($compare_sign != false) {
                     unset($params[$filter]);
@@ -376,8 +442,6 @@ function fields_map_filters($query, &$params, $table){
                             if ($compare_sign == 'not_null') {
                                 $query = $query->whereNotNull($table . '.' . $filter);
                             }
-
-
                         } else if ($compare_sign == 'in' || $compare_sign == 'not_in') {
                             if (is_string($value)) {
                                 $value = explode(',', $value);
