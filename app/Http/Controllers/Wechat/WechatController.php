@@ -38,6 +38,10 @@ class WechatController extends Controller{
             $m['session_key'] = $result['session_key'];
         if(isset($result['unionid']) && NotEstr($result['unionid']))
             $m['unionid'] = $result['unionid'];
+        //>避免用户重复
+        $user = get("users","openid={$m['openid']}&single=true&fields=id");
+        if(isset($user['id']) && isINT($user['id']))
+            $m['id'] = $user['id'];
         if(isset($m) && is_arr($m))
             $s = save("users",$m);
         if(isset($s) && $s)

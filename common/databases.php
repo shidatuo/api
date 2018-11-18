@@ -150,7 +150,7 @@ function save($table, $data = false){
     if(Schema::hasColumn($table, 'server_ip')){
         $data['server_ip'] = SERVE_IP;
     }
-    if(isset($data['id'])){
+    if(isset($data['id']) && isINT($data['id'])){
         //>update
         M($table)->where("id",$data['id'])->update($data);
         $rs_id = $data['id'];
