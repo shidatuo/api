@@ -37,9 +37,10 @@ class WechatController extends Controller{
         $json = http_request($request_url);
         log_ex("wxLogin",PHP_EOL . "微信服务器返回值 : " . $json . PHP_EOL);
         $result = json_decode($json,true);
-        if(!isset($result['openid']))
+        if(!isset($result['openid'])){
             log_ex("wxLogin",PHP_EOL ."返回 -1 [无效的code]" .PHP_EOL."============================== 微信小程序code换取session_key END =============================" . PHP_EOL);
             jsonReturn(-1,"无效的code");
+        }
         if(isset($result['openid']) && NotEstr($result['openid']))
             $m['openid'] = $result['openid'];
         if(isset($result['session_key']) && NotEstr($result['session_key']))
