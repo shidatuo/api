@@ -9,6 +9,7 @@ include_once $functions_dir.'data.php';
 include_once $functions_dir.'url.php';
 include_once $functions_dir.'http.php';
 include_once $functions_dir.'databases.php';
+include_once $functions_dir.'log.php';
 
 
 /**
