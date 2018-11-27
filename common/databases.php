@@ -119,7 +119,8 @@ function save($table, $data = false){
         throw new Exception("Table $table doesn't exist");
     }
     if(isset($data['appId']) && NotEstr($data['appId'])){
-        $data['app_id'] = decode($data['app_id']);
+        $data['app_id'] = decode($data['appId']);
+        unset($data['appId']);
     }
     //>统一处理openid
     if (isset($data['openid']) && NotEstr($data['openid'])){

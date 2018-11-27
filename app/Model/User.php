@@ -9,6 +9,10 @@ class User extends Authenticatable
 {
     use Notifiable;
 
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
+    public $timestamps = true;
+
     public $table = "users";
 
     /**
@@ -37,8 +41,11 @@ class User extends Authenticatable
     public static function api_login($api_key = false){
         if ($api_key == false)
             return false;
-        if (NotEstr($api_key))
+        if (!NotEstr($api_key))
             return false;
-        return User::query()->where("openid",$api_key)->first()->toArray();
+        $u = User::query()->where("openid",$api_key)->first();
+        if(is_null($u))
+            return false;
+        return $u->toArray();
     }
 }

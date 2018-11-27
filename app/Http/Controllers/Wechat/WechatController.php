@@ -41,6 +41,7 @@ class WechatController extends Controller{
             log_ex("wxLogin",PHP_EOL ."返回 -1 [无效的code]" .PHP_EOL."============================== 微信小程序code换取session_key END =============================" . PHP_EOL);
             jsonReturn(-1,"无效的code");
         }
+        $m['appId'] = $req->input("appId","");
         if(isset($result['openid']) && NotEstr($result['openid']))
             $m['openid'] = $result['openid'];
         if(isset($result['session_key']) && NotEstr($result['session_key']))
