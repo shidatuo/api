@@ -153,10 +153,12 @@ function save($table, $data = false){
     }
     if(isset($data['id']) && isINT($data['id'])){
         //>update
+        $data['updated_at'] = date("Y-m-d H:i:s");
         M($table)->where("id",$data['id'])->update($data);
         $rs_id = $data['id'];
     }else{
         //>insert
+        $data['updated_at'] = $data['created_at'] = date("Y-m-d H:i:s");
         $rs_id = M($table)->insertGetId($data);
     }
     return $rs_id;
