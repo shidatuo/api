@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Wechat;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use \App\Model\User;
+use Illuminate\Support\Facades\URL;
 
 class WechatController extends Controller{
 
