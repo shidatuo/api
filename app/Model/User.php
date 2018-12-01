@@ -48,4 +48,20 @@ class User extends Authenticatable
             return false;
         return $u->toArray();
     }
+    /**
+     * @param bool $api_key
+     * @return array|bool
+     * @author shidatuo
+     * @description
+     */
+    public static function getuid($api_key = false){
+        if ($api_key == false)
+            return false;
+        if (!NotEstr($api_key))
+            return false;
+        $u = User::query()->where("openid",$api_key)->pluck('id');
+        if(is_null($u) || !count($u))
+            return false;
+        return $u->toArray()[0];
+    }
 }

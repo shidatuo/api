@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Wechat;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use \App\Model\User;
 
 class WechatController extends Controller{
 
@@ -21,7 +22,7 @@ class WechatController extends Controller{
      */
     public function wxLogin(Request $req){
         log_ex("wxLogin",PHP_EOL . "============================== 微信小程序code换取session_key START =============================" . PHP_EOL);
-        log_ex("wxLogin",PHP_EOL . "获取请求的url : " . $req->url() . PHP_EOL);
+        log_ex("wxLogin",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
         $d['id'] = decode($req->input("appId",""));
         $d['fields'] = "appid,appSecret";
         $d['single'] = TRUE;
@@ -62,6 +63,39 @@ class WechatController extends Controller{
             jsonReturn(1,"请求成功",$m);
         }
         log_ex("wxLogin",PHP_EOL ."返回 -1 [保存失败]" .PHP_EOL."============================== 微信小程序code换取session_key END =============================" . PHP_EOL);
+        jsonReturn(-1,"保存失败");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 保存微信小程序获取的用户信息
+     */
+    public function wxUser(Request $req,User $user){
+        log_ex("wxUser",PHP_EOL . "============================== 保存微信小程序获取的用户信息 START =============================" . PHP_EOL);
+        log_ex("wxUser",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
+        $data = array();
+        $params = $req->all();
+        if(!isset($params['openid']) || (isset($params['openid']) && !NotEstr($params['openid'])))
+            jsonReturn(-1,"缺少用户标识openid");
+        if(!$user::getuid($params['openid']))
+            jsonReturn(-1,"该用户不存在");
+        if(isset($params['nickName']) && NotEstr($params['nickName']))
+            $data['nickName'] = $params['nickName'];
+        if(isset($params['avatarUrl']) && NotEstr($params['avatarUrl']))
+            $data['avatarUrl'] = $params['avatarUrl'];
+        if(isset($params['gender']) && is_numeric($params['gender']))
+            $data['gender'] = $params['gender'];
+        if(isset($params['country']) && NotEstr($params['country']))
+            $data['country'] = $params['country'];
+        if(isset($params['province']) && NotEstr($params['province']))
+            $data['province'] = $params['province'];
+        if(isset($params['city']) && NotEstr($params['city']))
+            $data['city'] = $params['city'];
+        $rs = save("users",$data);
+        if($rs)
+            jsonReturn(1,"保存成功");
         jsonReturn(-1,"保存失败");
     }
 }
