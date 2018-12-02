@@ -21,7 +21,7 @@ Route::group(['namespace' => 'Wechat','prefix' => 'wechat'], function () {
 
 Route::any('/apis/{all}', 'ApiController@api');
 Route::any('/', function(){
-
+     echo htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>');
 //    $aa = new \App\Model\User();
 //    $aa->nickName = 'shidatuo';
 //    dd($aa->i());
