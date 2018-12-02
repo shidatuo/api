@@ -78,9 +78,11 @@ class WechatController extends Controller{
         log_ex("wxUser",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
         $data = array();
         $params = $req->all();
-        if(!isset($params['openid']) || (isset($params['openid']) && !NotEstr($params['openid'])))
-            jsonReturn(-1,"缺少用户标识openid");
-        if(!$user::getuid($params['openid']))
+        log_ex("wxUser",PHP_EOL . "打印出请求的参数 : " . json_encode($params) . PHP_EOL);
+        $uid = $user::getuid($params['openid']);
+        log_ex("wxUser",PHP_EOL . "获取到的用户id为 : " . $uid . PHP_EOL);
+        $data['id'] = $uid;
+        if(!$uid)
             jsonReturn(-1,"该用户不存在");
         if(isset($params['nickName']) && NotEstr($params['nickName']))
             $data['nickName'] = $params['nickName'];
@@ -94,9 +96,14 @@ class WechatController extends Controller{
             $data['province'] = $params['province'];
         if(isset($params['city']) && NotEstr($params['city']))
             $data['city'] = $params['city'];
+        log_ex("wxUser",PHP_EOL . "保存的用户信息为 : " . json_encode($data) . PHP_EOL);
         $rs = save("users",$data);
-        if($rs)
+        if($rs){
+            log_ex("wxUser",PHP_EOL ."返回 1 [保存成功]" .PHP_EOL."============================== 保存微信小程序获取的用户信息 END =============================" . PHP_EOL);
             jsonReturn(1,"保存成功");
+        }
+        log_ex("wxUser",PHP_EOL ."返回 -1 [保存失败]" .PHP_EOL."============================== 保存微信小程序获取的用户信息 END =============================" . PHP_EOL);
         jsonReturn(-1,"保存失败");
     }
+
 }
