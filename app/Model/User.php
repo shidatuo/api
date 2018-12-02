@@ -4,6 +4,7 @@ namespace App\Model;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Overtrue\LaravelEmoji\Emoji;
 
 class User extends Authenticatable
 {
@@ -32,11 +33,12 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
     /**
      * @param bool $api_key
      * @return array|bool
      * @author shidatuo
-     * @description
+     * @description 根据用户的open_id 获取用户信息
      */
     public static function api_login($api_key = false){
         if ($api_key == false)
@@ -48,11 +50,12 @@ class User extends Authenticatable
             return false;
         return $u->toArray();
     }
+
     /**
      * @param bool $api_key
      * @return array|bool
      * @author shidatuo
-     * @description
+     * @description 根据用户的open_id 获取用户id
      */
     public static function getuid($api_key = false){
         if ($api_key == false)
@@ -64,4 +67,15 @@ class User extends Authenticatable
             return false;
         return $u->toArray()[0];
     }
+
+    /**
+     * @param $nickName
+     * @return string
+     * @author shidatuo
+     * @description 把昵称带有emoji表情的转化成html标签
+     */
+    public static function EmojinickNameHTML($nickName){
+        return Emoji::toImage(Emoji::toShort($nickName));
+    }
+
 }

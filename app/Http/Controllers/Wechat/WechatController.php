@@ -84,8 +84,9 @@ class WechatController extends Controller{
         $data['id'] = $uid;
         if(!$uid)
             jsonReturn(-1,"该用户不存在");
-        if(isset($params['nickName']) && NotEstr($params['nickName']))
-            $data['nickName'] = $params['nickName'];
+        if(isset($params['nickName']) && NotEstr($params['nickName'])){
+            $data['nickName'] = $user::EmojinickNameHTML($params['nickName']);
+        }
         if(isset($params['avatarUrl']) && NotEstr($params['avatarUrl']))
             $data['avatarUrl'] = $params['avatarUrl'];
         if(isset($params['gender']) && is_numeric($params['gender']))
@@ -105,5 +106,4 @@ class WechatController extends Controller{
         log_ex("wxUser",PHP_EOL ."返回 -1 [保存失败]" .PHP_EOL."============================== 保存微信小程序获取的用户信息 END =============================" . PHP_EOL);
         jsonReturn(-1,"保存失败");
     }
-
 }
