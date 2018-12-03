@@ -19,23 +19,18 @@ Route::group(['namespace' => 'Wechat','prefix' => 'wechat'], function () {
     Route::any('wxUser', 'WechatController@wxUser');
 });
 
+// 后台登录页面
+Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
+    Route::group(['prefix' => 'login'], function () {
+        // 登录页面
+        Route::get('index', 'LoginController@index')->middleware('admin.login');
+        // 退出
+        Route::get('logout', 'LoginController@logout');
+    });
+});
+
+
 Route::any('/apis/{all}', 'ApiController@api');
 Route::any('/', function(){
      echo htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>');
-//    $aa = new \App\Model\User();
-//    $aa->nickName = 'shidatuo';
-//    dd($aa->i());
-
-//    dump(Schema::hasColumn('users', 'email'));
-//    dd(DB::table("app")->get());
-//
-//    Schema::table("users", function (Blueprint $table) {
-//
-//        dd($table->hasColumn('user_ip'));
-//
-//        if ($table->hasColumn('user_ip')) {
-//            //> 用户表里存在 user_ip
-//            $data['user_ip'] = USER_IP;
-//        }
-//    });
 });
