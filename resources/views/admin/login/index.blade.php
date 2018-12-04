@@ -53,6 +53,8 @@
     </div>
 </div>
 
+
+
 <!-- jQuery -->
 <script src="{{ asset('statics/gentelella/vendors/jquery/dist/jquery.min.js') }}"></script>
 <!-- Bootstrap -->
