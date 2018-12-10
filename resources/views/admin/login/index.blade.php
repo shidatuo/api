@@ -13,8 +13,9 @@
     <link href="{{ asset('statics/gentelella/vendors/nprogress/nprogress.css') }}" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="{{ asset('statics/gentelella/build/css/custom.min.css') }}" rel="stylesheet">
-    <link rel="shortcut icon" href="<?php echo $config['WEB_ICON']?>"/>
+
     @yield('css')
+
 </head>
 <body class="nav-md">
 <div>
