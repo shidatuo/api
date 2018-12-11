@@ -180,7 +180,6 @@ return [
          * Laravel Emoji
          */
         Overtrue\LaravelEmoji\EmojiServiceProvider::class,
-
     ],
 
     /*
