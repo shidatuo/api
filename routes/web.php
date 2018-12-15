@@ -19,6 +19,24 @@ Route::group(['namespace' => 'Wechat','prefix' => 'wechat'], function () {
     Route::any('wxUser', 'WechatController@wxUser');
 });
 
+// auth
+Route::group(['namespace' => 'Auth', 'prefix' => 'auth'], function () {
+    // 第三方登录
+    Route::group(['prefix' => 'oauth'], function () {
+        // 重定向
+        Route::get('redirectToProvider/{service}', 'OAuthController@redirectToProvider');
+        // 获取用户资料并登录
+        Route::get('handleProviderCallback/{service}', 'OAuthController@handleProviderCallback');
+        // 退出登录
+        Route::get('logout', 'OAuthController@logout');
+    });
+
+    // 后台登录
+    Route::group(['prefix' => 'admin'], function () {
+        Route::post('login', 'AdminController@login');
+    });
+});
+
 // 后台登录页面
 Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
     Route::group(['prefix' => 'login'], function () {
