@@ -14,9 +14,11 @@
     <!-- Custom Theme Style -->
     <link href="{{ asset('statics/gentelella/build/css/custom.min.css') }}" rel="stylesheet">
 
-    @yield('css')
 
+
+    @yield('css')
 </head>
+
 <body class="nav-md">
 <div>
     <a class="hiddenanchor" id="signup"></a>
@@ -43,18 +45,18 @@
 
                     <div class="separator">
                         <div class="clearfix"></div>
-                        <div>
-                            <h1><i class="fa fa-paw"></i> {{ $config['WEB_NAME'] }}!</h1>
-                            <p>©2017 All Rights Reserved. {{ $config['WEB_NAME'] }}! is a Bootstrap 3 template. Privacy and Terms</p>
-                        </div>
+
+
+
+
+
+
                     </div>
                 </form>
             </section>
         </div>
     </div>
 </div>
-
-
 
 <!-- jQuery -->
 <script src="{{ asset('statics/gentelella/vendors/jquery/dist/jquery.min.js') }}"></script>
