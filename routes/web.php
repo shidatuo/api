@@ -30,7 +30,6 @@ Route::group(['namespace' => 'Auth', 'prefix' => 'auth'], function () {
         // 退出登录
         Route::get('logout', 'OAuthController@logout');
     });
-
     // 后台登录 laravel 自带的登陆系统
     Route::group(['prefix' => 'admin'], function () {
         Route::post('login', 'LoginController@login');
@@ -38,7 +37,7 @@ Route::group(['namespace' => 'Auth', 'prefix' => 'auth'], function () {
 });
 
 // 后台登录页面
-Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
+Route::group(['namespace' => 'Admin','prefix' => 'admin'], function () {
     Route::group(['prefix' => 'login'], function () {
         // 登录页面
         Route::get('index', 'LoginController@index')->middleware('admin.login');
@@ -49,7 +48,8 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
 
 
 // Admin 模块(后台页面路由)
-Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admin.auth'], function () {
+//Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admin.auth'], function () {
+Route::group(['namespace' => 'Admin', 'prefix' => 'admin'], function () {
     // 首页控制器
     Route::group(['prefix' => 'index'], function () {
         // 后台首页

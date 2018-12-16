@@ -4,6 +4,17 @@
  * @description 项目的全局配置
  */
 return [
-    //>后台跳转后台首页
-    'RedirectAdminIndex' => '/admin/index/index',
+    'pages'=>[
+         //>后台登陆页面
+         'AdminLogin' => '/admin/login/index',
+         //>后台首页
+         'AdminIndex' => '/admin/index/index'
+    ],
+
+
+
+
+
+    //>框架版本号
+    'Version' => 'laravel 5.5',
 ];

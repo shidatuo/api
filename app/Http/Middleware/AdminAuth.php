@@ -3,8 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Session;
 
-class AdminLogin
+class AdminAuth
 {
     /**
      * Handle an incoming request.
@@ -15,9 +16,8 @@ class AdminLogin
      */
     public function handle($request, Closure $next)
     {
-        //如果登陆;则重定向到后台首页
-        if (session('user.is_admin') == 1) {
-            return redirect(config("config.pages.AdminIndex"));
+        if(session("user.is_admin") !== 1){
+            return redirect(Config("config.pages.AdminLogin"));
         }
         return $next($request);
     }

@@ -13,9 +13,14 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
+        //>生成 laravel 监听器
         'App\Events\Event' => [
             'App\Listeners\EventListener',
         ],
+        //>生成 后台用户登陆的监听器
+        'Illuminate\Auth\Events\Login' => [
+            'App\Listeners\LoginStoreSession'
+        ]
     ];
 
     /**
