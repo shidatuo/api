@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 class IndexController extends Controller
 {
@@ -34,10 +35,11 @@ class IndexController extends Controller
 //        Session::flush();
 
 //        session_unset()
-        $request->session()->flush();
-        dump(Auth::user());
-        dump(session('user.is_admin'));
-        dd($request->session()->all());
+//        $request->session()->flush();
+
+//        dump(Auth::user());
+//        dump(session('user.is_admin'));
+//        dd($request->session()->all());
 
         // 文章总数
         $articleCount = 0;
@@ -48,10 +50,11 @@ class IndexController extends Controller
         // 用户总数
         $oauthUserCount = 0;
         // 最新登录小程序的5个用户
-        $oauthUserData = OauthUser::select('name', 'avatar', 'login_times', 'updated_at')
-            ->orderBy('updated_at', 'desc')
-            ->limit(5)
-            ->get();
+        $oauthUserData = [];
+//        $oauthUserData = OauthUser::select('name', 'avatar', 'login_times', 'updated_at')
+//            ->orderBy('updated_at', 'desc')
+//            ->limit(5)
+//            ->get();
         // 最新的5条评论
         $commentData = 0;
         $version = [
@@ -61,6 +64,8 @@ class IndexController extends Controller
             "mysql"     => DB::select('SHOW VARIABLES LIKE "version"')[0]->Value, //获取mysql版本
         ];
         $assign = compact("articleCount","commentCount","chatCount","oauthUserCount","oauthUserData","commentData","version");
+
+        dd($assign);
         return view('admin.index.index',$assign);
     }
 }
