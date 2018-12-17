@@ -13,9 +13,7 @@
     <link href="{{ asset('statics/gentelella/vendors/nprogress/nprogress.css') }}" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="{{ asset('statics/gentelella/build/css/custom.min.css') }}" rel="stylesheet">
-
-
-
+    <link rel="shortcut icon" href="<?php echo $config['WEB_ICON']?>"/>
     @yield('css')
 </head>
 
@@ -40,17 +38,13 @@
                     <div>
                         <button class="btn btn-default submit" type="submit">登录</button>
                     </div>
-
                     <div class="clearfix"></div>
-
                     <div class="separator">
                         <div class="clearfix"></div>
-
-
-
-
-
-
+                        <div>
+                            <h1><i class="fa fa-paw"></i> {{ $config['WEB_NAME'] }}!</h1>
+                            <p>©2017 All Rights Reserved. {{ $config['WEB_NAME'] }}! is a Bootstrap 3 template. Privacy and Terms</p>
+                        </div>
                     </div>
                 </form>
             </section>
@@ -66,7 +60,6 @@
 <script src="{{ asset('statics/gentelella/vendors/fastclick/lib/fastclick.js') }}"></script>
 <!-- NProgress -->
 <script src="{{ asset('statics/gentelella/vendors/nprogress/nprogress.js') }}"></script>
-
 <!-- Custom Theme Scripts -->
 <script src="{{ asset('statics/gentelella/build/js/custom.min.js') }}"></script>
 @yield('js')
