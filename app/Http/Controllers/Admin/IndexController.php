@@ -16,7 +16,7 @@ class IndexController extends Controller
      * @description 后台首页
      */
     public function index(Request $request){
-        dump(56765766);
+//        dump(56765766);
 //        Session::flush();
 //
 //
@@ -65,7 +65,7 @@ class IndexController extends Controller
         ];
         $assign = compact("articleCount","commentCount","chatCount","oauthUserCount","oauthUserData","commentData","version");
 
-        dd($assign);
+//        dd($assign);
         return view('admin.index.index',$assign);
     }
 }

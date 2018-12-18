@@ -64,20 +64,20 @@
                     <div class="clearfix"></div>
                 </div>
                 <div class="x_content">
-                    @foreach($oauthUserData as $k => $v)
-                        <article class="media event">
-                            <a class="pull-left">
-                                <img class="bjy-img" src="{{ url($v->avatar) }}" alt="">
-                            </a>
-                            <div class="media-body">
-                                {{ $v->name }}
-                                <p>
-                                    登录次数：{{ $v->login_times }} <br>
-                                    登录时间：{{ $v->updated_at }}
-                                </p>
-                            </div>
-                        </article>
-                    @endforeach
+                    {{--@foreach($oauthUserData as $k => $v)--}}
+                        {{--<article class="media event">--}}
+                            {{--<a class="pull-left">--}}
+                                {{--<img class="bjy-img" src="{{ url($v->avatar) }}" alt="">--}}
+                            {{--</a>--}}
+                            {{--<div class="media-body">--}}
+                                {{--{{ $v->name }}--}}
+                                {{--<p>--}}
+                                    {{--登录次数：{{ $v->login_times }} <br>--}}
+                                    {{--登录时间：{{ $v->updated_at }}--}}
+                                {{--</p>--}}
+                            {{--</div>--}}
+                        {{--</article>--}}
+                    {{--@endforeach--}}
                 </div>
             </div>
         </div>
@@ -89,21 +89,21 @@
                     <div class="clearfix"></div>
                 </div>
                 <div class="x_content">
-                    @foreach($commentData as $k => $v)
-                        <article class="media event">
-                            <a class="pull-left">
-                                <img class="bjy-img" src="{{ url($v->avatar) }}" alt="">
-                            </a>
-                            <div class="media-body">
-                                {{ $v->name }}
-                                <p>
-                                    <a href="{{ url('article', [$v->article_id]) }}">{{ $v->title }}</a>
-                                    <br>
-                                    {{ re_substr($v->content, 0, 14, '...') }}
-                                </p>
-                            </div>
-                        </article>
-                    @endforeach
+                    {{--@foreach($commentData as $k => $v)--}}
+                        {{--<article class="media event">--}}
+                            {{--<a class="pull-left">--}}
+                                {{--<img class="bjy-img" src="{{ url($v->avatar) }}" alt="">--}}
+                            {{--</a>--}}
+                            {{--<div class="media-body">--}}
+                                {{--{{ $v->name }}--}}
+                                {{--<p>--}}
+                                    {{--<a href="{{ url('article', [$v->article_id]) }}">{{ $v->title }}</a>--}}
+                                    {{--<br>--}}
+                                    {{--{{ re_substr($v->content, 0, 14, '...') }}--}}
+                                {{--</p>--}}
+                            {{--</div>--}}
+                        {{--</article>--}}
+                    {{--@endforeach--}}
                 </div>
             </div>
         </div>
