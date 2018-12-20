@@ -47,6 +47,7 @@ Route::group(['namespace' => 'Admin','prefix' => 'admin'], function () {
 });
 
 
+
 // Admin 模块(后台页面路由)
 //Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admin.auth'], function () {
 Route::group(['namespace' => 'Admin', 'prefix' => 'admin'], function () {
