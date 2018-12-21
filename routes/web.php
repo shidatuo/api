@@ -200,7 +200,6 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin'], function () {
         Route::get('clear', 'ConfigController@clear');
     });
 
-
     // 开源项目管理
     Route::group(['prefix' => 'gitProject'], function () {
         // 开源项目列表
