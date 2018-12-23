@@ -54,13 +54,13 @@ class BaseModel extends Model{
             ->get();
         // 可能有查不到数据的情况
         if ($model->isEmpty()) {
-            flash_error('无需要添加的数据');
+            flash_error('无需要修改的数据');
             return false;
         }
         foreach ($model as $k => $v) {
             $result = $v->forceFill($data)->save();
         }
-        if ($result) {
+        if (isset($result) && $result) {
             flash_success('修改成功');
             return $result;
         }else{

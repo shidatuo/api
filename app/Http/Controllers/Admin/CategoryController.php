@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Category\Update;
 use App\Model\Category;
 use App\Http\Requests\Category\Store;
 use Illuminate\Support\Facades\Cache;
@@ -49,5 +50,78 @@ class CategoryController extends Controller
         return redirect("admin/category/index");
     }
 
+    /**
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @author shidatuo
+     * @description 修改类目页面
+     */
+    public function edit($id){
+        $data = Category::find($id);
+        $assign = compact("data");
+        return view("admin.category.edit",$assign);
+    }
 
+    /**
+     * @param $id
+     * @param Update $req
+     * @param Category $category
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 修改类目操作
+     */
+    public function update($id , Update $req , Category $category){
+        $data = $req->except('_token');
+        $rs = $category->updateData(['id'=>$id],$data);
+        if($rs){
+            //>删除缓存
+            Cache::forget('common:category');
+        }
+        return redirect("admin/category/index");
+    }
+
+    /**
+     * @param $id
+     * @param Category $category
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 软删除类目操作
+     */
+    public function destroy($id , Category $category){
+        $rs = $category->removeData(['id'=>$id]);
+        if($rs){
+            //>删除缓存
+            Cache::forget('common:category');
+        }
+        return redirect("admin/category/index");
+    }
+
+    /**
+     * @param $id
+     * @param Category $category
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 恢复软删除类目数据
+     */
+    public function restore($id , Category $category){
+        $rs = $category->restoreData(['id'=>$id]);
+        if($rs){
+            //>删除缓存
+            Cache::forget('common:category');
+        }
+        return redirect("admin/category/index");
+    }
+
+    /**
+     * @param $id
+     * @param Category $category
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 彻底删除类目数据
+     */
+    public function forceDelete($id , Category $category){
+        $data = compact("id");
+        $category->forceDeleteData($data);
+        return redirect("admin/category/index");
+    }
 }
