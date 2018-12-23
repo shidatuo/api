@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Cache;
 use App\Model\Config;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Contracts\Http\Kernel;
+use App\Http\Middleware\LaravelFlash;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +62,9 @@ class AppServiceProvider extends ServiceProvider
 //            }
             $view->with($assign);
         });
+        //>后台提示
+        $kernel = $this->app[Kernel::class];
+        $kernel->pushMiddleware(LaravelFlash::class);
     }
 
     /**

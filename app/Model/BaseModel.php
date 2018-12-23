@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
-class BaseModel extends Model
-{
+class BaseModel extends Model{
+
     // 软删除
     use SoftDeletes;
     /**
@@ -23,8 +23,7 @@ class BaseModel extends Model
      * @param  array $data 需要添加的数据
      * @return bool        是否成功
      */
-    public function storeData($data)
-    {
+    public function storeData($data){
         // 处理data为空的情况
         if (empty($data)) {
             flash_error('无需要添加的数据');
@@ -48,8 +47,7 @@ class BaseModel extends Model
      * @param  array $data 需要修改的数据
      * @return bool        是否成功
      */
-    public function updateData($map, $data)
-    {
+    public function updateData($map, $data){
         $model = $this
             ->whereMap($map)
             ->withTrashed()
@@ -77,8 +75,7 @@ class BaseModel extends Model
      * @param  array $map   where 条件数组形式
      * @return bool         是否成功
      */
-    public function destroyData($map)
-    {
+    public function destroyData($map){
         // 软删除
         $result=$this
             ->whereMap($map)
@@ -99,8 +96,7 @@ class BaseModel extends Model
      *
      * @return bool
      */
-    public function restoreData($map)
-    {
+    public function restoreData($map){
         // 恢复
         $result=$this
             ->whereMap($map)
@@ -121,8 +117,7 @@ class BaseModel extends Model
      *
      * @return bool
      */
-    public function forceDeleteData($map)
-    {
+    public function forceDeleteData($map){
         // 彻底删除
         $result=$this
             ->whereMap($map)
@@ -150,8 +145,7 @@ class BaseModel extends Model
      * @param $map
      * @return mixed
      */
-    public function scopeWhereMap($query, array $map)
-    {
+    public function scopeWhereMap($query, array $map){
         // 如果是空直接返回
         if (empty($map)) {
             return $query;

@@ -242,3 +242,29 @@ function url_current($skip_ajax = false, $no_get = false) {
 
     return $u;
 }
+
+if (!function_exists('flash_success')){
+    /**
+     * @param string $message
+     * @author shidatuo
+     * @description 添加成功提示
+     * @link https://laravel.com/docs/5.5/session
+     * flash方法执行此操作。使用此方法存储在会话中的数据仅在后续HTTP请求期间可用，然后将被删除
+     */
+    function flash_success($message = '成功'){
+        session()->flash('alert-message', $message);
+        session()->flash('alert-type', 'success');
+    }
+}
+
+if (!function_exists('flash_error')){
+    /**
+     * @param string $message
+     * @author shidatuo
+     * @description 添加失败提示
+     */
+    function flash_error($message = '失败'){
+        session()->flash('alert-message', $message);
+        session()->flash('alert-type', 'error');
+    }
+}
