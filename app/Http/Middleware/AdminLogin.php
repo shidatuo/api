@@ -13,8 +13,7 @@ class AdminLogin
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
-    {
+    public function handle($request, Closure $next){
         //如果登陆;则重定向到后台首页
         if (session('user.is_admin') == 1) {
             return redirect(config("config.pages.AdminIndex"));
