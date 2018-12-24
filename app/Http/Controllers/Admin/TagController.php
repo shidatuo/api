@@ -5,38 +5,126 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tag\Store;
+use App\Http\Requests\Tag\Update;
+use App\Model\Tag;
+use Illuminate\Support\Facades\Cache;
 
 class TagController extends Controller{
-    //标枪首页
-    public function index(){
 
+    /**
+     * @param Tag $tagModel
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @author shidatuo
+     * @description 展示标签列表
+     */
+    public function index(Tag $tagModel){
+        $data = $tagModel::withTrashed()->get();
+        $assign = compact("data");
+        return view('admin.tag.index',$assign);
     }
-    //添加页面
+
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @author shidatuo
+     * @description 创建标签页面
+     */
     public function create(){
-
+        return view('admin.tag.create');
     }
-    //添加标签
-    public function store(){
 
+    /**
+     * @param Store $req
+     * @param Tag $tagModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 添加标签
+     */
+    public function store(Store $req , Tag $tagModel){
+        $data = $req->except('_token');
+        $rs = $tagModel->storeData($data);
+        if($rs){
+            //>删除缓存
+            Cache::forget('common:tag');
+        }
+        return redirect('admin/tag/index');
     }
-    //修改页面
-    public function edit(){
 
+    /**
+     * @param $id
+     * @param Tag $tagModel
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @author shidatuo
+     * @description 修改标签页面
+     */
+    public function edit($id , Tag $tagModel){
+        $data = $tagModel::find($id);
+        $assign = compact("data");
+        return view('admin.tag.edit',$assign);
     }
-    //修改标签
-    public function update(){
 
+    /**
+     * @param $id
+     * @param Update $req
+     * @param Tag $tagModel
+     * @return \Illuminate\Http\RedirectResponse
+     * @author shidatuo
+     * @description 修改标签
+     */
+    public function update($id , Update $req , Tag $tagModel){
+        $data = $req->except('_token');
+        $map = compact("id");
+        $rs = $tagModel->updateData($map,$data);
+        if($rs){
+            //>删除缓存
+            Cache::forget('common:tag');
+        }
+        return redirect('admin/tag/index');
     }
-    //软删除
-    public function destroy(){
 
+    /**
+     * @param $id
+     * @param Tag $tagModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 软删除标签
+     */
+    public function destroy($id , Tag $tagModel){
+        $map = compact("id");
+        $rs = $tagModel->destroyData($map);
+        if($rs){
+            //>删除缓存
+            Cache::forget('common:tag');
+        }
+        return redirect()->back();
     }
-    //恢复软删除
-    public function restore(){
 
+    /**
+     * @param $id
+     * @param Tag $tagModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 恢复软删除标签
+     */
+    public function restore($id , Tag $tagModel){
+        $map = compact("id");
+        $rs = $tagModel->restoreData($map);
+        if($rs){
+            //>删除缓存
+            Cache::forget('common:tag');
+        }
+        return redirect()->back();
     }
-    //彻底删除
-    public function forceDelete(){
 
+    /**
+     * @param $id
+     * @param Tag $tagModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 彻底删除
+     */
+    public function forceDelete($id , Tag $tagModel){
+        $map = compact("id");
+        $tagModel->forceDeleteData($map);
+        return redirect()->back();
     }
 }

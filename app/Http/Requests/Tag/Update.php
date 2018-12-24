@@ -4,7 +4,7 @@ namespace App\Http\Requests\Tag;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class Store extends FormRequest
+class Update extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,7 @@ class Store extends FormRequest
      */
     public function rules(){
         return [
-            'name'=>'required|unique:tags|max:20'
+            'name'=>'required|unique:tags,name,'. $this->route()->id
         ];
     }
 
