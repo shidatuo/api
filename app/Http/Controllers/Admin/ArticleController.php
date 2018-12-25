@@ -16,6 +16,7 @@ class ArticleController extends Controller{
 
     }
 
+
     //保存文章
     public function store(){
 
