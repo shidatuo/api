@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Model\Article;
 
 class ArticleController extends Controller{
+
     //首页
     public function index(){
-
+        $article = Article::with('category')
+            ->orderBy('created_at', 'desc')
+            ->withTrashed()
+            ->paginate(15);
+        $assign = compact('article');
+        return view('admin.article.index', $assign);
     }
 
     //发布文章
