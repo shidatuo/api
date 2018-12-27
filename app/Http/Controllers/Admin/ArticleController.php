@@ -5,10 +5,16 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Model\Article;
+use App\Model\Category;
 
 class ArticleController extends Controller{
 
-    //首页
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @author shidatuo
+     * @description 后台文章首页
+     * @link https://laravel.com/docs/4.2/eloquent#eager-loading
+     */
     public function index(){
         $article = Article::with('category')
             ->orderBy('created_at', 'desc')
