@@ -24,6 +24,8 @@ class ArticleController extends Controller{
         return view('admin.article.index', $assign);
     }
 
+
+
     //发布文章
     public function create(){
 
