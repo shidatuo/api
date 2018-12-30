@@ -10,6 +10,8 @@ use App\Model\Category;
 use App\Model\Tag;
 use App\Model\ArticleTag;
 use App\Http\Requests\Article\Store;
+use http\Env\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ArticleController extends Controller{
 
@@ -97,9 +99,9 @@ class ArticleController extends Controller{
      */
     public function update(Store $req ,Article $articleModel ,ArticleTag $articleTagModel ,$id){
         $data = $req->except('_token');
-        $data['top'] = isset($data['top']) ? $data['top'] : 0;
+        $data['is_top'] = isset($data['is_top']) ? $data['is_top'] : 0;
         //>markdown 字段
-        $markdown = $articleModel->where('id', $id)->value('markdown');
+        $markdown = $articleModel->where('id',$id)->value('markdown');
         //>取出封面图 字段
         $cover_value = $articleModel->where('id', $id)->value('cover');
         preg_match_all('/!\[.*\]\((.*.[jpg|jpeg|png|gif]).*\)/i', $markdown, $images);
@@ -130,26 +132,78 @@ class ArticleController extends Controller{
             //>更新标签统计缓存
             Cache::forget('common:tag');
         }
-        return redirect()->back();
+        return redirect('admin/article/index');
+    }
+
+    /**
+     * @param $id
+     * @param Article $articleModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 删除文章
+     */
+    public function destroy($id , Article $articleModel){
+        $map = compact("id");
+        $result = $articleModel->destroyData($map);
+        if($result){
+            //>更新缓存
+            Cache::forget('common:topArticle');
+        }
+        return redirect('admin/article/index');
+    }
+
+    /**
+     * @param $id
+     * @param Article $articleModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 恢复文章
+     */
+    public function restore($id , Article $articleModel){
+        $map = compact("id");
+        $result = $articleModel->restoreData($map);
+        if($result){
+            //>更新缓存
+            Cache::forget('common:topArticle');
+        }
+        return redirect('admin/article/index');
+    }
+
+    /**
+     * @param $id
+     * @param Article $articleModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 彻底删除文章
+     */
+    public function forceDelete($id , Article $articleModel){
+        $map = compact("id");
+        $result = $articleModel->restoreData($map);
+        if($result){
+            //>更新缓存
+            Cache::forget('common:topArticle');
+        }
+        return redirect('admin/article/index');
     }
 
     //上传图片
     public function uploadImage(){
-
+        $result = upload('editormd-image-file', 'uploads/article');
+        if ($result['status_code'] === 200) {
+            $data = [
+                'success' => 1,
+                'message' => $result['message'],
+                'url' => $result['data']['path'].$result['data']['new_name']
+            ];
+        } else {
+            $data = [
+                'success' => 0,
+                'message' => $result['message'],
+                'url' => ''
+            ];
+        }
+        return response()->json($data);
     }
 
-    //删除文章
-    public function destroy(){
 
-    }
-
-    //恢复文章
-    public function restore(){
-
-    }
-
-    //彻底删除文章
-    public function forceDelete(){
-
-    }
 }
