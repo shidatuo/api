@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
+use App\Model\Config;
+//use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Model\Article;
 use App\Model\Category;
+use App\Model\Tag;
+use App\Http\Requests\Article\Store;
 
 class ArticleController extends Controller{
 
@@ -19,22 +22,35 @@ class ArticleController extends Controller{
         $article = Article::with('category')
             ->orderBy('created_at', 'desc')
             ->withTrashed()
-            ->paginate(15);
+            ->paginate(10);
         $assign = compact('article');
-        return view('admin.article.index', $assign);
+        return view('admin.article.index',$assign);
     }
 
-
-
-    //发布文章
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @author shidatuo
+     * @description 发布文章
+     */
     public function create(){
-
+        $category = Category::all();
+        $tag = Tag::all();
+        $author = Config::where('name','AUTHOR')->value('value');
+        $assign = compact("category","tag","author");
+        return view('admin.article.create',$assign);
     }
 
 
     //保存文章
-    public function store(){
 
+
+    public function store(Store $req , Article $articleModel){
+        dd($req->all());
+
+        $data = $req->except('_token');
+        if($req->hasFile('cover')){
+
+        }
     }
 
     //修改文章页面
