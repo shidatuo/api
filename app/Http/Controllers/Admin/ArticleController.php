@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Model\Config;
-//use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Model\Article;
 use App\Model\Category;
 use App\Model\Tag;
 use App\Model\ArticleTag;
 use App\Http\Requests\Article\Store;
-use http\Env\Request;
 use Illuminate\Support\Facades\Cache;
 
 class ArticleController extends Controller{
@@ -186,7 +184,11 @@ class ArticleController extends Controller{
         return redirect('admin/article/index');
     }
 
-    //上传图片
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     * @author shidatuo
+     * @description markdown 编辑器上传图片
+     */
     public function uploadImage(){
         $result = upload('editormd-image-file', 'uploads/article');
         if ($result['status_code'] === 200) {
@@ -204,6 +206,4 @@ class ArticleController extends Controller{
         }
         return response()->json($data);
     }
-
-
 }
