@@ -78,6 +78,26 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
         Route::get('forceDelete/{id}', 'ArticleController@forceDelete');
     });
 
+    // 产品管理
+    Route::group(['prefix' => 'product'], function () {
+        // 产品列表
+        Route::get('index', 'ProductController@index');
+        // 发布文章
+        Route::get('create', 'ProductController@create');
+        Route::post('store', 'ProductController@store');
+        // 编辑文章
+        Route::get('edit/{id}', 'ProductController@edit');
+        Route::post('update/{id}', 'ProductController@update');
+        // 上传图片
+//        Route::post('uploadImage', 'ProductController@uploadImage');
+        // 删除文章
+        Route::get('destroy/{id}', 'ProductController@destroy');
+        // 恢复删除的文章
+        Route::get('restore/{id}', 'ProductController@restore');
+        // 彻底删除文章
+        Route::get('forceDelete/{id}', 'ProductController@forceDelete');
+    });
+
     // 分类管理
     Route::group(['prefix' => 'category'], function () {
         // 分类列表
