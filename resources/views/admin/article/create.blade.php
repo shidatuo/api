@@ -59,7 +59,7 @@
                 <th>标签</th>
                 <td>
                     @foreach($tag as $v)
-                        {{ $v['name'] }}<input class="bjy-icheck" type="checkbox" name="tag_ids[]" value="{{ $v['id'] }}" @if(in_array($v['id'], old('tag_ids', []))) checked="checked" @endif> &emsp;
+                        {{ $v['name'] }} <input class="bjy-icheck" type="checkbox" name="tag_ids[]" value="{{ $v['id'] }}" @if(in_array($v['id'], old('tag_ids', []))) checked="checked" @endif> &emsp;&nbsp;
                     @endforeach
                 </td>
             </tr>

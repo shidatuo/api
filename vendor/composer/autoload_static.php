@@ -95,6 +95,10 @@ class ComposerStaticInit8d47bff9c4e43684b6b04ce21a5eb774
             'Intervention\\Image\\' => 19,
             'Illuminate\\' => 11,
         ),
+        'H' => 
+        array (
+            'HyperDown\\' => 10,
+        ),
         'G' => 
         array (
             'GuzzleHttp\\Psr7\\' => 16,
@@ -273,6 +277,10 @@ class ComposerStaticInit8d47bff9c4e43684b6b04ce21a5eb774
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate',
         ),
+        'HyperDown\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/joyqi/hyper-down',
+        ),
         'GuzzleHttp\\Psr7\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
@@ -387,6 +395,7 @@ class ComposerStaticInit8d47bff9c4e43684b6b04ce21a5eb774
         'App\\Listeners\\LoginStoreSession' => __DIR__ . '/../..' . '/app/Listeners/LoginStoreSession.php',
         'App\\Model\\App' => __DIR__ . '/../..' . '/app/Model/App.php',
         'App\\Model\\Article' => __DIR__ . '/../..' . '/app/Model/Article.php',
+        'App\\Model\\ArticleTag' => __DIR__ . '/../..' . '/app/Model/ArticleTag.php',
         'App\\Model\\BaseModel' => __DIR__ . '/../..' . '/app/Model/BaseModel.php',
         'App\\Model\\Category' => __DIR__ . '/../..' . '/app/Model/Category.php',
         'App\\Model\\Config' => __DIR__ . '/../..' . '/app/Model/Config.php',
@@ -1065,6 +1074,7 @@ class ComposerStaticInit8d47bff9c4e43684b6b04ce21a5eb774
         'Hamcrest\\Type\\IsString' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsString.php',
         'Hamcrest\\Util' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Util.php',
         'Hamcrest\\Xml\\HasXPath' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Xml/HasXPath.php',
+        'HyperDown\\Parser' => __DIR__ . '/..' . '/joyqi/hyper-down/Parser.php',
         'Illuminate\\Auth\\Access\\AuthorizationException' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Auth/Access/AuthorizationException.php',
         'Illuminate\\Auth\\Access\\Gate' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Auth/Access/Gate.php',
         'Illuminate\\Auth\\Access\\HandlesAuthorization' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Auth/Access/HandlesAuthorization.php',

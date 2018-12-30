@@ -4484,5 +4484,43 @@
             "thumbnail",
             "watermark"
         ]
+    },
+    {
+        "name": "joyqi/hyper-down",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/SegmentFault/HyperDown.git",
+            "reference": "30d1ececb5dfac6829561fd6f05bec39276d3569"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/SegmentFault/HyperDown/zipball/30d1ececb5dfac6829561fd6f05bec39276d3569",
+            "reference": "30d1ececb5dfac6829561fd6f05bec39276d3569",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4.0"
+        },
+        "time": "2018-08-13T09:00:41+00:00",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "HyperDown\\": "./"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD"
+        ],
+        "authors": [
+            {
+                "name": "joyqi",
+                "email": "joyqi@segmentfault.com"
+            }
+        ],
+        "description": "A light weight markdown parser library"
     }
 ]

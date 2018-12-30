@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Model\Article;
 use App\Model\Category;
 use App\Model\Tag;
+use App\Model\ArticleTag;
 use App\Http\Requests\Article\Store;
 
 class ArticleController extends Controller{
@@ -40,27 +41,96 @@ class ArticleController extends Controller{
         return view('admin.article.create',$assign);
     }
 
-
-    //保存文章
-
-
+    /**
+     * @param Store $req
+     * @param Article $articleModel
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @author shidatuo
+     * @description 保存文章接口
+     */
     public function store(Store $req , Article $articleModel){
-        dd($req->all());
-
         $data = $req->except('_token');
         if($req->hasFile('cover')){
-
+            $result = upload('cover','uploads/article');
+            if($result['status_code'] == 200){
+                $data['cover'] = $result['data']['path'].$result['data']['new_name'];
+            }
         }
+        $result = $articleModel->storeData($data);
+        if($result){
+            // 更新热门推荐文章缓存  移除缓存
+            Cache::forget('common:topArticle');
+            // 更新标签统计缓存  移除缓存
+            Cache::forget('common:tag');
+        }
+        return redirect('admin/article/index');
     }
 
-    //修改文章页面
-    public function edit(){
-
+    /**
+     * @param $id
+     * @param Article $articleModel
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @author shidatuo
+     * @description 修改文章页面
+     */
+    public function edit($id,Article $articleModel){
+        //>查询文章
+        $article = $articleModel::withTrashed()->find($id);
+        //>查询标签组成数组
+        $article->tag_ids = ArticleTag::where('article_id', $id)->pluck('tag_id')->toArray();
+        //>获取分类
+        $category = Category::all();
+        //>获取标签
+        $tag = Tag::all();
+        $assign = compact("category","tag","article");
+        return view('admin.article.edit',$assign);
     }
 
-    //修改文章
-    public function update(){
-
+    /**
+     * @param Store $req
+     * @param Article $articleModel
+     * @param ArticleTag $articleTagModel
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     * @author shidatuo
+     * @description 修改文章
+     */
+    public function update(Store $req ,Article $articleModel ,ArticleTag $articleTagModel ,$id){
+        $data = $req->except('_token');
+        $data['top'] = isset($data['top']) ? $data['top'] : 0;
+        //>markdown 字段
+        $markdown = $articleModel->where('id', $id)->value('markdown');
+        //>取出封面图 字段
+        $cover_value = $articleModel->where('id', $id)->value('cover');
+        preg_match_all('/!\[.*\]\((.*.[jpg|jpeg|png|gif]).*\)/i', $markdown, $images);
+        //>添加水印 并获取第一张图
+        $cover = $articleModel->getCover($data['markdown'], $images[1]);
+        //>是否上传了封面图
+        if($req->hasFile('cover')){
+            $result = upload('cover','uploads/article');
+            if($result['status_code'] == 200){
+                $data['cover'] = $result['data']['path'].$result['data']['new_name'];
+            }
+        }else{
+            if(checkEmpty($cover_value))
+                $data['cover'] = $cover;
+        }
+        //>为文章批量添加标签
+        $tag_ids = isset($data['tag_ids']) ? $data['tag_ids'] : [];
+        if(isset($data['tag_ids']))
+            unset($data['tag_ids']);
+        $articleTagModel->addTagIds($id,$tag_ids);
+        //>把markdown 转化成 html
+        $data['html'] = markdown_to_html($data['markdown']);
+        $map = compact("id");
+        $result = $articleModel->updateData($map,$data);
+        if($result){
+            //>更新热门推荐文章缓存
+            Cache::forget('common:topArticle');
+            //>更新标签统计缓存
+            Cache::forget('common:tag');
+        }
+        return redirect()->back();
     }
 
     //上传图片
