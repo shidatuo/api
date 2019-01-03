@@ -16,31 +16,6 @@ class IndexController extends Controller
      * @description 后台首页
      */
     public function index(Request $request){
-//        dump(56765766);
-//        Session::flush();
-//
-//
-//        dump(Session::getId());
-//// 增加一个会话键值数据
-//        Session::put('key', 'value');
-//// 将一个值加入到 session 的数组中
-//        Session::push('foo.bar','value');
-//// 返回 session 的所有条目
-//        Session::all();
-//// 检查 session 里是否有此条目
-//        Session::has('key');
-//// 从 session 中移除一个条目
-//        Session::forget('key');
-//// 从 session 中移除所有条目
-//        Session::flush();
-
-//        session_unset()
-//        $request->session()->flush();
-
-//        dump(Auth::user());
-//        dump(session('user.is_admin'));
-//        dd($request->session()->all());
-
         // 文章总数
         $articleCount = 0;
         // 评论总数
@@ -64,8 +39,6 @@ class IndexController extends Controller
             "mysql"     => DB::select('SHOW VARIABLES LIKE "version"')[0]->Value, //获取mysql版本
         ];
         $assign = compact("articleCount","commentCount","chatCount","oauthUserCount","oauthUserData","commentData","version");
-
-//        dd($assign);
         return view('admin.index.index',$assign);
     }
 }
