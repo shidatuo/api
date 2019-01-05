@@ -124,5 +124,5 @@ class CategoryController extends Controller
         $category->forceDeleteData($data);
         return redirect("admin/category/index");
     }
-    
+
 }
