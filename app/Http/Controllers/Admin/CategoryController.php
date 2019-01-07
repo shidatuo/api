@@ -18,7 +18,7 @@ class CategoryController extends Controller
      */
     public function index(){
         //>调用 withTrashed 方法需要开启软删除
-        $data = Category::withTrashed()->orderBy('sort')->get();
+        $data = Category::withTrashed()->where("data_type","post")->orderBy('sort')->get();
         $assign = compact('data');
         return view('admin.category.index',$assign);
     }
@@ -42,6 +42,7 @@ class CategoryController extends Controller
     public function store(Store $req,Category $categoryModel){
         //>过滤 _token 字段
         $data = $req->except('_token');
+        $data['data_type'] = "post";
         $rs = $categoryModel->storeData($data);
         if($rs){
             //>删除缓存

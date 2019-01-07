@@ -57,14 +57,15 @@
                                 <a><i class="fa fa-book"></i> 文章管理 <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
                                     <li><a href="{{ url('admin/article/index') }}">文章列表</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a><i class="fa fa-th"></i> 分类管理 <span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
                                     <li><a href="{{ url('admin/category/index') }}">分类列表</a></li>
                                 </ul>
                             </li>
+                            {{--<li>--}}
+                                {{--<a><i class="fa fa-th"></i> 分类管理 <span class="fa fa-chevron-down"></span></a>--}}
+                                {{--<ul class="nav child_menu">--}}
+                                    {{--<li><a href="{{ url('admin/category/index') }}">分类列表</a></li>--}}
+                                {{--</ul>--}}
+                            {{--</li>--}}
                             <li>
                                 <a><i class="fa fa-tags"></i> 标签管理 <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
