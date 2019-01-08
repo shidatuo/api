@@ -3,6 +3,7 @@ use HyperDown\Parser;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 
 if ( !function_exists('ajax_return') ) {
 	/**
@@ -1336,6 +1337,17 @@ if(!function_exists("ago")){
             return '1 second ago';
         }
         return '' . $retval . ' ago';
+    }
+}
+
+if(!function_exists("Pathinfo_basename")){
+    /**
+     * @return mixed
+     * @author shidatuo
+     * @description 获取url的basename
+     */
+    function Pathinfo_basename(){
+        return pathinfo(URL::current(),PATHINFO_BASENAME);
     }
 }
 

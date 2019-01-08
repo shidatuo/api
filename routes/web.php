@@ -101,10 +101,10 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
     // 分类管理
     Route::group(['prefix' => 'category'], function () {
         // 分类列表
-        Route::get('index', 'CategoryController@index');
+        Route::get('index/{data_type}', 'CategoryController@index');
         // 添加分类
-        Route::get('create', 'CategoryController@create');
-        Route::post('store', 'CategoryController@store');
+        Route::get('create/{data_type}', 'CategoryController@create');
+        Route::post('store/{data_type}', 'CategoryController@store');
         // 编辑分类
         Route::get('edit/{id}', 'CategoryController@edit');
         Route::post('update/{id}', 'CategoryController@update');

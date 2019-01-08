@@ -10,13 +10,13 @@
 
     <ul id="myTab" class="nav nav-tabs bar_tabs">
         <li class="active">
-            <a href="{{ url('admin/category/index') }}">分类列表</a>
+            <a href="{{ url('admin/category/index/' . Pathinfo_basename()) }}">分类列表</a>
         </li>
         <li>
-            <a href="{{ url('admin/category/create') }}">添加分类</a>
+            <a href="{{ url('admin/category/create/' . Pathinfo_basename()) }}">添加分类</a>
         </li>
     </ul>
-    <form action="{{ url('admin/category/sort') }}" method="post">
+    <form action="{{ url('admin/category/sort/' . Pathinfo_basename()) }}" method="post">
         {{ csrf_field() }}
         <table class="table table-bordered table-striped table-hover table-condensed">
             <tr>

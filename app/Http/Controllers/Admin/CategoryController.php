@@ -8,17 +8,26 @@ use App\Model\Category;
 use App\Http\Requests\Category\Store;
 use Illuminate\Support\Facades\Cache;
 
-class CategoryController extends Controller
-{
+class CategoryController extends Controller{
+
+    /**
+     * @return array
+     * @author shidatuo
+     * @description 后台限制data_type字段类型
+     */
+    public function fillable_data_type(){
+        return ["post","product"];
+    }
+
     /**
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      * @author shidatuo
-     * @description 后台分类列表
+     * @description 文章和产品的分类
      * @link https://laravelacademy.org/post/138.html 查询软删除的模型数据
      */
-    public function index(){
+    public function index($data_type){
         //>调用 withTrashed 方法需要开启软删除
-        $data = Category::withTrashed()->where("data_type","post")->orderBy('sort')->get();
+        $data = Category::withTrashed()->where("data_type",$data_type)->orderBy('sort')->get();
         $assign = compact('data');
         return view('admin.category.index',$assign);
     }
@@ -39,16 +48,20 @@ class CategoryController extends Controller
      * @author shidatuo
      * @description 保存分类
      */
-    public function store(Store $req,Category $categoryModel){
+    public function store($data_type , Store $req,Category $categoryModel){
         //>过滤 _token 字段
         $data = $req->except('_token');
-        $data['data_type'] = "post";
+        if(!in_array($data_type,self::fillable_data_type())){
+            flash_error('无效的数据类型');
+            return redirect()->back();
+        }
+        $data['data_type'] = $data_type;
         $rs = $categoryModel->storeData($data);
         if($rs){
             //>删除缓存
             Cache::forget('common:category');
         }
-        return redirect("admin/category/index");
+        return redirect("admin/category/index/$data_type");
     }
 
     /**
