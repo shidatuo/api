@@ -14,13 +14,14 @@ class ProductController extends Controller{
      * @description 产品列表
      */
     public function index(){
-        $data = Product::withTrashed()->orderBy('sort')->get();
+        $data = Product::withTrashed()->orderBy('sort')->paginate(10);
         $assign = compact('data');
         return view('admin.product.index',$assign);
     }
 
-    public function create(){
 
+    public function create(){
+        return view('admin.product.create');
     }
 
     public function store(){
