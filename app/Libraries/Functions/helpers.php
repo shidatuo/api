@@ -337,12 +337,10 @@ if (! function_exists('redis')) {
      * @param null $expire
      * @return bool|string
      */
-    function redis($key = null, $value = null, $expire = null)
-    {
+    function redis($key = null, $value = null, $expire = null){
         if (is_null($key)) {
             return app('redis');
         }
-
         if (is_null($value)) {
             $content = Redis::get($key);
             if (is_null($content)) {
@@ -350,7 +348,6 @@ if (! function_exists('redis')) {
             }
             return is_null($content) ? null : unserialize($content);
         }
-
         Redis::set($key, serialize($value));
         if (! is_null($expire)) {
             Redis::expire($key, $expire);

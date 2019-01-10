@@ -43,12 +43,7 @@
                     <input class="form-control" type="text" name="title" value="{{ old('title') }}">
                 </td>
             </tr>
-            {{--<tr>--}}
-                {{--<th>作者{{ $author }}</th>--}}
-                {{--<td>--}}
-                    {{--<input class="form-control" type="text" name="author" value="@if(empty(old('author'))){{ $author }}@else{{ old('author') }}@endif">--}}
-                {{--</td>--}}
-            {{--</tr>--}}
+
             <tr>
                 <th>关键词 (搜索) </th>
                 <td>
@@ -82,9 +77,9 @@
                 </td>
             </tr>
             <tr>
-                <th>描述</th>
+                <th>产品简介</th>
                 <td>
-                    <textarea class="form-control modal-sm" name="description" rows="7" placeholder="可以不填，如不填；则截取文章内容前300字为描述">{{ old('description') }}</textarea>
+                    <textarea class="form-control modal-sm" name="description" rows="7" placeholder="可以不填，如不填；则截取产品内容前300字为描述">{{ old('description') }}</textarea>
                 </td>
             </tr>
             <tr>
@@ -96,12 +91,17 @@
                 </td>
             </tr>
             <tr>
-                <th>置顶</th>
+                <th>产品原价</th>
                 <td>
-                    <input class="js-switch" type="checkbox" name="is_top" value="1" @if(old('is_top', 0) == 1) checked="checked" @endif>
+                    <input class="form-control" type="text" name="origin_price" value="{{ old('origin_price') }}">
                 </td>
             </tr>
-
+            <tr>
+                <th>是否热卖</th>
+                <td>
+                    <input class="js-switch" type="checkbox" name="is_top" value="1" @if(old('is_hot', 0) == 1) checked="checked" @endif>
+                </td>
+            </tr>
             <tr>
                 <th></th>
                 <td>
