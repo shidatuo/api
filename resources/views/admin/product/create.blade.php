@@ -103,6 +103,12 @@
                 </td>
             </tr>
             <tr>
+                <th>商品规格</th>
+                <td>
+                    <input class="btn btn-primary" type="button" value="添加商品规格">
+                </td>
+            </tr>
+            <tr>
                 <th></th>
                 <td>
                     <input class="btn btn-success" type="submit" value="提交">

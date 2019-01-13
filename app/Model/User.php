@@ -5,9 +5,13 @@ namespace App\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Overtrue\LaravelEmoji\Emoji;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
+    // 软删除
+    use SoftDeletes;
+
     use Notifiable;
 
     const CREATED_AT = 'created_at';

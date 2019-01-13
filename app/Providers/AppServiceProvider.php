@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        
+
         //定义全局的config 变量 使用 try catch 是为了解决 composer install 时候触发 php artisan optimize 但此时无数据库的问题
         try {
             // 获取配置项
