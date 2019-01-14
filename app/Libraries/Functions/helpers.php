@@ -1348,6 +1348,27 @@ if(!function_exists("Pathinfo_basename")){
     }
 }
 
+if(!function_exists("qrcode")){
+    /**
+     * @param int $size
+     * @param int $margin
+     * @param string $format
+     * @param $link
+     * @param string $file_path
+     * @author shidatuo
+     * @description 创建二维码
+     * @link https://laravelacademy.org/post/2605.html
+     */
+    function qrcode($size = 100,$margin = 100,$format = 'png',$link,$file_path = 'qrcodes/qrcode.png'){
+        QrCode::format($format)
+            ->size(100)
+            ->color(255,0,255)
+            ->backgroundColor(255,255,0)
+            ->margin(100)
+            ->generate($link,public_path($file_path));
+    }
+}
+
 
 
 
