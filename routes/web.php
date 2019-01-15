@@ -19,6 +19,7 @@ Route::group(['namespace' => 'Wechat','prefix' => 'wechat'], function () {
     Route::any('wxUser', 'WechatController@wxUser');
 });
 
+
 // auth
 Route::group(['namespace' => 'Auth', 'prefix' => 'auth'], function () {
     // 第三方登录
