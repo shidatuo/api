@@ -11,6 +11,7 @@
 |
 */
 
+
 //> Wechat 模块(小程序api)
 Route::group(['namespace' => 'Wechat','prefix' => 'wechat'], function () {
     //> 微信小程序登陆
