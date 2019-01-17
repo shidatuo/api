@@ -1359,12 +1359,14 @@ if(!function_exists("qrcode")){
      * @description 创建二维码
      * @link https://laravelacademy.org/post/2605.html
      */
-    function qrcode($size = 100,$margin = 100,$format = 'png',$link,$file_path = 'qrcodes/qrcode.png'){
+    function qrcode($link,$size = 100,$margin = 2,$format = 'png',$file_path = 'qrcodes/qrcode.png',$merge_media_path = 'qrcodes/bigicon.png'){
         QrCode::format($format)
-            ->size(100)
-            ->color(255,0,255)
-            ->backgroundColor(255,255,0)
-            ->margin(100)
+            ->size($size)
+            ->color(0,0,0)
+            ->backgroundColor(255 ,250 ,250)
+            ->margin($margin)
+            ->encoding('UTF-8')
+            ->merge(public_path($merge_media_path),.15)
             ->generate($link,public_path($file_path));
     }
 }

@@ -246,5 +246,10 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
 
 Route::any('/apis/{all}', 'ApiController@api');
 Route::any('/', function(){
+
+    //qrcode("周盛吃" . htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>'));
+    qrcode("http://www.shidatuos.cn/");
+     exit;
+
      echo htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>');
 });
