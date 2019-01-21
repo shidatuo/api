@@ -1366,7 +1366,7 @@ if(!function_exists("qrcode")){
             ->backgroundColor(255 ,250 ,250)
             ->margin($margin)
             ->encoding('UTF-8')
-            ->merge(public_path($merge_media_path),.15)
+            ->merge(public_path($merge_media_path),.15,true)
             ->generate($link,public_path($file_path));
     }
 }

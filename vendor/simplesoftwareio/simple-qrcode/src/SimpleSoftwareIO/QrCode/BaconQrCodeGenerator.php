@@ -107,7 +107,6 @@ class BaconQrCodeGenerator implements QrCodeInterface {
         {
             $filepath = base_path() . $filepath;
         }
-
         $this->imageMerge = file_get_contents($filepath);
         $this->imagePercentage = $percentage;
 
