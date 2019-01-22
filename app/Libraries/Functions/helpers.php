@@ -738,7 +738,7 @@ if(!function_exists("jsonReturn")){
     function jsonReturn($status=0,$msg='',$data=''){
         if(empty($data))
             $data = [];
-        $info['status'] = $status;
+        $info['code'] = $status;
         $info['msg'] = $msg;
         $info['data'] = $data;
         exit(json_encode($info));

@@ -328,7 +328,7 @@ class ApiController extends Controller{
         if(!NotEstr($open_id))
             jsonReturn(201,"无效的openid");
         log_ex("wxLogin",PHP_EOL . "获取open_id : " . $open_id . PHP_EOL);
-        $user_info = get("jy_user","openid={$open_id}&single=true&fields=id");
+        $user_info = get("jy_user","openid={$open_id}&single=true");
         log_ex("wxLogin",PHP_EOL . "根据open_id 获取到用户信息" . json_encode($user_info) . PHP_EOL);
         jsonReturn(200,"请求成功",$user_info ? $user_info : []);
     }
