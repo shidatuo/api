@@ -328,7 +328,7 @@ class ApiController extends Controller{
         if(!NotEstr($open_id))
             jsonReturn(-1,"无效的openid");
         log_ex("wxLogin",PHP_EOL . "获取open_id : " . $open_id . PHP_EOL);
-        $user_info = get("xiao_jy_user","openid={$open_id}&single=true&fields=id");
+        $user_info = get("jy_user","openid={$open_id}&single=true&fields=id");
         log_ex("wxLogin",PHP_EOL . "根据open_id 获取到用户信息" . json_encode($user_info) . PHP_EOL);
         jsonReturn(1,"请求成功",$user_info ? $user_info : []);
     }
@@ -355,12 +355,12 @@ class ApiController extends Controller{
             $save['nickName'] = $user::EmojinickNameHTML($params['nickName']);
         if(isset($params['unionid']) && NotEstr($params['unionid']))
             $save['unionid'] = $params['unionid'];
-        $user_info = get("xiao_jy_user","openid={$save['openid']}&single=true&fields=id");
+        $user_info = get("jy_user","openid={$save['openid']}&single=true&fields=id");
         if(isset($user_info['id']) && isINT($user_info['id']))
             $save['id'] = $user_info['id'];
         if(isset($save) && is_arr($save))
             log_ex("wxcreateUser",PHP_EOL . "保存用户信息 : " . json_encode($save) . PHP_EOL);
-            $s = save("xiao_jy_user",$save);
+            $s = save("jy_user",$save);
         if(isset($s) && $s){
             log_ex("wxcreateUser",PHP_EOL ."返回 1 [请求成功]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
             jsonReturn(1,"请求成功");
