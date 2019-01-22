@@ -310,9 +310,9 @@ class ApiController extends Controller{
         $result = json_decode($json,true);
         if(!isset($result['openid'])){
             log_ex("wxLogin",PHP_EOL ."返回 -1 [无效的code]" .PHP_EOL."============================== 微信小程序code换取session_key END =============================" . PHP_EOL);
-            jsonReturn(-1,"无效的code");
+            jsonReturn(201,"无效的code");
         }
-        jsonReturn(1,"请求成功",$result);
+        jsonReturn(200,"请求成功",$result);
     }
 
     /**
@@ -326,11 +326,11 @@ class ApiController extends Controller{
         log_ex("wxLogin",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
         $open_id = $req->input("openid","");
         if(!NotEstr($open_id))
-            jsonReturn(-1,"无效的openid");
+            jsonReturn(201,"无效的openid");
         log_ex("wxLogin",PHP_EOL . "获取open_id : " . $open_id . PHP_EOL);
         $user_info = get("jy_user","openid={$open_id}&single=true&fields=id");
         log_ex("wxLogin",PHP_EOL . "根据open_id 获取到用户信息" . json_encode($user_info) . PHP_EOL);
-        jsonReturn(1,"请求成功",$user_info ? $user_info : []);
+        jsonReturn(200,"请求成功",$user_info ? $user_info : []);
     }
 
     /**
@@ -346,7 +346,7 @@ class ApiController extends Controller{
         if(isset($params['openid']) && NotEstr($params['openid']))
             $save['openid'] = $params['openid'];
         else
-            jsonReturn(-1,"无效的openid");
+            jsonReturn(201,"无效的openid");
         if(isset($params['avatarUrl']) && NotEstr($params['avatarUrl']))
             $save['avatarUrl'] = $params['avatarUrl'];
         if(isset($params['gender']))
@@ -363,10 +363,10 @@ class ApiController extends Controller{
             $s = save("jy_user",$save);
         if(isset($s) && $s){
             log_ex("wxcreateUser",PHP_EOL ."返回 1 [请求成功]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
-            jsonReturn(1,"请求成功");
+            jsonReturn(200,"请求成功");
         }
         log_ex("wxcreateUser",PHP_EOL ."返回 -1 [保存失败]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
-        jsonReturn(-1,"保存失败");
+        jsonReturn(201,"保存失败");
     }
 
 

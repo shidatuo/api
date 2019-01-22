@@ -740,7 +740,7 @@ if(!function_exists("jsonReturn")){
             $data = [];
         $info['status'] = $status;
         $info['msg'] = $msg;
-        $info['result'] = $data;
+        $info['data'] = $data;
         exit(json_encode($info));
     }
 }
