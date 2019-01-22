@@ -10,6 +10,14 @@ function M($table){
         return App\Model\App::query();
     elseif ($table == 'users')
         return App\Model\User::query();
+    elseif ($table == 'jy_sale_goods')
+        return App\Model\jy_sale_goods::query();
+    elseif ($table == 'jy_user')
+        return App\Model\jy_user::query();
+    elseif ($table == 'jy_sale')
+        return App\Model\jy_sale::query();
+    elseif ($table == 'jy_order')
+        return App\Model\jy_order::query();
     return DB::table($table);
 }
 /**

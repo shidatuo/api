@@ -2,10 +2,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+use \App\Model\User;
 
 class ApiController extends Controller{
 
     public $app;
+
+    /**
+     * @description 使用登录凭证 code 获取 session_key 和 openid
+     * @link https://www.w3cschool.cn/weixinapp/weixinapp-api-login.html
+     */
+    const API_WX_LOGIN = "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code";
 
     public function __construct($app = null){
         if (!is_object($this->app)) {
@@ -282,12 +291,108 @@ class ApiController extends Controller{
         $response=json_encode($res);
         return $response;
     }
+
+
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 微信小程序code换取session_key
+     */
+    public function wxLogin(Request $req){
+        log_ex("wxLogin",PHP_EOL . "============================== 微信小程序code换取session_key START =============================" . PHP_EOL);
+        log_ex("wxLogin",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
+        $request_url = sprintf(self::API_WX_LOGIN,'wxfb7ee7bea70315cd','c462b7e6b84990f480a9e309ac2fe617',$req->input("code",""));
+        log_ex("wxLogin",PHP_EOL . "请求微信服务器url : " . $request_url . PHP_EOL);
+        $json = http_request($request_url);
+        log_ex("wxLogin",PHP_EOL . "微信服务器返回值 : " . $json . PHP_EOL);
+        $result = json_decode($json,true);
+        if(!isset($result['openid'])){
+            log_ex("wxLogin",PHP_EOL ."返回 -1 [无效的code]" .PHP_EOL."============================== 微信小程序code换取session_key END =============================" . PHP_EOL);
+            jsonReturn(-1,"无效的code");
+        }
+        jsonReturn(1,"请求成功",$result);
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取用户信息
+     */
+    public function wxgetUser(Request $req){
+        log_ex("wxLogin",PHP_EOL . "============================== 获取用户信息 START =============================" . PHP_EOL);
+        log_ex("wxLogin",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
+        $open_id = $req->input("openid","");
+        if(!NotEstr($open_id))
+            jsonReturn(-1,"无效的openid");
+        log_ex("wxLogin",PHP_EOL . "获取open_id : " . $open_id . PHP_EOL);
+        $user_info = get("xiao_jy_user","openid={$open_id}&single=true&fields=id");
+        log_ex("wxLogin",PHP_EOL . "根据open_id 获取到用户信息" . json_encode($user_info) . PHP_EOL);
+        jsonReturn(1,"请求成功",$user_info ? $user_info : []);
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 创建用户信息
+     */
+    public function wxcreateUser(Request $req,User $user){
+        log_ex("wxcreateUser",PHP_EOL . "============================== 创建用户信息 START =============================" . PHP_EOL);
+        log_ex("wxcreateUser",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
+        $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $save['openid'] = $params['openid'];
+        else
+            jsonReturn(-1,"无效的openid");
+        if(isset($params['avatarUrl']) && NotEstr($params['avatarUrl']))
+            $save['avatarUrl'] = $params['avatarUrl'];
+        if(isset($params['gender']))
+            $save['gender'] = $params['gender'];
+        if(isset($params['nickName']) && NotEstr($params['nickName']))
+            $save['nickName'] = $user::EmojinickNameHTML($params['nickName']);
+        if(isset($params['unionid']) && NotEstr($params['unionid']))
+            $save['unionid'] = $params['unionid'];
+        $user_info = get("xiao_jy_user","openid={$save['openid']}&single=true&fields=id");
+        if(isset($user_info['id']) && isINT($user_info['id']))
+            $save['id'] = $user_info['id'];
+        if(isset($save) && is_arr($save))
+            log_ex("wxcreateUser",PHP_EOL . "保存用户信息 : " . json_encode($save) . PHP_EOL);
+            $s = save("xiao_jy_user",$save);
+        if(isset($s) && $s){
+            log_ex("wxcreateUser",PHP_EOL ."返回 1 [请求成功]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
+            jsonReturn(1,"请求成功");
+        }
+        log_ex("wxcreateUser",PHP_EOL ."返回 -1 [保存失败]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
+        jsonReturn(-1,"保存失败");
+    }
+
+
 }
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################################################################################
 
 
 class UrlManager {
@@ -930,4 +1035,8 @@ class URLify {
         }
         self::$regex = '/[' . self::$chars . ']/u';
     }
+
+
+
+
 }

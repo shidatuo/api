@@ -1,4 +1,9 @@
 <?php
+//use Tymon\JWTAuth\Contracts\Providers\JWT;
+
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Contracts\Routing\Registrar as RouteContract;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,7 +24,6 @@ Route::group(['namespace' => 'Wechat','prefix' => 'wechat'], function () {
     //>保存用户详细信息
     Route::any('wxUser', 'WechatController@wxUser');
 });
-
 
 // auth
 Route::group(['namespace' => 'Auth', 'prefix' => 'auth'], function () {
@@ -246,10 +250,45 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
 
 Route::any('/apis/{all}', 'ApiController@api');
 Route::any('/', function(){
-
+    JWTAuth::setToken('foo.bar.baz');
+      dd(JWTAuth::getToken());
+//    $user = User::first();
+//    dd($user);
+//    $token = JWTAuth::fromUser($user);
+//    dd(JWTAuth::getToken());
     //qrcode("周盛吃" . htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>'));
     qrcode("http://www.shidatuos.cn/");
      exit;
 
      echo htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>');
+});
+
+
+
+/**
+ * 简约生活小程序  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ */
+Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
+    Route::any('wxLogin', 'ApiController@wxLogin');
+    Route::any('wxgetUser', 'ApiController@wxgetUser');
+    Route::any('wxcreateUser', 'ApiController@wxcreateUser');
+});
+
+
+Route::group(['prefix' => 'v2'], function (RouteContract $api) {
+
+
+    $api->group(['middleware' => 'jwt.auth', 'providers' => 'jwt'], function (RouteContract $api) {
+        // Refresh token
+        $api->post('/tokens/{token}', TokenController::class.'@refresh');
+
+        $api->get('/check_token', TokenController::class.'@check_token');
+        $api->any('/{all}', array('as' => 'mp', 'uses' => 'ApiMpController@api'))->where('all', '.*');
+//        $api->group(['middleware' => 'sees', 'providers' => 'jwt'], function (RouteContract $api) {
+//            $api->any('/{all}', array('as' => 'mp', 'uses' => 'ApiMpController@api'))->where('all', '.*');
+//        });
+
+
+    });
+
 });

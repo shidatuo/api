@@ -21,8 +21,7 @@ return [
     |
     */
 
-    'secret' => env('JWT_SECRET', 'changeme'),
-//    'secret' => env('JWT_SECRET', 'PkfIF0SX7wXyFvvhhZmH9Pat8lnESmgw'),
+    'secret' => env('JWT_SECRET'),
 
     /*
     |--------------------------------------------------------------------------
@@ -31,7 +30,7 @@ return [
     |
     | Specify the length of time (in minutes) that the token will be valid for.
     | Defaults to 1 hour
-    |
+    | token有效期（分钟）
     */
 
     'ttl' => 60,
@@ -45,7 +44,7 @@ return [
     | within. I.E. The user can refresh their token within a 2 week window of
     | the original token being created until they must re-authenticate.
     | Defaults to 2 weeks
-    |
+    | 刷新token时间（分钟）
     */
 
     'refresh_ttl' => 20160,
@@ -59,7 +58,7 @@ return [
     |
     | See here: https://github.com/namshi/jose/tree/2.2.0/src/Namshi/JOSE/Signer
     | for possible values
-    |
+    | token签名算法
     */
 
     'algo' => 'HS256',
@@ -71,7 +70,7 @@ return [
     |
     | Specify the full namespace to your User model.
     | e.g. 'Acme\Entities\User'
-    |
+    | 指向User模型的命名空间路径
     */
 
     'user' => 'App\User',
@@ -83,7 +82,7 @@ return [
     |
     | Specify a unique property of the user that will be added as the 'sub'
     | claim of the token payload.
-    |
+    | 用于从token的sub中获取用户
     */
 
     'identifier' => 'id',
@@ -96,7 +95,7 @@ return [
     | Specify the required claims that must exist in any token.
     | A TokenInvalidException will be thrown if any of these claims are not
     | present in the payload.
-    |
+    | 必须出现在token的payload中的选项，否则会抛出TokenInvalidException异常
     */
 
     'required_claims' => ['iss', 'iat', 'exp', 'nbf', 'sub', 'jti'],
@@ -108,7 +107,7 @@ return [
     |
     | In order to invalidate tokens, you must have the blacklist enabled.
     | If you do not want or need this functionality, then set this to false.
-    |
+    | 如果该选项被设置为false，那么我们将不能废止token，即使我们刷新了token，前一个token仍然有效
     */
 
     'blacklist_enabled' => env('JWT_BLACKLIST_ENABLED', true),
@@ -119,7 +118,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Specify the various providers used throughout the package.
-    |
+    | 完成各种任务的具体实现，如果需要的话你可以重写他们
     */
 
     'providers' => [
@@ -145,7 +144,8 @@ return [
         |
         */
 
-        'jwt' => 'Tymon\JWTAuth\Providers\JWT\NamshiAdapter',
+//        'jwt' => 'Tymon\JWTAuth\Providers\JWT\NamshiAdapter',
+        'jwt' => Tymon\JWTAuth\Providers\JWT\Namshi::class,
 
         /*
         |--------------------------------------------------------------------------
@@ -156,8 +156,8 @@ return [
         |
         */
 
-        'auth' => 'Tymon\JWTAuth\Providers\Auth\IlluminateAuthAdapter',
-
+//        'auth' => 'Tymon\JWTAuth\Providers\Auth\IlluminateAuthAdapter',
+        'auth' => Tymon\JWTAuth\Providers\Auth\Illuminate::class,
         /*
         |--------------------------------------------------------------------------
         | Storage Provider
@@ -167,8 +167,8 @@ return [
         |
         */
 
-        'storage' => 'Tymon\JWTAuth\Providers\Storage\IlluminateCacheAdapter',
-
+//        'storage' => 'Tymon\JWTAuth\Providers\Storage\IlluminateCacheAdapter',
+        'storage' => Tymon\JWTAuth\Providers\Storage\Illuminate::class,
     ],
 
 ];
