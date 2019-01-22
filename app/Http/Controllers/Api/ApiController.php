@@ -363,7 +363,8 @@ class ApiController extends Controller{
             $s = save("jy_user",$save);
         if(isset($s) && $s){
             log_ex("wxcreateUser",PHP_EOL ."返回 1 [请求成功]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
-            jsonReturn(200,"请求成功");
+            $u = get("jy_user","id=$s&single=true");
+            jsonReturn(200,"请求成功",$u);
         }
         log_ex("wxcreateUser",PHP_EOL ."返回 -1 [保存失败]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
         jsonReturn(201,"保存失败");
