@@ -372,9 +372,10 @@ class ApiController extends Controller{
 
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $req
+     * @throws \Exception
      * @author shidatuo
-     * @description markdown 编辑器上传图片
+     * @description 上传图片
      */
     public function wxupImg(){
         ini_set('upload_max_filesize', '2500M');
@@ -404,8 +405,110 @@ class ApiController extends Controller{
         }
     }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 销售商资料入住
+     */
+    public function wxupSaleInfo(Request $req){
+        $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $data['openid'] = $params['openid'];
+        else
+            jsonReturn(201,"无效的openid");
+        if(isset($params['user_name']) && NotEstr($params['user_name']))
+            $data['user_name'] = $params['user_name'];
+        else
+            jsonReturn(201,"无效的user_name");
+        if(isset($params['identity']) && NotEstr($params['identity']))
+            $data['identity'] = $params['identity'];
+        else
+            jsonReturn(201,"无效的identity");
+        if(isset($params['address']) && NotEstr($params['address']))
+            $data['address'] = $params['address'];
+        else
+            jsonReturn(201,"无效的address");
+        if(isset($params['pic1']) && NotEstr($params['pic1']))
+            $data['pic1'] = $params['pic1'];
+        else
+            jsonReturn(201,"无效的pic1");
+        if(isset($params['pic2']) && NotEstr($params['pic2']))
+            $data['pic2'] = $params['pic2'];
+        else
+            jsonReturn(201,"无效的pic2");
+        if(isset($params['pic3']) && NotEstr($params['pic3']))
+            $data['pic3'] = $params['pic3'];
+        else
+            jsonReturn(201,"无效的pic3");
+        if(isset($params['phoneNumber']) && NotEstr($params['phoneNumber']))
+            $data['phoneNumber'] = $params['phoneNumber'];
+        else
+            jsonReturn(201,"无效的phoneNumber");
+        $rs = get("jy_sale","openid={$data['openid']}&single=true&fields=id");
+        if(isset($rs['id']) && isINT($rs['id']))
+            $data['id'] = $params['id'];
+        $result = save("jy_sale",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(201,"请求失败");
+    }
 
-    public function wxupSaleInfo(){
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 录入商品
+     */
+    public function wxupSaleGoods(Request $req){
+        $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $data['openid'] = $params['openid'];
+        else
+            jsonReturn(201,"无效的openid");
+        if(isset($params['title']) && NotEstr($params['title']))
+            $data['title'] = $params['title'];
+        else
+            jsonReturn(201,"无效的title");
+        if(isset($params['stock']) && isINT($params['stock']))
+            $data['stock'] = $params['stock'];
+        else
+            jsonReturn(201,"无效的stock");
+        if(isset($params['pic']) && isINT($params['pic']))
+            $data['pic'] = $params['pic'];
+        else
+            jsonReturn(201,"无效的pic");
+        if(isset($params['price']))
+            $data['price'] = $params['price'];
+        else
+            jsonReturn(201,"无效的price");
+        if(isset($params['dis_price']))
+            $data['dis_price'] = $params['dis_price'];
+        else
+            jsonReturn(201,"无效的dis_price");
+        if(isset($params['spec']) && NotEstr($params['spec']))
+            $data['spec'] = $params['spec'];
+        else
+            jsonReturn(201,"无效的dis_price");
+        if(isset($params['intro']) && NotEstr($params['intro']))
+            $data['intro'] = $params['intro'];
+        else
+            jsonReturn(201,"无效的intro");
+        if(isset($params['end_time']) && NotEstr($params['end_time']))
+            $data['end_time'] = $params['end_time'];
+        else
+            jsonReturn(201,"无效的end_time");
+        $result = save("jy_sale_goods",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(201,"请求失败");
+    }
+
+    public function wxgetActive(Request $req){
+
+    }
+
+    public function wxgetGoods(Request $req){
 
     }
 

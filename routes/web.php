@@ -274,6 +274,9 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxcreateUser', 'ApiController@wxcreateUser');
     Route::any('wxupImg', 'ApiController@wxupImg');
     Route::any('wxupSaleInfo', 'ApiController@wxupSaleInfo');
+    Route::any('wxupSaleGoods', 'ApiController@wxupSaleGoods');
+    Route::any('wxgetActive', 'ApiController@wxgetActive');
+    Route::any('wxgetGoods', 'ApiController@wxgetGoods');
 });
 
 
