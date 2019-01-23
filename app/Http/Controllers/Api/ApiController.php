@@ -417,8 +417,8 @@ class ApiController extends Controller{
             $data['openid'] = $params['openid'];
         else
             jsonReturn(201,"无效的openid");
-        if(isset($params['user_name']) && NotEstr($params['user_name']))
-            $data['user_name'] = $params['user_name'];
+        if(isset($params['userName']) && NotEstr($params['userName']))
+            $data['userName'] = $params['userName'];
         else
             jsonReturn(201,"无效的user_name");
         if(isset($params['identity']) && NotEstr($params['identity']))
@@ -520,7 +520,6 @@ class ApiController extends Controller{
             $data['current_page'] = $params['current_page'];
         else
             $data['current_page'] = 1;
-
         if(isset($params['limit']) && isINT($params['limit']))
             $data['limit'] = $params['limit'];
         else
