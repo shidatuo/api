@@ -458,6 +458,24 @@ class ApiController extends Controller{
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
+     * @description 销售商资料入住
+     */
+    public function wxgetSaleInfo(Request $req){
+        $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $data['openid'] = $params['openid'];
+        else
+            jsonReturn(201,"无效的openid");
+        $data['single'] = true;
+        $rs = get("jy_sale",$data);
+        $resule = $rs ? $rs : [];
+        jsonReturn(200,"请求成功",$resule);
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
      * @description 录入商品
      */
     public function wxupSaleGoods(Request $req){
@@ -546,6 +564,27 @@ class ApiController extends Controller{
         $resule = $rs ? $rs : [];
         jsonReturn(200,"请求成功",$resule);
     }
+
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取商品信息
+     */
+    public function backgetSale(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];
+        else
+            jsonReturn(201,"无效的id");
+        $data['single'] = true;
+        $rs = get("jy_sale_goods",$data);
+        $resule = $rs ? $rs : [];
+        jsonReturn(200,"请求成功",$resule);
+    }
+
+
 
 
 }

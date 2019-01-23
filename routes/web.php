@@ -277,6 +277,7 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxupSaleGoods', 'ApiController@wxupSaleGoods');
     Route::any('wxgetActive', 'ApiController@wxgetActive');
     Route::any('wxgetGoods', 'ApiController@wxgetGoods');
+    Route::any('wxgetSaleInfo', 'ApiController@wxgetSaleInfo');
 });
 
 
