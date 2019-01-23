@@ -10,11 +10,8 @@ return [
          //>后台首页
          'AdminIndex' => '/admin/index/index'
     ],
-
-
-
-
-
     //>框架版本号
     'Version' => 'laravel 5.5',
+    //>获取域名
+    'DNS' => 'https://api.shidatuos.cn'
 ];

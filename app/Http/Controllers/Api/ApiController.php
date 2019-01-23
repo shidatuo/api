@@ -303,7 +303,7 @@ class ApiController extends Controller{
     public function wxLogin(Request $req){
         log_ex("wxLogin",PHP_EOL . "============================== 微信小程序code换取session_key START =============================" . PHP_EOL);
         log_ex("wxLogin",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
-        $request_url = sprintf(self::API_WX_LOGIN,'wxfb7ee7bea70315cd','c462b7e6b84990f480a9e309ac2fe617',$req->input("code",""));
+        $request_url = sprintf(self::API_WX_LOGIN,'wx6e75e53e4a50bf41','c716d92c8e4f2df7f54a73c563e24b57',$req->input("code",""));
         log_ex("wxLogin",PHP_EOL . "请求微信服务器url : " . $request_url . PHP_EOL);
         $json = http_request($request_url);
         log_ex("wxLogin",PHP_EOL . "微信服务器返回值 : " . $json . PHP_EOL);
@@ -368,6 +368,45 @@ class ApiController extends Controller{
         }
         log_ex("wxcreateUser",PHP_EOL ."返回 -1 [保存失败]" .PHP_EOL."============================== 创建用户信息 END =============================" . PHP_EOL);
         jsonReturn(201,"保存失败");
+    }
+
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     * @author shidatuo
+     * @description markdown 编辑器上传图片
+     */
+    public function wxupImg(){
+        ini_set('upload_max_filesize', '2500M');
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 0);
+        ini_set('post_max_size', '2500M');
+        ini_set('max_input_time', 9999999);
+        $allowedExts = array('jpg', 'jpeg', 'gif', 'png', 'bmp','pem','txt','mp4','xls');
+        foreach ($_FILES as $key => $item) {
+            if(isset($item['size']) && $item['size'] > 31457280)
+                jsonReturn(201,"上传文件不能大于30M");
+            $efile = explode('.', $item['name']);
+            $extension = end($efile);
+            $extension = strtolower($extension);
+            if (in_array($extension, $allowedExts)) {
+                if ($item['error'] > 0){
+                    jsonReturn(201,$item['error']);
+                } else {
+                    $rs = [];
+                    $f = $_SERVER['DOCUMENT_ROOT'] . DS . 'api' . DS . md5(uniqid()) . '.png';
+                    if (move_uploaded_file($item['tmp_name'], $f)) {
+                        $rs[] = str_replace(public_path(),Config("config.DNS"),$f);
+                    }
+                    jsonReturn(200,"请求成功",is_arr($rs) ? $rs : []);
+                }
+            }
+        }
+    }
+
+
+    public function wxupSaleInfo(){
+
     }
 
 
