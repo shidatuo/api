@@ -504,12 +504,48 @@ class ApiController extends Controller{
         jsonReturn(201,"请求失败");
     }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取拼单信息(销售商发起的)
+     */
     public function wxgetActive(Request $req){
+        $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $data['openid'] = $params['openid'];
+        else
+            jsonReturn(201,"无效的openid");
+        if(isset($params['current_page']) && isINT($params['current_page']))
+            $data['current_page'] = $params['current_page'];
+        else
+            $data['current_page'] = 1;
 
+        if(isset($params['limit']) && isINT($params['limit']))
+            $data['limit'] = $params['limit'];
+        else
+            $data['limit'] = 10;
+        $rs = get("jy_sale_goods",$data);
+        $resule = $rs ? $rs : [];
+        jsonReturn(200,"请求成功",$resule);
     }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取商品信息
+     */
     public function wxgetGoods(Request $req){
-
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];
+        else
+            jsonReturn(201,"无效的id");
+        $data['single'] = true;
+        $rs = get("jy_sale_goods",$data);
+        $resule = $rs ? $rs : [];
+        jsonReturn(200,"请求成功",$resule);
     }
 
 

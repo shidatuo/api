@@ -57,9 +57,9 @@ function get($table,$params = null){
     }
     $query = M($table);
     $origin_params = $field;
-//    if(!isset($field['limit'])){
-//        $field['limit'] = LIMIT;
-//    }
+    if(!isset($field['limit'])){
+        $field['limit'] = LIMIT;
+    }
     if(isset($field['single']))
         unset($field['single']);
     if (isset($field['no_limit']))
