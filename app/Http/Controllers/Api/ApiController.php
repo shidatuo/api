@@ -622,7 +622,7 @@ class ApiController extends Controller{
              jsonReturn(201,"商品不存在");
          if(isset($sale_goods['stock']) && !isINT($sale_goods['stock']))
              jsonReturn(201,"库存不足 , 已售完");
-         if(isset($sale_goods['stock']) && $data['stock'] > $sale_goods['stock'])
+         if(isset($sale_goods['stock']) && $data['num'] > $sale_goods['stock'])
              jsonReturn(202,"库存不足");
          if(!isset($sale_goods['price']) || (isset($sale_goods['price']) && !isINT($sale_goods['price'])))
              jsonReturn(201,"无效的商品价格");
@@ -714,6 +714,9 @@ class ApiController extends Controller{
              ]
          );
      }
+
+
+
 
 
 //Route::any('wxgetOrderDetails', 'ApiController@wxgetOrderDetails');
