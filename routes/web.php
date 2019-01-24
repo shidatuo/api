@@ -278,10 +278,14 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxgetActive', 'ApiController@wxgetActive');
     Route::any('wxgetGoods', 'ApiController@wxgetGoods');
     Route::any('wxgetSaleInfo', 'ApiController@wxgetSaleInfo');
-
     Route::any('wxInsertBill', 'ApiController@wxInsertBill');
     Route::any('wxgetOrderList', 'ApiController@wxgetOrderList');
     Route::any('wxPurchaser', 'ApiController@wxPurchaser');
+
+
+    Route::any('wxgetOrderDetails', 'ApiController@wxgetOrderDetails');
+    Route::any('wxtakeOver', 'ApiController@wxtakeOver');
+    Route::any('wxgetOActive', 'ApiController@wxgetOActive');
 });
 
 

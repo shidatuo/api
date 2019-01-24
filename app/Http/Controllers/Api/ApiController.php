@@ -680,6 +680,15 @@ class ApiController extends Controller{
              $data['state'] = 1;
          $rs = get("jy_order",$data);
          $resule = $rs ? $rs : [];
+         foreach ($resule as $item=>$value){
+             $resule[$item]['stock'] = $value['num'];
+             $goods_info = self::getOrderGoods($value);
+             $resule[$item]['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
+             $resule[$item]['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
+             $resule[$item]['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
+             $resule[$item]['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
+             $resule[$item]['member'] = self::getOrderAvatarUrl($value);
+         }
          jsonReturn(200,"请求成功",$resule);
      }
 
@@ -715,7 +724,70 @@ class ApiController extends Controller{
          );
      }
 
-//     public function
+     public function wxgetOrderDetails(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         $data['single'] = true;
+//         $data['fields'] = ;
+
+         $list = self::getOrderAvatarUrl($data);
+
+
+         get("jy_order",$data);
+
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 确认订单 , 已收货
+     */
+     public function wxtakeOver(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         $data['state'] = 4;
+         $result = save("jy_order",$data);
+         if($result)
+             jsonReturn(200,"请求成功",[$result]);
+         jsonReturn(201,"请求失败");
+     }
+
+     public function wxgetOActive(Request $req){
+
+     }
+
+     public function getOrderAvatarUrl($params){
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         $data['fields'] = "goods_id";
+         $data['single'] = true;
+         $rs = get("jy_order",$data);
+         if(!$rs || !isset($rs['goods_id']))
+             jsonReturn(201,"获取失败");
+         $result = get("jy_order","goods_id={$rs['goods_id']}&fields=avatarUrl&state=1");
+         return $result ? $result : [];
+     }
+
+
+     public function getOrderGoods($params){
+         if(isset($params['goods_id']) && isINT($params['goods_id']))
+             $data['id'] = $params['goods_id'];
+         else
+             jsonReturn(201,"无效的id");
+         $result = get("jy_sale_goods","id={$data['id']}&single=true");
+         return $result ? $result : [];
+     }
+
+
 
 
 
