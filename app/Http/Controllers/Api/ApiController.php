@@ -622,7 +622,7 @@ class ApiController extends Controller{
              jsonReturn(201,"商品不存在");
          if(isset($sale_goods['stock']) && !isINT($sale_goods['stock']))
              jsonReturn(201,"库存不足 , 已售完");
-         if(isset($sale_goods['stock']) && $data['stock'] < $sale_goods['stock'])
+         if(isset($sale_goods['stock']) && $data['stock'] > $sale_goods['stock'])
              jsonReturn(202,"库存不足");
          if(!isset($sale_goods['price']) || (isset($sale_goods['price']) && isINT($sale_goods['price'])))
              jsonReturn(201,"无效的stock");
@@ -653,16 +653,65 @@ class ApiController extends Controller{
          jsonReturn(201,"请求失败");
      }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取我的订单列表
+     */
      public function wxgetOrderList(Request $req){
          $params = $req->all();
          if(isset($params['openid']) && NotEstr($params['openid']))
              $data['openid'] = $params['openid'];
          else
              jsonReturn(201,"无效的openid");
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         if(isset($params['state']) && isINT($params['state']))
+             $data['state'] = $params['state'];
+         else
+             $data['state'] = 1;
+         $rs = get("jy_order",$data);
+         $resule = $rs ? $rs : [];
+         jsonReturn(200,"请求成功",$resule);
      }
 
-     public function wxPurchaser(){
-
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取购买当前商品的人员信息
+     */
+     public function wxPurchaser(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['goods_id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         $data['state'] = 1;
+         $data['fields'] = "avatarUrl";
+         $rs = get("jy_order",$data);
+         $resule = $rs ? $rs : [];
+         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock");
+         jsonReturn(200,"请求成功",[
+                 'avatarUrls'=>$resule,
+                 'surplus'=>isset($sale_goods['stock']) ? $sale_goods['stock'] : 0
+             ]
+         );
      }
 
 
