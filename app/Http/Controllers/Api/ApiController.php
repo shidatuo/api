@@ -624,8 +624,8 @@ class ApiController extends Controller{
              jsonReturn(201,"库存不足 , 已售完");
          if(isset($sale_goods['stock']) && $data['stock'] > $sale_goods['stock'])
              jsonReturn(202,"库存不足");
-         if(!isset($sale_goods['price']) || (isset($sale_goods['price']) && isINT($sale_goods['price'])))
-             jsonReturn(201,"无效的stock");
+         if(!isset($sale_goods['price']) || (isset($sale_goods['price']) && !isINT($sale_goods['price'])))
+             jsonReturn(201,"无效的商品价格");
          $data['amount'] = bcpow($data['stock'],$sale_goods['price'],2);
          if(isset($params['address']['address']) && NotEstr($params['address']['address']))
              $data['address'] = $params['address'];
