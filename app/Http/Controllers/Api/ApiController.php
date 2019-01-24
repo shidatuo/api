@@ -597,42 +597,68 @@ class ApiController extends Controller{
      */
      public function wxInsertBill(Request $req){
          $params = $req->all();
-
          if(isset($params['openid']) && NotEstr($params['openid']))
              $data['openid'] = $params['openid'];
          else
              jsonReturn(201,"无效的openid");
-
+         if(isset($params['avatarUrl']) && NotEstr($params['avatarUrl']))
+             $data['avatarUrl'] = $params['avatarUrl'];
+         else
+             jsonReturn(201,"无效的avatarUrl");
+         if(isset($params['nickName']) && NotEstr($params['nickName']))
+             $data['nickName'] = $params['nickName'];
+         else
+             jsonReturn(201,"无效的nickName");
          if(isset($params['id']) && isINT($params['id']))
              $data['goods_id'] = $params['id'];
          else
              jsonReturn(201,"无效的id");
-         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock");
-
-         if($sale_goods['stock'])
-
-         if(isset($params['avatarUrl']) && NotEstr($params['avatarUrl']))
-             $data['avatarUrl'] = $params['avatarUrl'];
+         if(isset($params['stock']) && isINT($params['stock']))
+             $data['stock'] = $params['stock'];
          else
-             jsonReturn(201,"无效的avatarUrl");
-
-
-         if(isset($params['avatarUrl']) && NotEstr($params['avatarUrl']))
-             $data['avatarUrl'] = $params['avatarUrl'];
+             jsonReturn(201,"无效的stock");
+         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price");
+         if(!$sale_goods)
+             jsonReturn(201,"商品不存在");
+         if(isset($sale_goods['stock']) && !isINT($sale_goods['stock']))
+             jsonReturn(201,"库存不足 , 已售完");
+         if(isset($sale_goods['stock']) && $data['stock'] < $sale_goods['stock'])
+             jsonReturn(202,"库存不足");
+         if(!isset($sale_goods['price']) || (isset($sale_goods['price']) && isINT($sale_goods['price'])))
+             jsonReturn(201,"无效的stock");
+         $data['amount'] = bcpow($data['stock'],$sale_goods['price'],2);
+         if(isset($params['address']['address']) && NotEstr($params['address']['address']))
+             $data['address'] = $params['address'];
          else
-             jsonReturn(201,"无效的avatarUrl");
-
-
-
-
-
-
-
-
+             jsonReturn(201,"无效的address");
+         if(isset($params['address']['detailInfo']) && NotEstr($params['address']['detailInfo']))
+             $data['detailInfo'] = $params['address']['detailInfo'];
+         else
+             jsonReturn(201,"无效的detailInfo");
+         if(isset($params['address']['telNumber']) && NotEstr($params['address']['telNumber']))
+             $data['telNumber'] = $params['address']['telNumber'];
+         else
+             jsonReturn(201,"无效的telNumber");
+         if(isset($params['address']['userName']) && NotEstr($params['address']['userName']))
+             $data['userName'] = $params['address']['userName'];
+         else
+             jsonReturn(201,"无效的userName");
+         if(isset($params['address']['postalCode']) && NotEstr($params['address']['postalCode']))
+             $data['postalCode'] = $params['address']['postalCode'];
+         else
+             jsonReturn(201,"无效的postalCode");
+         $result = save("jy_order",$data);
+         if($result)
+             jsonReturn(200,"请求成功",[$result]);
+         jsonReturn(201,"请求失败");
      }
 
-     public function wxgetOrderList(){
-
+     public function wxgetOrderList(Request $req){
+         $params = $req->all();
+         if(isset($params['openid']) && NotEstr($params['openid']))
+             $data['openid'] = $params['openid'];
+         else
+             jsonReturn(201,"无效的openid");
      }
 
      public function wxPurchaser(){
