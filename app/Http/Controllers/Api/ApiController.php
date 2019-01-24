@@ -724,6 +724,12 @@ class ApiController extends Controller{
          );
      }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取订单详情
+     */
      public function wxgetOrderDetails(Request $req){
          $params = $req->all();
          if(isset($params['id']) && isINT($params['id']))
@@ -731,13 +737,16 @@ class ApiController extends Controller{
          else
              jsonReturn(201,"无效的id");
          $data['single'] = true;
-//         $data['fields'] = ;
-
-         $list = self::getOrderAvatarUrl($data);
-
-
-         get("jy_order",$data);
-
+         $rs = get("jy_order",$data);
+         $resule = $rs ? $rs : [];
+         $resule['stock'] = $resule['num'];
+         $goods_info = self::getOrderGoods($resule);
+         $resule['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
+         $resule['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
+         $resule['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
+         $resule['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
+         $resule['avatarUrls'] = self::getOrderAvatarUrl($resule);
+         jsonReturn(200,"请求成功",$resule);
      }
 
     /**
@@ -759,10 +768,55 @@ class ApiController extends Controller{
          jsonReturn(201,"请求失败");
      }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取拼单信息(个人参与的)
+     */
      public function wxgetOActive(Request $req){
-
+         $params = $req->all();
+         if(isset($params['openid']) && isINT($params['openid']))
+             $data['openid'] = $params['openid'];
+         else
+             jsonReturn(201,"无效的openid");
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         $data['state'] = "[gte]1";
+         $rs = get("jy_order",$data);
+         $resule = $rs ? $rs : [];
+         $res = [];
+         foreach ($resule as $item=>$value){
+             $goods_info = self::getOrderGoods($value);
+             $res[$item]['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
+             $res[$item]['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
+             $res[$item]['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
+             $res[$item]['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
+             $res[$item]['dis_price'] = isset($goods_info['dis_price']) ? $goods_info['dis_price'] : 0;
+             $res[$item]['end_time'] = isset($goods_info['end_time']) ? $goods_info['end_time'] : '';
+             $res[$item]['id'] = isset($goods_info['id']) ? $goods_info['id'] : 0;
+             $res[$item]['intro'] = isset($goods_info['intro']) ? $goods_info['intro'] : '';
+             $res[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
+             $res[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
+             $res[$item]['openid'] = $value['openid'];
+             $res[$item]['avatarUrls'] = self::getOrderAvatarUrl($value);
+         }
+         jsonReturn(200,"请求成功",$res);
      }
 
+    /**
+     * @param $params
+     * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取拼单人头像
+     */
      public function getOrderAvatarUrl($params){
          if(isset($params['id']) && isINT($params['id']))
              $data['id'] = $params['id'];
@@ -773,11 +827,17 @@ class ApiController extends Controller{
          $rs = get("jy_order",$data);
          if(!$rs || !isset($rs['goods_id']))
              jsonReturn(201,"获取失败");
-         $result = get("jy_order","goods_id={$rs['goods_id']}&fields=avatarUrl&state=1");
+         $result = get("jy_order","goods_id={$rs['goods_id']}&fields=avatarUrl&state=[gte]1");
          return $result ? $result : [];
      }
 
-
+    /**
+     * @param $params
+     * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取拼单商品信息
+     */
      public function getOrderGoods($params){
          if(isset($params['goods_id']) && isINT($params['goods_id']))
              $data['id'] = $params['goods_id'];
@@ -786,19 +846,6 @@ class ApiController extends Controller{
          $result = get("jy_sale_goods","id={$data['id']}&single=true");
          return $result ? $result : [];
      }
-
-
-
-
-
-//Route::any('wxgetOrderDetails', 'ApiController@wxgetOrderDetails');
-//Route::any('wxtakeOver', 'ApiController@wxtakeOver');
-//Route::any('wxgetOActive', 'ApiController@wxgetOActive');
-
-
-
-
-
 }
 
 
