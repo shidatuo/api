@@ -628,24 +628,24 @@ class ApiController extends Controller{
              jsonReturn(201,"无效的商品价格");
 //         $data['amount'] = bcpow($data['stock'],$sale_goods['price'],2);
          $data['amount'] = $data['stock'] * $sale_goods['price'];
-         if(isset($params['address']['address']) && NotEstr($params['address']['address']))
+         if(isset($params['address']) && NotEstr($params['address']))
              $data['address'] = $params['address'];
          else
              jsonReturn(201,"无效的address");
-         if(isset($params['address']['detailInfo']) && NotEstr($params['address']['detailInfo']))
-             $data['detailInfo'] = $params['address']['detailInfo'];
+         if(isset($params['detailInfo']) && NotEstr($params['detailInfo']))
+             $data['detailInfo'] = $params['detailInfo'];
          else
              jsonReturn(201,"无效的detailInfo");
-         if(isset($params['address']['telNumber']) && NotEstr($params['address']['telNumber']))
-             $data['telNumber'] = $params['address']['telNumber'];
+         if(isset($params['telNumber']) && NotEstr($params['telNumber']))
+             $data['telNumber'] = $params['telNumber'];
          else
              jsonReturn(201,"无效的telNumber");
-         if(isset($params['address']['userName']) && NotEstr($params['address']['userName']))
-             $data['userName'] = $params['address']['userName'];
+         if(isset($params['userName']) && NotEstr($params['userName']))
+             $data['userName'] = $params['userName'];
          else
              jsonReturn(201,"无效的userName");
-         if(isset($params['address']['postalCode']) && NotEstr($params['address']['postalCode']))
-             $data['postalCode'] = $params['address']['postalCode'];
+         if(isset($params['postalCode']) && NotEstr($params['postalCode']))
+             $data['postalCode'] = $params['postalCode'];
          else
              jsonReturn(201,"无效的postalCode");
          $result = save("jy_order",$data);
