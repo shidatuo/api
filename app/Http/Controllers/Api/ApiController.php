@@ -614,7 +614,7 @@ class ApiController extends Controller{
          else
              jsonReturn(201,"无效的id");
          if(isset($params['stock']) && isINT($params['stock']))
-             $data['stock'] = $params['stock'];
+             $data['num'] = $params['stock'];
          else
              jsonReturn(201,"无效的stock");
          $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price");
@@ -714,6 +714,11 @@ class ApiController extends Controller{
              ]
          );
      }
+
+
+//Route::any('wxgetOrderDetails', 'ApiController@wxgetOrderDetails');
+//Route::any('wxtakeOver', 'ApiController@wxtakeOver');
+//Route::any('wxgetOActive', 'ApiController@wxgetOActive');
 
 
 
