@@ -779,7 +779,7 @@ class ApiController extends Controller{
      */
      public function wxgetOActive(Request $req){
          $params = $req->all();
-         if(isset($params['openid']) && isINT($params['openid']))
+         if(isset($params['openid']) && NotEstr($params['openid']))
              $data['openid'] = $params['openid'];
          else
              jsonReturn(201,"无效的openid");
