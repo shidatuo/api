@@ -288,8 +288,8 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxgetOActive', 'ApiController@wxgetOActive');
 
 
-
     Route::any('wxgetuserReceiv', 'ApiController@wxgetuserReceiv');
+    Route::any('wxDeliver', 'ApiController@wxDeliver');
 
 });
 

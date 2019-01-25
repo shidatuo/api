@@ -842,6 +842,33 @@ class ApiController extends Controller{
      }
 
     /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description
+     */
+     public function wxDeliver(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         if(isset($params['express']) && NotEstr($params['express']))
+             $data['express'] = $params['express'];
+         else
+             jsonReturn(201,"无效的express");
+         if(isset($params['express_num']) && isINT($params['express_num']))
+             $data['express_num'] = $params['express_num'];
+         else
+             jsonReturn(201,"无效的express_num");
+         $data['state'] = 2;
+         $result = save("jy_order",$data);
+         if($result)
+             jsonReturn(200,"请求成功");
+         jsonReturn(201,"请求失败");
+     }
+
+    /**
      * @param $params
      * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]
      * @throws \Exception
