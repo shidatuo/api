@@ -877,7 +877,7 @@ class ApiController extends Controller{
      public function wxWallet(Request $req){
          $params = $req->all();
          if(isset($params['type']) && in_array($params['type'],[1,2]))
-             $data['state'] = $params['type'] == 1 ? 4 : "[in]2,3,4";
+             $data['state'] = $params['type'] == 1 ? 4 : "[in]1,2,3";
          else
              jsonReturn(201,"无效的type");
          if(isset($params['openid']) && NotEstr($params['openid']))
@@ -894,6 +894,19 @@ class ApiController extends Controller{
              $data['limit'] = 10;
          $rs = get("jy_order",$data);
          $orderlist = $rs ? $rs : [];
+         foreach ($orderlist as $item=>$value){
+             $goods_info = self::getOrderGoods($value);
+             $res[$item]['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
+             $res[$item]['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
+             $res[$item]['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
+             $res[$item]['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
+             $res[$item]['dis_price'] = isset($goods_info['dis_price']) ? $goods_info['dis_price'] : 0;
+             $res[$item]['end_time'] = isset($goods_info['end_time']) ? $goods_info['end_time'] : '';
+             $res[$item]['id'] = isset($goods_info['id']) ? $goods_info['id'] : 0;
+             $res[$item]['intro'] = isset($goods_info['intro']) ? $goods_info['intro'] : '';
+             $res[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
+             $res[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
+         }
          $sale_info = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
          $amount = isset($sale_info['amount']) ? $sale_info['amount'] : 0;
          $result = compact("orderlist","amount");
