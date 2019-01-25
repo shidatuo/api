@@ -896,16 +896,16 @@ class ApiController extends Controller{
          $orderlist = $rs ? $rs : [];
          foreach ($orderlist as $item=>$value){
              $goods_info = self::getOrderGoods($value);
-             $res[$item]['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
-             $res[$item]['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
-             $res[$item]['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
-             $res[$item]['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
-             $res[$item]['dis_price'] = isset($goods_info['dis_price']) ? $goods_info['dis_price'] : 0;
-             $res[$item]['end_time'] = isset($goods_info['end_time']) ? $goods_info['end_time'] : '';
-             $res[$item]['id'] = isset($goods_info['id']) ? $goods_info['id'] : 0;
-             $res[$item]['intro'] = isset($goods_info['intro']) ? $goods_info['intro'] : '';
-             $res[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
-             $res[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
+             $orderlist[$item]['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
+             $orderlist[$item]['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
+             $orderlist[$item]['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
+             $orderlist[$item]['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
+             $orderlist[$item]['dis_price'] = isset($goods_info['dis_price']) ? $goods_info['dis_price'] : 0;
+             $orderlist[$item]['end_time'] = isset($goods_info['end_time']) ? $goods_info['end_time'] : '';
+             $orderlist[$item]['id'] = isset($goods_info['id']) ? $goods_info['id'] : 0;
+             $orderlist[$item]['intro'] = isset($goods_info['intro']) ? $goods_info['intro'] : '';
+             $orderlist[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
+             $orderlist[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
          }
          $sale_info = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
          $amount = isset($sale_info['amount']) ? $sale_info['amount'] : 0;
