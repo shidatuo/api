@@ -544,6 +544,9 @@ class ApiController extends Controller{
             $data['limit'] = 10;
         $rs = get("jy_sale_goods",$data);
         $resule = $rs ? $rs : [];
+        foreach ($resule as $item=>$value){
+            $resule[$item]['avatarUrls'] = self::getOrderAvatarUrl($value);
+        }
         jsonReturn(200,"请求成功",$resule);
     }
 
