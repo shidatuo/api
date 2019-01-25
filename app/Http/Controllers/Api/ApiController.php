@@ -845,7 +845,7 @@ class ApiController extends Controller{
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
-     * @description
+     * @description 订单发货
      */
      public function wxDeliver(Request $req){
          $params = $req->all();
@@ -866,6 +866,38 @@ class ApiController extends Controller{
          if($result)
              jsonReturn(200,"请求成功");
          jsonReturn(201,"请求失败");
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 我的钱包
+     */
+     public function wxWallet(Request $req){
+         $params = $req->all();
+         if(isset($params['type']) && in_array($params['type'],[1,2]))
+             $data['state'] = $params['type'] == 1 ? 4 : "[in]2,3,4";
+         else
+             jsonReturn(201,"无效的type");
+         if(isset($params['openid']) && NotEstr($params['openid']))
+             $data['openid'] = $params['openid'];
+         else
+             jsonReturn(201,"无效的openid");
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         $rs = get("jy_order",$data);
+         $orderlist = $rs ? $rs : [];
+         $sale_info = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
+         $amount = isset($sale_info['amount']) ? $sale_info['amount'] : 0;
+         $result = compact("orderlist","amount");
+         jsonReturn(200,"请求成功",$result);
      }
 
     /**
