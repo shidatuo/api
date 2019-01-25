@@ -814,6 +814,33 @@ class ApiController extends Controller{
          jsonReturn(200,"请求成功",$res);
      }
 
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取拼单人的收货信息
+     */
+     public function wxgetuserReceiv(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['goods_id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的goods_id");
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         $data['state'] = 1;
+         $rs = get("jy_order",$data);
+         $resule = $rs ? $rs : [];
+         jsonReturn(200,"请求成功",$resule);
+     }
+
     /**
      * @param $params
      * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]

@@ -286,6 +286,11 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxgetOrderDetails', 'ApiController@wxgetOrderDetails');
     Route::any('wxtakeOver', 'ApiController@wxtakeOver');
     Route::any('wxgetOActive', 'ApiController@wxgetOActive');
+
+
+
+    Route::any('wxgetuserReceiv', 'ApiController@wxgetuserReceiv');
+
 });
 
 
