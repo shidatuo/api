@@ -715,14 +715,15 @@ class ApiController extends Controller{
              $data['limit'] = $params['limit'];
          else
              $data['limit'] = 10;
-         $data['state'] = 1;
+         $data['state'] = "[gte]1";
          $data['fields'] = "avatarUrl";
          $rs = get("jy_order",$data);
+         $p = count($rs);
          $resule = $rs ? $rs : [];
          $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock");
          jsonReturn(200,"请求成功",[
                  'avatarUrls'=>$resule,
-                 'surplus'=>isset($sale_goods['stock']) ? $sale_goods['stock'] : 0
+                 'surplus'=>isset($sale_goods['stock']) ? $sale_goods['stock'] - $p : 0
              ]
          );
      }
