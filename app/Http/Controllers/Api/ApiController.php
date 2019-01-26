@@ -814,7 +814,6 @@ class ApiController extends Controller{
          jsonReturn(200,"请求成功",$res);
      }
 
-
     /**
      * @param Request $req
      * @throws \Exception
@@ -950,27 +949,6 @@ class ApiController extends Controller{
          return $result ? $result : [];
      }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ######################################################################################################################################################
 
 
