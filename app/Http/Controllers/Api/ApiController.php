@@ -921,20 +921,16 @@ class ApiController extends Controller{
      * @description 发起支付
      */
      public function wxpayment(Request $req){
-
          $params = $req->all();
          if(isset($params['id']) && isINT($params['id']))
              $data['id'] = $params['id'];
          else
              jsonReturn(201,"无效的id");
-         if(isset($params['api_key']) && NotEstr($params['api_key']))
-             $api_key = $params['api_key'];
+         if(isset($params['openid']) && NotEstr($params['openid']))
+             $api_key = $params['openid'];
          else
-             jsonReturn(201,"无效的api_key");
-
+             jsonReturn(201,"无效的openid");
          $notify_url = "https://shidatuos.cn/wxnotifyurl";
-
-
          $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount");
          $total_fee = isset($order_info['amount']) && $order_info['amount'] > 0 ? $order_info['amount'] : 0;
          $this->wxpayConfig ['appid'] = 'wx6e75e53e4a50bf41'; // 微信公众号身份的唯一标识
@@ -943,9 +939,9 @@ class ApiController extends Controller{
          $this->wxpayConfig ['key'] = 'mykjsde34sdfmzf98342559kdshzx8as'; // 商户支付密钥Key
          $this->wxpayConfig ['notifyurl'] = $notify_url;
          $this->wxpayConfig ['returnurl'] = "";
-         $wxpaypubconfig = new WxPayConf ($this->wxpayConfig);
-         $timeStamp = time();
-         $out_trade_no = "{$timeStamp}";
+         new WxPayConf ($this->wxpayConfig);
+//         $timeStamp = time();
+//         $out_trade_no = "{$timeStamp}";
          //用户id @ 订单id @ formid @ 应用id @ openid @ 类型 @ 附加类型 @ 附加数据
          $pkey = $data['id'];// 附加数据
          //$jsApiParameters = $wxPay->getJsApiPayParams($openId, $body, $out_trade_no,$total_fee, $notify_url,$pkey,'123.206.41.185');
@@ -1702,5 +1698,803 @@ class URLify {
             }
         }
         self::$regex = '/[' . self::$chars . ']/u';
+    }
+}
+
+
+
+class KdNiaoManager{
+
+    public $EBusinessID;
+    public $AppKey;
+    public $app;
+
+    public function __construct($app = null){
+        if (!is_object($this->app)){
+            if (is_object($app)) {
+                $this->app = $app;
+            } else {
+                $this->app = xn();
+            }
+        }
+        $this->EBusinessID = '1437692'; //用户ID
+        $this->AppKey = 'c638fcca-1057-4ea5-a7fb-3ac0a5c6e607'; //API key
+    }
+
+    /**
+     * @return url响应返回的html
+     * @author shidatuo
+     * @description 测试电子面单
+     */
+    function get_v3_electronic_order($params){
+        if(isset($params['id']) && $params['id'] != false){
+            $id = $params['id'];
+        }else{
+            return ["errcode"=>70001,"errmsg"=>"保存参数缺失,缺少必填参数id"];
+        }
+        if(isset($params['id']) && $params['id'] != false){
+            $id = $params['id'];
+        }else{
+            return ["errcode"=>70001,"errmsg"=>"保存参数缺失,缺少必填参数id"];
+        }
+        $order_info = xn()->order_manager->get_order_info(['id'=>$id]);
+        if(!$order_info){
+            return ["errcode"=>70111,"errmsg"=>"订单号不存在"];
+        }
+        //构造电子面单提交信息
+        $receiver = $commodity = $commodityOne = $sender = $eorder = [];
+
+        $eorder["ShipperCode"] = "SF";//快递公司编码
+        $eorder["OrderCode"] = "012657700387";//订单编号
+        $eorder["PayType"] = 1;//邮费支付方式:1-现付，2-到付，3-月结，4-第三方支付
+        $eorder["ExpType"] = 1;//快递类型：1-标准快件
+        $eorder["ThrOrderCode"] = 1;//第三方订单号
+        $eorder["Cost"] = 1;//寄件费(运费)
+        $eorder["OtherCost"] = 0;//其他费用
+
+        /* 收货人信息 start */
+        $receiver["Name"] = "李先生";//收件人
+        $receiver["Mobile"] = "18888888888";//电话与手机，必填一个
+        $receiver["ProvinceName"] = "广东省";//收件省（如广东省，不要缺少“省”
+        $receiver["CityName"] = "深圳市";//收件市（如深圳市，不要缺少“市”）
+        $receiver["ExpAreaName"] = "福田区";//收件区（如福田区，不要缺少“区”或“县”）
+        $receiver["Address"] = "赛格广场5401AB";//收件人详细地址
+        $eorder["Receiver"] = $receiver;
+        /* 收货人信息 end */
+
+        /* 发件人信息 start */
+        $sender["Name"] = "李先生";//发件人
+        $sender["Mobile"] = "18888888888";
+        $sender["ProvinceName"] = "李先生";
+        $sender["CityName"] = "深圳市";
+        $sender["ExpAreaName"] = "福田区";
+        $sender["Address"] = "赛格广场5401AB";
+        $eorder["Sender"] = $sender;
+        /* 发件人信息 end */
+
+        /* 其他信息 start */
+        $eorder['IsNotice'] = 1;//是否通知快递员上门揽件：0-通知；1-不通知；不填则默认为1
+        $eorder['Weight'] = 1;//物品总重量kg
+        $eorder['Quantity'] = 1;//件数/包裹数
+        $eorder['Volume'] = 1;//物品总体积m3
+        $eorder['Remark'] = "";//备注
+
+        /* 商品信息 start */
+        $commodityOne["GoodsName"] = "其他";//商品名称
+        $commodityOne["Goodsquantity"] = 1;//商品数量
+        $commodityOne["GoodsPrice"] = 1;//商品价格
+        $eorder["Commodity"][] = $commodityOne;
+        /* 商品信息 end */
+
+        $eorder['IsReturnPrintTemplate'] = 1;//返回电子面单模板：0-不需要；1-需要
+        $eorder['IsSendMessage'] = 1;//是否订阅短信：0-不需要；1-需要
+        $eorder['TemplateSize'] = 180;//模板规格(默认的模板无需传值，非默认模板传对应模板尺寸)
+        /* 其他信息 end */
+        //调用电子面单
+        $jsonParam = json_encode($eorder,JSON_UNESCAPED_UNICODE);
+        //$jsonParam = JSON($eorder);//兼容php5.2（含）以下
+        // echo "电子面单接口提交内容：<br/>".$jsonParam;
+        $jsonResult = $this->submitEOrder($jsonParam);
+        return $jsonResult;
+        dd();
+        echo "<br/><br/>电子面单提交结果:<br/>".$jsonResult;
+
+        //解析电子面单返回结果
+        $result = json_decode($jsonResult, true);
+        echo "<br/><br/>返回码:".$result["ResultCode"];
+        if($result["ResultCode"] == "100") {
+            echo "<br/>是否成功:".$result["Success"];
+        }
+        else {
+            echo "<br/>电子面单下单失败";
+        }
+    }
+
+    /**
+     * getOrderTracesByJson
+     *
+     * @desc        查询订单物流轨迹
+     *
+     * @author      yuluo
+     *
+     * @param $params['codetype']           Required             快递单号
+     * @param $params['codeNo']             Required             快递编码
+     * @param $params['orderid']            Not Required         订单号
+     * @return json
+     */
+    function getOrderTracesByJson($params){
+        //快递单号
+        $codeNo = $params['codetype'];
+        //快递编码
+        $codetype = $params['codeNo'];
+        $ReqURL = "http://api.kdniao.com/Ebusiness/EbusinessOrderHandle.aspx"; //正式
+        $requestData = "{'OrderCode':'','ShipperCode':'".$codetype."','LogisticCode':'".$codeNo."'}";
+        $datas = array(
+            'EBusinessID' =>  $this->EBusinessID,
+            'RequestType' => '1002',
+            'RequestData' => urlencode($requestData),
+            'DataType' => '2',
+        );
+        $datas['DataSign'] =  $this->encrypt($requestData,  $this->AppKey);
+        $result = $this->sendPost($ReqURL, $datas);
+        $guiji = json_decode($result,true);
+        if(isset($params['orderid']) && !empty($params['orderid']) && $params['orderid'] != 'undefined') {
+            if (isset($guiji['State']) && $guiji['State'] == 3) {
+                $data['table'] = 'cart_orders';
+                $data['logistics'] = $result;
+                $data['id'] = $params['orderid'];
+                //更新快递信息
+                $this->app->database_manager->save($data);
+            }
+        }
+        return $result;
+    }
+
+
+    /**
+     * Json方式 调用电子面单接口
+     */
+    function submitEOrder($requestData){
+//        $ReqURL = "http://testapi.kdniao.cc:8080/api/EOrderService"; //测试
+        $ReqURL = "http://sandboxapi.kdniao.cc:8080/kdniaosandbox/gateway/exterfaceInvoke.json"; //测试
+        //	$ReqURL = "http://api.kdniao.cc/api/Eorderservice"; //正式
+        $datas = array(
+            'EBusinessID' => $this->EBusinessID,
+            'RequestType' => '1007',
+            'RequestData' => urlencode($requestData) ,
+            'DataType' => '2',
+        );
+        $datas['DataSign'] = $this->encrypt($requestData, $this->AppKey);
+//        dd($ReqURL,$datas);
+        $result=$this->sendPost($ReqURL, $datas);
+        //根据公司业务处理返回的信息......
+        return $result;
+    }
+
+    /**
+     * Json方式  物流信息订阅
+     */
+    function orderTracesSubByJson(){
+
+        $ReqURL = "http://testapi.kdniao.cc:8081/api/dist"; //测试
+        //	$ReqURL = "http://api.kdniao.cc/api/dist"; //正式
+
+        $requestData="{'OrderCode': 'SF201608081055208281',".
+            "'ShipperCode':'SF',".
+            "'LogisticCode':'3100707578976',".
+            "'PayType':1,".
+            "'ExpType':1,".
+            "'IsNotice':0,".
+            "'Cost':1.0,".
+            "'OtherCost':1.0,".
+            "'Sender':".
+            "{".
+            "'Company':'LV','Name':'Taylor','Mobile':'15018442396','ProvinceName':'上海','CityName':'上海','ExpAreaName':'青浦区','Address':'明珠路73号'},".
+            "'Receiver':".
+            "{".
+            "'Company':'GCCUI','Name':'Yann','Mobile':'15018442396','ProvinceName':'北京','CityName':'北京','ExpAreaName':'朝阳区','Address':'三里屯街道雅秀大厦'},".
+            "'Commodity':".
+            "[{".
+            "'GoodsName':'鞋子','Goodsquantity':1,'GoodsWeight':1.0}],".
+            "'Weight':1.0,".
+            "'Quantity':1,".
+            "'Volume':0.0,".
+            "'Remark':'小心轻放'}";
+
+
+        $datas = array(
+            'EBusinessID' => $this->EBusinessID,
+            'RequestType' => '1008',
+            'RequestData' => urlencode($requestData) ,
+            'DataType' => '2',
+        );
+        $datas['DataSign'] = $this->encrypt($requestData, $this->AppKey);
+        $result=$this->sendPost($ReqURL, $datas);
+
+        //根据公司业务处理返回的信息......
+
+        return $result;
+    }
+
+
+
+    /**
+     * Json方式 单号识别
+     */
+//    function getOrderTracesByJson(){
+//
+//        var_dump('sssssssssss');
+//        //$ReqURL = "http://testapi.kdniao.cc:8081/Ebusiness/EbusinessOrderHandle.aspx"; //测试
+//        $ReqURL = "http://api.kdniao.cc/Ebusiness/EbusinessOrderHandle.aspx"; //正式
+//
+//        $requestData= "{'LogisticCode':'600432190772'}";
+//        $datas = array(
+//            'EBusinessID' => $this->EBusinessID,
+//            'RequestType' => '2002',
+//            'RequestData' => urlencode($requestData) ,
+//            'DataType' => '2',
+//        );
+//        $datas['DataSign'] = $this->encrypt($requestData, $this->AppKey);
+//        $result=$this->sendPost($ReqURL, $datas);
+//
+//        //根据公司业务处理返回的信息......
+//
+//        return $result;
+//    }
+
+
+
+    /**
+     * post提交数据
+     * @param  string $url 请求Url
+     * @param  array $datas 提交的数据
+     * @return url响应返回的html
+     */
+    function sendPost($url, $datas) {
+        $temps = array();
+        foreach ($datas as $key => $value) {
+            $temps[] = sprintf('%s=%s', $key, $value);
+        }
+        $post_data = implode('&', $temps);
+        $url_info = parse_url($url);
+        $httpheader = "POST " . $url_info['path'] . " HTTP/1.0\r\n";
+        $httpheader.= "Host:" . $url_info['host'] . "\r\n";
+        $httpheader.= "Content-Type:application/x-www-form-urlencoded\r\n";
+        $httpheader.= "Content-Length:" . strlen($post_data) . "\r\n";
+        $httpheader.= "Connection:close\r\n\r\n";
+        $httpheader.= $post_data;
+        $fd = fsockopen($url_info['host'], isset($url_info['port']) ? $url_info['port'] : 80);
+        fwrite($fd, $httpheader);
+        $gets = "";
+        $headerFlag = true;
+        while (!feof($fd)) {
+            if (($header = @fgets($fd)) && ($header == "\r\n" || $header == "\n")) {
+                break;
+            }
+        }
+        while (!feof($fd)) {
+            $gets.= fread($fd, 128);
+        }
+        fclose($fd);
+        return $gets;
+    }
+
+
+    /**
+     * 电商Sign签名生成
+     * @param data 内容
+     * @param appkey Appkey
+     * @return DataSign签名
+     */
+    function encrypt($data, $appkey) {
+        return urlencode(base64_encode(md5($data.$appkey)));
+    }
+
+
+    /**************************************************************
+     *
+     *  使用特定function对数组中所有元素做处理
+     *  @param  string  &$array     要处理的字符串
+     *  @param  string  $function   要执行的函数
+     *  @return boolean $apply_to_keys_also     是否也应用到key上
+     *  @access public
+     *
+     *************************************************************/
+    function arrayRecursive(&$array, $function, $apply_to_keys_also = false)
+    {
+        static $recursive_counter = 0;
+        if (++$recursive_counter > 1000) {
+            die('possible deep recursion attack');
+        }
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $this->arrayRecursive($array[$key], $function, $apply_to_keys_also);
+            } else {
+                $array[$key] = $function($value);
+            }
+
+            if ($apply_to_keys_also && is_string($key)) {
+                $new_key = $function($key);
+                if ($new_key != $key) {
+                    $array[$new_key] = $array[$key];
+                    unset($array[$key]);
+                }
+            }
+        }
+        $recursive_counter--;
+    }
+
+
+    /**************************************************************
+     *
+     *  将数组转换为JSON字符串（兼容中文）
+     *  @param  array   $array      要转换的数组
+     *  @return string      转换得到的json字符串
+     *  @access public
+     *
+     *************************************************************/
+    function JSON($array) {
+        $this->arrayRecursive($array, 'urlencode', true);
+        $json = json_encode($array);
+        return urldecode($json);
+    }
+
+    function getcode($getcom)
+    {
+        switch ($getcom) {
+            case "EMS"://后台中显示的快递公司名称
+                $postcom = 'EMS';//快递公司代码
+                break;
+            case "中通速递":
+                $postcom = 'ZTO';
+                break;
+            case "7天连锁物流":
+                $postcom = '7TLSWL';
+                break;
+            case "安捷快递":
+                $postcom = 'AJ';
+                break;
+            case "安能物流":
+                $postcom = 'ANE';
+                break;
+            case "安信达快递":
+                $postcom = 'AXD';
+                break;
+            case "巴伦支快递":
+                $postcom = 'BALUNZHI';
+                break;
+            case "百福东方":
+                $postcom = 'BFDF';
+                break;
+            case "宝凯物流":
+                $postcom = 'BKWL';
+                break;
+            case "北青小红帽":
+                $postcom = 'BQXHM';
+                break;
+            case "邦送物流":
+                $postcom = 'BSWL';
+                break;
+            case "百世物流":
+                $postcom = 'BTWL';
+                break;
+            case "CCES快递":
+                $postcom = 'CCES';
+                break;
+            case "城市100":
+                $postcom = 'CITY100';
+                break;
+            case "COE东方快递":
+                $postcom = 'COE';
+                break;
+            case "长沙创一":
+                $postcom = 'CSCY';
+                break;
+            case "传喜物流":
+                $postcom = 'CXWL';
+                break;
+            case "德邦":
+                $postcom = 'DBL';
+                break;
+            case "德创物流":
+                $postcom = 'DCWL';
+                break;
+            case "东红物流":
+                $postcom = 'DHWL';
+                break;
+            case "D速物流":
+                $postcom = 'DSWL';
+                break;
+            case "店通快递":
+                $postcom = 'DTKD';
+                break;
+            case "大田物流":
+                $postcom = 'DTWL';
+                break;
+            case "大洋物流快递":
+                $postcom = 'DYWL';
+                break;
+            case "快捷速递":
+                $postcom = 'FAST';
+                break;
+            case "飞豹快递":
+                $postcom = 'FBKD';
+                break;
+            case "FedEx联邦快递":
+                $postcom = 'FEDEX';
+                break;
+            case "飞狐快递":
+                $postcom = 'FHKD';
+                break;
+            case "飞康达":
+                $postcom = 'FKD';
+                break;
+            case "飞远配送":
+                $postcom = 'FYPS';
+                break;
+            case "凡宇速递":
+                $postcom = 'FYSD';
+                break;
+            case "广东邮政":
+                $postcom = 'GDEMS';
+                break;
+            case "冠达快递":
+                $postcom = 'GDKD';
+                break;
+            case "挂号信":
+                $postcom = 'GHX';
+                break;
+            case "港快速递":
+                $postcom = 'GKSD';
+                break;
+            case "共速达":
+                $postcom = 'GSD';
+                break;
+            case "广通速递":
+                $postcom = 'GTKD';
+                break;
+            case "国通快递":
+                $postcom = 'GTO';
+                break;
+            case "高铁速递":
+                $postcom = 'GTSD';
+                break;
+            case "河北建华":
+                $postcom = 'HBJH';
+                break;
+            case "汇丰物流":
+                $postcom = 'HFWL';
+                break;
+            case "华航快递":
+                $postcom = 'HHKD';
+                break;
+            case "天天快递":
+                $postcom = 'HHTT';
+                break;
+            case "韩润物流":
+                $postcom = 'HLKD';
+                break;
+            case "恒路物流":
+                $postcom = 'HLWL';
+                break;
+            case "黄马甲快递":
+                $postcom = 'HMJKD';
+                break;
+            case "海盟速递":
+                $postcom = 'HMSD';
+                break;
+            case "天地华宇":
+                $postcom = 'HOAU';
+                break;
+            case "华强物流":
+                $postcom = 'hq568';
+                break;
+            case "华企快运":
+                $postcom = 'HQKY';
+                break;
+            case "昊盛物流":
+                $postcom = 'HSWL';
+                break;
+            case "百世汇通":
+                $postcom = 'HTKY';
+                break;
+            case "户通物流":
+                $postcom = 'HTWL';
+                break;
+            case "华夏龙物流":
+                $postcom = 'HXLWL';
+                break;
+            case "好来运快递":
+                $postcom = 'HYLSD';
+                break;
+            case "京东快递":
+                $postcom = 'JD';
+                break;
+            case "京广速递":
+                $postcom = 'JGSD';
+                break;
+            case "九曳供应链":
+                $postcom = 'JIUYE';
+                break;
+            case "佳吉快运":
+                $postcom = 'JJKY';
+                break;
+            case "嘉里大通":
+                $postcom = 'JLDT';
+                break;
+            case "捷特快递":
+                $postcom = 'JTKD';
+                break;
+            case "急先达":
+                $postcom = 'JXD';
+                break;
+            case "晋越快递":
+                $postcom = 'JYKD';
+                break;
+            case "加运美":
+                $postcom = 'JYM';
+                break;
+            case "久易快递":
+                $postcom = 'JYSD';
+                break;
+            case "佳怡物流":
+                $postcom = 'JYWL';
+                break;
+            case "康力物流":
+                $postcom = 'KLWL';
+                break;
+            case "快淘快递":
+                $postcom = 'KTKD';
+                break;
+            case "快优达速递":
+                $postcom = 'KYDSD';
+                break;
+            case "跨越速递":
+                $postcom = 'KYWL';
+                break;
+            case "龙邦快递":
+                $postcom = 'LB';
+                break;
+            case "联邦快递":
+                $postcom = 'LBKD';
+                break;
+            case "蓝弧快递":
+                $postcom = 'LHKD';
+                break;
+            case "联昊通速递":
+                $postcom = 'LHT';
+                break;
+            case "乐捷递":
+                $postcom = 'LJD';
+                break;
+            case "立即送":
+                $postcom = 'LJS';
+                break;
+            case "民邦速递":
+                $postcom = 'MB';
+                break;
+            case "门对门":
+                $postcom = 'MDM';
+                break;
+            case "民航快递":
+                $postcom = 'MHKD';
+                break;
+            case "明亮物流":
+                $postcom = 'MLWL';
+                break;
+            case "闽盛快递":
+                $postcom = 'MSKD';
+                break;
+            case "能达速递":
+                $postcom = 'NEDA';
+                break;
+            case "南京晟邦物流":
+                $postcom = 'NJSBWL';
+                break;
+            case "平安达腾飞快递":
+                $postcom = 'PADTF';
+                break;
+            case "陪行物流":
+                $postcom = 'PXWL';
+                break;
+            case "全晨快递":
+                $postcom = 'QCKD';
+                break;
+            case "全峰快递":
+                $postcom = 'QFKD';
+                break;
+            case "全日通快递":
+                $postcom = 'QRT';
+                break;
+            case "如风达":
+                $postcom = 'RFD';
+                break;
+            case "日昱物流":
+                $postcom = 'RLWL';
+                break;
+            case "赛澳递":
+                $postcom = 'SAD';
+                break;
+            case "圣安物流":
+                $postcom = 'SAWL';
+                break;
+            case "盛邦物流":
+                $postcom = 'SBWL';
+                break;
+            case "山东海红":
+                $postcom = 'SDHH';
+                break;
+            case "上大物流":
+                $postcom = 'SDWL';
+                break;
+            case "顺丰快递":
+                $postcom = 'SF';
+                break;
+            case "盛丰物流":
+                $postcom = 'SFWL';
+                break;
+            case "上海林道货运":
+                $postcom = 'SHLDHY';
+                break;
+            case "盛辉物流":
+                $postcom = 'SHWL';
+                break;
+            case "穗佳物流":
+                $postcom = 'SJWL';
+                break;
+            case "速通物流":
+                $postcom = 'ST';
+                break;
+            case "申通快递":
+                $postcom = 'STO';
+                break;
+            case "三态速递":
+                $postcom = 'STSD';
+                break;
+            case "速尔快递":
+                $postcom = 'SURE';
+                break;
+            case "山西红马甲":
+                $postcom = 'SXHMJ';
+                break;
+            case "沈阳佳惠尔":
+                $postcom = 'SYJHE';
+                break;
+            case "世运快递":
+                $postcom = 'SYKD';
+                break;
+            case "通和天下":
+                $postcom = 'THTX';
+                break;
+            case "唐山申通":
+                $postcom = 'TSSTO';
+                break;
+            case "全一快递":
+                $postcom = 'UAPEX';
+                break;
+            case "优速快递":
+                $postcom = 'UC';
+                break;
+            case "万家物流":
+                $postcom = 'WJWL';
+                break;
+            case "微特派":
+                $postcom = 'WTP';
+                break;
+            case "万象物流":
+                $postcom = 'WXWL';
+                break;
+            case "新邦物流":
+                $postcom = 'XBWL';
+                break;
+            case "信丰快递":
+                $postcom = 'XFEX';
+                break;
+            case "香港邮政":
+                $postcom = 'XGYZ';
+                break;
+            case "祥龙运通":
+                $postcom = 'XLYT';
+                break;
+            case "希优特":
+                $postcom = 'XYT';
+                break;
+            case "源安达快递":
+                $postcom = 'YADEX';
+                break;
+            case "邮必佳":
+                $postcom = 'YBJ';
+                break;
+            case "远成物流":
+                $postcom = 'YCWL';
+                break;
+            case "韵达快递":
+                $postcom = 'YD';
+                break;
+            case "义达国际物流":
+                $postcom = 'YDH';
+                break;
+            case "越丰物流":
+                $postcom = 'YFEX';
+                break;
+            case "原飞航物流":
+                $postcom = 'YFHEX';
+                break;
+            case "亚风快递":
+                $postcom = 'YFSD';
+                break;
+            case "银捷速递":
+                $postcom = 'YJSD';
+                break;
+            case "亿领速运":
+                $postcom = 'YLSY';
+                break;
+            case "英脉物流":
+                $postcom = 'YMWL';
+                break;
+            case "亿顺航":
+                $postcom = 'YSH';
+                break;
+            case "音素快运":
+                $postcom = 'YSKY';
+                break;
+            case "易通达":
+                $postcom = 'YTD';
+                break;
+            case "一统飞鸿":
+                $postcom = 'YTFH';
+                break;
+            case "运通快递":
+                $postcom = 'YTKD';
+                break;
+            case "圆通速递":
+                $postcom = 'YTO';
+                break;
+            case "宇鑫物流":
+                $postcom = 'YXWL';
+                break;
+            case "邮政平邮/小包":
+                $postcom = 'YZPY';
+                break;
+            case "增益快递":
+                $postcom = 'ZENY';
+                break;
+            case "汇强快递":
+                $postcom = 'ZHQKD';
+                break;
+            case "宅急送":
+                $postcom = 'ZJS';
+                break;
+            case "芝麻开门":
+                $postcom = 'ZMKM';
+                break;
+            case "中睿速递":
+                $postcom = 'ZRSD';
+                break;
+            case "众通快递":
+                $postcom = 'ZTE';
+                break;
+            case "中铁快运":
+                $postcom = 'ZTKY';
+                break;
+            case "中铁物流":
+                $postcom = 'ZTWL';
+                break;
+            case "中天万运":
+                $postcom = 'ZTWY';
+                break;
+            case "中外运速递":
+                $postcom = 'ZWYSD';
+                break;
+            case "中邮物流":
+                $postcom = 'ZYWL';
+                break;
+            case "郑州建华":
+                $postcom = 'ZZJH';
+                break;
+            default:
+                $postcom = '';
+        }
+        return $postcom;
     }
 }
