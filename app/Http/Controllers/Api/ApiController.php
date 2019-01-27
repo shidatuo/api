@@ -954,7 +954,7 @@ class ApiController extends Controller{
              $wxQrcodePay->setParameter("out_trade_no", "$out_trade_no"); // 商户订单号
              $wxQrcodePay->setParameter("body", "商品支付");//附加数据
              // $wxQrcodePay->setParameter ( "body", "商品支付");//附加数据
-             $wxQrcodePay->setParameter("spbill_create_ip", "123.206.230.183"); //
+             $wxQrcodePay->setParameter("spbill_create_ip", "140.143.7.81"); //
              $wxQrcodePay->setParameter("trade_type", "JSAPI"); // 交易类型
              $wxQrcodePay->setParameter("fee_type", "CNY");//附加数据
              $wxQrcodePay->setParameter("total_fee", $total_fee); // 总金额
@@ -1017,6 +1017,11 @@ class ApiController extends Controller{
          }
          $wxQrcodePayResult ["total_fee"] = isset($total_fee) ? $total_fee : 0;
          return $wxQrcodePayResult;
+     }
+
+
+     public function wxnotifyurl(){
+
      }
 
     /**
