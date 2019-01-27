@@ -21,6 +21,9 @@ class ComposerStaticInit8d47bff9c4e43684b6b04ce21a5eb774
         '58571171fd5812e6e447dce228f52f4d' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Support/helpers.php',
         'df83fa4df488263e30b2f23484cf12d8' => __DIR__ . '/..' . '/overtrue/laravel-emoji/src/helpers.php',
         '271c9858f63d719147d6f514507a8f62' => __DIR__ . '/../..' . '/app/Libraries/Functions/helpers.php',
+        '40ffcdf3eb7de473e3f2223e69b97222' => __DIR__ . '/../..' . '/app/Libraries/Functions/WxPay/WxPayConf.php',
+        '6050b0ca8ec8a3466723ab59a432c35d' => __DIR__ . '/../..' . '/app/Libraries/Functions/WxPay/WxPayBase.php',
+        'e019ec1ca4f3187a9c0a06bd86ea4292' => __DIR__ . '/../..' . '/app/Libraries/Functions/WxPay/WxQrcodePay.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -447,6 +450,10 @@ class ComposerStaticInit8d47bff9c4e43684b6b04ce21a5eb774
         'App\\Model\\Product' => __DIR__ . '/../..' . '/app/Model/Product.php',
         'App\\Model\\Tag' => __DIR__ . '/../..' . '/app/Model/Tag.php',
         'App\\Model\\User' => __DIR__ . '/../..' . '/app/Model/User.php',
+        'App\\Model\\jy_order' => __DIR__ . '/../..' . '/app/Model/jy_order.php',
+        'App\\Model\\jy_sale' => __DIR__ . '/../..' . '/app/Model/jy_sale.php',
+        'App\\Model\\jy_sale_goods' => __DIR__ . '/../..' . '/app/Model/jy_sale_goods.php',
+        'App\\Model\\jy_user' => __DIR__ . '/../..' . '/app/Model/jy_user.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\AuthServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AuthServiceProvider.php',
         'App\\Providers\\BroadcastServiceProvider' => __DIR__ . '/../..' . '/app/Providers/BroadcastServiceProvider.php',

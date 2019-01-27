@@ -20,4 +20,7 @@ return array(
     '58571171fd5812e6e447dce228f52f4d' => $vendorDir . '/laravel/framework/src/Illuminate/Support/helpers.php',
     'df83fa4df488263e30b2f23484cf12d8' => $vendorDir . '/overtrue/laravel-emoji/src/helpers.php',
     '271c9858f63d719147d6f514507a8f62' => $baseDir . '/app/Libraries/Functions/helpers.php',
+    '40ffcdf3eb7de473e3f2223e69b97222' => $baseDir . '/app/Libraries/Functions/WxPay/WxPayConf.php',
+    '6050b0ca8ec8a3466723ab59a432c35d' => $baseDir . '/app/Libraries/Functions/WxPay/WxPayBase.php',
+    'e019ec1ca4f3187a9c0a06bd86ea4292' => $baseDir . '/app/Libraries/Functions/WxPay/WxQrcodePay.php',
 );
