@@ -31,7 +31,10 @@
             "App\\": "app/"
         },
         "files": [
-            "app/Libraries/Functions/helpers.php"
+            "app/Libraries/Functions/helpers.php",
+            "app/Libraries/Functions/WxPay/WxPayConf.php",
+            "app/Libraries/Functions/WxPay/WxPayBase.php",
+            "app/Libraries/Functions/WxPay/WxQrcodePay.php"
         ]
     },
     "autoload-dev": {

@@ -5,6 +5,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use \App\Model\User;
+use WxPayConf;
+use WxQrcodePay;
 
 class ApiController extends Controller{
 
@@ -913,6 +915,115 @@ class ApiController extends Controller{
      }
 
     /**
+     * @param Request $req
+     * @return mixed
+     * @author shidatuo
+     * @description 发起支付
+     */
+     public function wxpayment(Request $req){
+
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         if(isset($params['api_key']) && NotEstr($params['api_key']))
+             $api_key = $params['api_key'];
+         else
+             jsonReturn(201,"无效的api_key");
+
+         $notify_url = "https://shidatuos.cn/wxnotifyurl";
+
+
+         $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount");
+         $total_fee = isset($order_info['amount']) && $order_info['amount'] > 0 ? $order_info['amount'] : 0;
+         $this->wxpayConfig ['appid'] = 'wx6e75e53e4a50bf41'; // 微信公众号身份的唯一标识
+         $this->wxpayConfig ['appsecret'] = 'c716d92c8e4f2df7f54a73c563e24b57'; // JSAPI接口中获取openid
+         $this->wxpayConfig ['mchid'] = '1525038701'; // 受理商ID
+         $this->wxpayConfig ['key'] = 'mykjsde34sdfmzf98342559kdshzx8as'; // 商户支付密钥Key
+         $this->wxpayConfig ['notifyurl'] = $notify_url;
+         $this->wxpayConfig ['returnurl'] = "";
+         $wxpaypubconfig = new WxPayConf ($this->wxpayConfig);
+         $timeStamp = time();
+         $out_trade_no = "{$timeStamp}";
+         //用户id @ 订单id @ formid @ 应用id @ openid @ 类型 @ 附加类型 @ 附加数据
+         $pkey = $data['id'];// 附加数据
+         //$jsApiParameters = $wxPay->getJsApiPayParams($openId, $body, $out_trade_no,$total_fee, $notify_url,$pkey,'123.206.41.185');
+         if ($total_fee > 0) {
+             // 使用统一支付接口
+             $wxQrcodePay = new WxQrcodePay ();
+             $wxQrcodePay->setParameter("body", "支付订单費用"); // 商品描述
+             $timeStamp = time();
+             $out_trade_no = "{$timeStamp}";
+             $wxQrcodePay->setParameter("out_trade_no", "$out_trade_no"); // 商户订单号
+             $wxQrcodePay->setParameter("body", "商品支付");//附加数据
+             // $wxQrcodePay->setParameter ( "body", "商品支付");//附加数据
+             $wxQrcodePay->setParameter("spbill_create_ip", "123.206.230.183"); //
+             $wxQrcodePay->setParameter("trade_type", "JSAPI"); // 交易类型
+             $wxQrcodePay->setParameter("fee_type", "CNY");//附加数据
+             $wxQrcodePay->setParameter("total_fee", $total_fee); // 总金额
+             $wxQrcodePay->setParameter("openid", $api_key);
+             $wxQrcodePay->setParameter("notify_url", $notify_url); // 通知地址
+             $wxQrcodePay->setParameter("attach", "$pkey"); // 附加数据
+             $wxQrcodePay->SetParameter("input_charset", "UTF-8");
+             // 获取统一支付接口结果
+             $wxQrcodePayResult = $wxQrcodePay->getResult();
+             if (isset($wxQrcodePayResult['prepay_id'])) {
+                 $wxQrcodePayResult['package'] = 'prepay_id=' . $wxQrcodePayResult['prepay_id'];
+                 $wxQrcodePayResult['timeStamp'] = "{$timeStamp}";
+                 $paraMap = array();
+                 $paraMap['appId'] = $wxQrcodePayResult['appid'];
+                 $paraMap['timeStamp'] = $wxQrcodePayResult['timeStamp'];
+                 $paraMap['nonceStr'] = $wxQrcodePayResult['nonce_str'];
+                 $paraMap['package'] = $wxQrcodePayResult['package'];
+                 $paraMap['signType'] = 'MD5';
+                 $buff = "";
+                 ksort($paraMap);
+                 foreach ($paraMap as $k => $v) {
+                     $buff .= $k . "=" . $v . "&";
+                 }
+                 // 签名步骤二：在string后加入KEY
+                 $String = $buff . "key={$this->wxpayConfig ['key']}";
+                 // 签名步骤三：MD5加密
+                 $String = md5($String);
+                 // 签名步骤四：所有字符转为大写
+                 $paySign = strtoupper($String);
+                 $wxQrcodePayResult['paySign'] = $paySign;
+             }
+         } else {
+             $wxQrcodePayResult['result_code'] = '价格小于0';
+         }
+         // 商户根据实际情况设置相应的处理流程
+         if (isset($wxQrcodePayResult ["return_code"]) && $wxQrcodePayResult ["return_code"] == "FAIL") {
+             // 商户自行增加处理流程
+             if(isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == 'appid and openid not match'){
+                 $wxQrcodePayResult ["return_msg"] = '支付失败,小程序id与openid不匹配';
+             }elseif (isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == 'mch_id参数格式错误'){
+                 $wxQrcodePayResult ["return_msg"] = '支付失败,支付id(mch_id)参数格式错误';
+             }elseif (isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == '签名错误') {
+                 $wxQrcodePayResult ["return_msg"] = '支付失败,请重新设置支付密钥';
+             }elseif (isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == '商户号mch_id或sub_mch_id不存在') {
+                 $wxQrcodePayResult ["return_msg"] = '支付失败,商户号或子商户号不存在';
+             }elseif (isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == '商户号mch_id与appid不匹配') {
+                 $wxQrcodePayResult ["return_msg"] = '商户号mch_id与appid不匹配';
+             }elseif (isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == '支付失败,商户号或子商户号不存在') {
+                 $wxQrcodePayResult ["return_msg"] = '支付失败,商户号或子商户号不存在';
+             }elseif (isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == '商户号该产品权限未开通，请前往商户平台>产品中心检查后重试') {
+                 $wxQrcodePayResult ["return_msg"] = '商户号该产品权限未开通，请前往商户平台>产品中心检查后重试';
+             }elseif (isset($wxQrcodePayResult ["return_msg"]) && $wxQrcodePayResult ["return_msg"] == '受理关系不存在'){
+                 $wxQrcodePayResult ["return_msg"] = '受理关系不存在，请前往商户平台检查后重试';
+             }else{
+                 $wxQrcodePayResult ["return_msg"] = '交易异常,请联系客服';
+             }
+         }
+         if (isset($wxQrcodePayResult['result_code']) && $wxQrcodePayResult['result_code'] == '价格小于0'){
+             $wxQrcodePayResult ["return_msg"] = '交易异常,请联系客服';
+         }
+         $wxQrcodePayResult ["total_fee"] = isset($total_fee) ? $total_fee : 0;
+         return $wxQrcodePayResult;
+     }
+
+    /**
      * @param $params
      * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]
      * @throws \Exception
@@ -1592,8 +1703,4 @@ class URLify {
         }
         self::$regex = '/[' . self::$chars . ']/u';
     }
-
-
-
-
 }

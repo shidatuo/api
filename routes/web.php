@@ -291,6 +291,8 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxgetuserReceiv', 'ApiController@wxgetuserReceiv');
     Route::any('wxDeliver', 'ApiController@wxDeliver');
     Route::any('wxWallet', 'ApiController@wxWallet');
+    Route::any('wxpayment', 'ApiController@wxpayment');
+    Route::any('wxnotifyurl', 'ApiController@wxnotifyurl');
 });
 
 
