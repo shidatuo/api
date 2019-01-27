@@ -964,6 +964,7 @@ class ApiController extends Controller{
              $wxQrcodePay->SetParameter("input_charset", "UTF-8");
              // 获取统一支付接口结果
              $wxQrcodePayResult = $wxQrcodePay->getResult();
+             log_ex("wxpayment",PHP_EOL ."获取统一支付接口结果 : " .PHP_EOL. json_encode($wxQrcodePayResult) . PHP_EOL);
              if (isset($wxQrcodePayResult['prepay_id'])) {
                  $wxQrcodePayResult['package'] = 'prepay_id=' . $wxQrcodePayResult['prepay_id'];
                  $wxQrcodePayResult['timeStamp'] = "{$timeStamp}";
