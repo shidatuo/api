@@ -548,9 +548,27 @@ class ApiController extends Controller{
         $rs = get("jy_sale_goods",$data);
         $resule = $rs ? $rs : [];
         foreach ($resule as $item=>$value){
-            $resule[$item]['avatarUrls'] = self::getOrderAvatarUrl($value);
+            $open_ids = get("jy_order","goods_id={$value['id']}&fields=openid&no_limit=true&state=[gte]1");
+            $open_ids = $open_ids ? $open_ids : [];
+            foreach ($open_ids as $v){
+                $resule[$item]['avatarUrls'][] = self::wxgetUseravatarUrl($v['openid']);
+            }
+            if(!isset($resule[$item]['avatarUrls']))
+                $resule[$item]['avatarUrls'] = [];
         }
         jsonReturn(200,"请求成功",$resule);
+    }
+
+    /**
+     * @param $openid
+     * @return \___PHPSTORM_HELPERS\static|mixed|string
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取用户头像
+     */
+    public function wxgetUseravatarUrl($openid){
+        $user_info = get("jy_user","openid={$openid}&single=true&fields=avatarUrl");
+        return isset($user_info['avatarUrl']) ? $user_info['avatarUrl'] : '';
     }
 
     /**

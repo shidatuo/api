@@ -66,6 +66,7 @@ function get($table,$params = null){
         unset($field['single']);
     if (isset($field['no_limit']))
         unset($field['limit']);
+        unset($field['no_limit']);
     //>设置缓存时间
     if (isset($field['cache_ttl'])){
         $ttl = $field['cache_ttl'];
