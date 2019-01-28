@@ -949,7 +949,7 @@ class ApiController extends Controller{
              $api_key = $params['openid'];
          else
              jsonReturn(201,"无效的openid");
-         $notify_url = "https://shidatuos.cn/wxnotifyurl";
+         $notify_url = "https://shidatuos.cn/api/wxnotifyurl";
          $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount");
          $total_fee = isset($order_info['amount']) && $order_info['amount'] > 0 ? $order_info['amount'] : 0;
          $total_fee = $total_fee * 100;
@@ -1042,6 +1042,7 @@ class ApiController extends Controller{
      * @description 支付回调
      */
      public function wxnotifyurl(){
+         log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '---xml--files:--debug---'  . 11111 . PHP_EOL);
          $wxQrcodePay = new WxQrcodePay();
          // 存储微信的回调
          $xml = file_get_contents("php://input");
