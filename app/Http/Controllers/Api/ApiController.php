@@ -1053,6 +1053,35 @@ class ApiController extends Controller{
      }
 
     /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 快递鸟查看物流
+     */
+     public function wxseeExpress(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         $order_info = get("jy_order","id={$data['id']}&fields=express,express_num&single=true");
+         if(!$order_info)
+             jsonReturn(201,"无效的订单号");
+         if(checkEmpty($order_info['express']))
+             jsonReturn(201,"无效的物流名称");
+         if(checkEmpty($order_info['express_num']) || !isINT($order_info['express_num']))
+             jsonReturn(201,"无效的物流单号");
+         $kd['codetype'] = $order_info['express'];
+         $kd['codeNo'] = $order_info['express_num'];
+         $KdNiao = new KdNiaoManager();
+         $result = $KdNiao->getOrderTracesByJson($kd);
+         jsonReturn(200,"请求成功",$result);
+     }
+
+
+
+
+    /**
      * @param $params
      * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]
      * @throws \Exception
@@ -1871,13 +1900,12 @@ class KdNiaoManager{
         $datas['DataSign'] =  $this->encrypt($requestData,  $this->AppKey);
         $result = $this->sendPost($ReqURL, $datas);
         $guiji = json_decode($result,true);
-        if(isset($params['orderid']) && !empty($params['orderid']) && $params['orderid'] != 'undefined') {
+        if(isset($params['id']) && isINT($params['id'])) {
             if (isset($guiji['State']) && $guiji['State'] == 3) {
-                $data['table'] = 'cart_orders';
                 $data['logistics'] = $result;
-                $data['id'] = $params['orderid'];
+                $data['id'] = $params['id'];
                 //更新快递信息
-                $this->app->database_manager->save($data);
+                save("jy_order",$data);
             }
         }
         return $result;
