@@ -1018,7 +1018,10 @@ class ApiController extends Controller{
          jsonReturn(200,"请求成功",$wxQrcodePayResult);
      }
 
-
+    /**
+     * @author shidatuo
+     * @description 支付回调
+     */
      public function wxnotifyurl(){
          $wxQrcodePay = new WxQrcodePay();
          // 存储微信的回调
@@ -1077,9 +1080,6 @@ class ApiController extends Controller{
          $result = $KdNiao->getOrderTracesByJson($kd);
          jsonReturn(200,"请求成功",$result);
      }
-
-
-
 
     /**
      * @param $params
