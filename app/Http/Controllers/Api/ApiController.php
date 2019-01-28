@@ -837,7 +837,7 @@ class ApiController extends Controller{
              $data['limit'] = $params['limit'];
          else
              $data['limit'] = 10;
-         $data['state'] = 1;
+         $data['state'] = "[gte]1";
          $rs = get("jy_order",$data);
          $resule = $rs ? $rs : [];
          jsonReturn(200,"请求成功",$resule);
