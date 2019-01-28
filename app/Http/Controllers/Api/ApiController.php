@@ -1085,7 +1085,7 @@ class ApiController extends Controller{
                          $state = 1;
                      $s['id'] = $order_info['goods_id'];
                      $s['state'] = $state;
-                     $s['actual_stock'] = $actual['actual_stock'] - $actual['num'];
+                     $s['actual_stock'] = $actual['actual_stock'] - $order_info['num'];
                      log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '保存商品数据 : ' .json_encode($s) . PHP_EOL);
                      save("jy_sale_goods",$s);
                  }
