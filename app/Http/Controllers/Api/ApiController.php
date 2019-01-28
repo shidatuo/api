@@ -492,7 +492,7 @@ class ApiController extends Controller{
         else
             jsonReturn(201,"无效的title");
         if(isset($params['stock']) && isINT($params['stock']))
-            $data['stock'] = $params['stock'];
+            $data['actual_stock'] = $data['stock'] = $params['stock'];
         else
             jsonReturn(201,"无效的stock");
         if(isset($params['pic']) && NotEstr($params['pic']))
@@ -1073,6 +1073,22 @@ class ApiController extends Controller{
          //支付订单
          $attach = explode('@', $order['attach']);
          log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '---xml--global:--debug---' .json_encode($attach) . PHP_EOL);
+         if(isset($attach[0]) && isINT($attach[0])){
+             $order_info = get("jy_order","id={$attach[0]}&single=true&fields=actual_stock");//actual_stock
+
+             if(isset($order_info['goods_id']) && isINT($order_info['goods_id'])){
+                 $actual = get("jy_sale_goods","id={$order_info['goods_id']}&single=true&fields=actual_stock,num");
+                 if(isset($actual['actual_stock'])){
+                     //修改活动状态
+                     if($actual['actual_stock'] == $actual['num'])
+                         $state = 2;
+                     else
+                         $state = 1;
+                 }
+                 save("jy_sale_goods","id={$order_info['goods_id']}&state=$state&actual_stock=" . bcsub($actual['actual_stock'],$actual['num'],0));
+             }
+             save("jy_order","id={$attach[0]}&state=1");
+         }
      }
 
     /**
