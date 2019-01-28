@@ -18,6 +18,8 @@ function M($table){
         return App\Model\jy_sale::query();
     elseif ($table == 'jy_order')
         return App\Model\jy_order::query();
+       elseif ($table == 'jy_complaint')
+        return App\Model\jy_complaint::query();
     return DB::table($table);
 }
 /**

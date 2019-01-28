@@ -1082,10 +1082,16 @@ class ApiController extends Controller{
          jsonReturn(200,"请求成功",$result);
      }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 投诉用户api
+     */
      public function wxComplaint(Request $req){
          $params = $req->all();
          if(isset($params['id']) && isINT($params['id']))
-             $data['id'] = $params['id'];
+             $data['orderid'] = $params['id'];
          else
              jsonReturn(201,"无效的id");
          if(isset($params['openid']) && NotEstr($params['openid']))
@@ -1096,6 +1102,16 @@ class ApiController extends Controller{
              $data['Reason'] = $params['Reason'];
          else
              jsonReturn(201,"无效的Reason");
+         $user_info = get("jy_user","openid={$data['openid']}&single=true&fields=id,nickName,avatarUrl");
+
+         if(isset($user_info['nickName']) && !checkEmpty($user_info['nickName']))
+             $data['nickName'] = $user_info['nickName'];
+         if(isset($user_info['avatarUrl']) && !checkEmpty($user_info['avatarUrl']))
+             $data['avatarUrl'] = $user_info['avatarUrl'];
+         $result = save("jy_complaint",$data);
+         if($result)
+             jsonReturn(200,"请求成功");
+         jsonReturn(201,"请求失败");
      }
 
     /**
