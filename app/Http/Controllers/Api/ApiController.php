@@ -8,6 +8,7 @@ use \App\Model\User;
 use \App\Model\jy_express;
 use WxPayConf;
 use WxQrcodePay;
+use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller{
 
@@ -1169,12 +1170,11 @@ class ApiController extends Controller{
              $data['openid'] = $params['openid'];
          else
              jsonReturn(201,"无效的openid");
-         $data['count'] = true;
          $da = $data;
          $da['state'] = 2;
          $data['state'] = 1;
-         $dfh = get("jy_order",$data);
-         $dsh = get("jy_order",$da);
+         $dfh = DB::table("jy_order")->where($data)->count();
+         $dsh = DB::table("jy_order")->where($da)->count();
          jsonReturn(200,"请求成功",compact("dfh","dsh"));
      }
 
