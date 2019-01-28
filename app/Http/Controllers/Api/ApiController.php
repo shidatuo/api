@@ -901,10 +901,24 @@ class ApiController extends Controller{
              $data['state'] = $params['type'] == 1 ? 4 : "[in]1,2,3";
          else
              jsonReturn(201,"无效的type");
-         if(isset($params['openid']) && NotEstr($params['openid']))
-             $data['openid'] = $params['openid'];
-         else
+         if(isset($params['openid']) && NotEstr($params['openid'])){
+             $openid = $params['openid'];
+             $f = get("jy_sale_goods","openid={$openid}&fields=id");
+             if(!$f){
+                 $orderlist = [];
+                 $amount = 0;
+                 $result = compact("orderlist","amount");
+                 jsonReturn(200,"请求成功",$result);
+             }
+             foreach ($f as $v){
+                 foreach ($v as $item){
+                     $n[] = $item;
+                 }
+             }
+             $data['goods_id'] = "[in]" . implode(",",$n);
+         }else{
              jsonReturn(201,"无效的openid");
+         }
          if(isset($params['current_page']) && isINT($params['current_page']))
              $data['current_page'] = $params['current_page'];
          else
@@ -928,8 +942,9 @@ class ApiController extends Controller{
              $orderlist[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
              $orderlist[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
          }
-         $sale_info = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
-         $amount = isset($sale_info['amount']) ? $sale_info['amount'] : 0;
+//         $sale_info = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
+//         $amount = isset($sale_info['amount']) ? $sale_info['amount'] : 0;
+         $amount = 0;
          $result = compact("orderlist","amount");
          jsonReturn(200,"请求成功",$result);
      }
