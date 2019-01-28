@@ -1929,9 +1929,9 @@ class KdNiaoManager{
      */
     function getOrderTracesByJson($params){
         //快递单号
-        $codeNo = $params['codetype'];
+        $codetype = $params['codetype'];
         //快递编码
-        $codetype = $params['codeNo'];
+        $codeNo = $params['codeNo'];
         $ReqURL = "http://api.kdniao.com/Ebusiness/EbusinessOrderHandle.aspx"; //正式
         $requestData = "{'OrderCode':'','ShipperCode':'".$codetype."','LogisticCode':'".$codeNo."'}";
         $datas = array(
