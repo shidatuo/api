@@ -941,9 +941,7 @@ class ApiController extends Controller{
          $this->wxpayConfig ['notifyurl'] = $notify_url;
          $this->wxpayConfig ['returnurl'] = "";
          new WxPayConf ($this->wxpayConfig);
-//         $timeStamp = time();
-//         $out_trade_no = "{$timeStamp}";
-         //用户id @ 订单id @ formid @ 应用id @ openid @ 类型 @ 附加类型 @ 附加数据
+         //订单id @ formid @ 应用id @ openid @ 类型 @ 附加类型 @ 附加数据
          $pkey = $data['id'];// 附加数据
          //$jsApiParameters = $wxPay->getJsApiPayParams($openId, $body, $out_trade_no,$total_fee, $notify_url,$pkey,'123.206.41.185');
          if ($total_fee > 0) {
@@ -954,7 +952,6 @@ class ApiController extends Controller{
              $out_trade_no = "{$timeStamp}";
              $wxQrcodePay->setParameter("out_trade_no", "$out_trade_no"); // 商户订单号
              $wxQrcodePay->setParameter("body", "商品支付");//附加数据
-             // $wxQrcodePay->setParameter ( "body", "商品支付");//附加数据
              $wxQrcodePay->setParameter("spbill_create_ip", "140.143.7.81"); //
              $wxQrcodePay->setParameter("trade_type", "JSAPI"); // 交易类型
              $wxQrcodePay->setParameter("fee_type", "CNY");//附加数据
@@ -1018,7 +1015,7 @@ class ApiController extends Controller{
              $wxQrcodePayResult ["return_msg"] = '交易异常,请联系客服';
          }
          $wxQrcodePayResult ["total_fee"] = isset($total_fee) ? $total_fee : 0;
-         return $wxQrcodePayResult;
+         jsonReturn(200,"请求成功",$wxQrcodePayResult);
      }
 
 
