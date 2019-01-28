@@ -933,6 +933,7 @@ class ApiController extends Controller{
          $notify_url = "https://shidatuos.cn/wxnotifyurl";
          $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount");
          $total_fee = isset($order_info['amount']) && $order_info['amount'] > 0 ? $order_info['amount'] : 0;
+         $total_fee = $total_fee * 100;
          $this->wxpayConfig ['appid'] = 'wx6e75e53e4a50bf41'; // 微信公众号身份的唯一标识
          $this->wxpayConfig ['appsecret'] = 'c716d92c8e4f2df7f54a73c563e24b57'; // JSAPI接口中获取openid
          $this->wxpayConfig ['mchid'] = '1525038701'; // 受理商ID
@@ -1022,7 +1023,36 @@ class ApiController extends Controller{
 
 
      public function wxnotifyurl(){
+         $wxQrcodePay = new WxQrcodePay();
+         // 存储微信的回调
+         $xml = file_get_contents("php://input");
+         log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '---xml--files:--debug---' .$xml . PHP_EOL);
+         if (!$xml) $xml = $GLOBALS['HTTP_RAW_POST_DATA'];
+         log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '---xml--global:--debug---' .$xml . PHP_EOL);
+         $wxQrcodePay->saveData($xml);
+         // 验证签名，并回应微信。
+         if ($wxQrcodePay->checkSign() == FALSE) {
+             $wxQrcodePay->setReturnParameter("return_code", "FAIL"); // 返回状态码
+             $wxQrcodePay->setReturnParameter("return_msg", "签名失败"); // 返回信息
+         } else {
+             $wxQrcodePay->setReturnParameter("return_code", "SUCCESS"); // 设置返回码
+         }
+         $returnXml = $wxQrcodePay->returnXml();
+         log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '---xml--global:--debug---' .$returnXml . PHP_EOL);
 
+         // ==商户根据实际情况设置相应的处理流程，此处仅作举例=======
+         /** if ($wxQrcodePay->checkSign() == TRUE) {
+         if ($wxQrcodePay->data ["return_code"] == "FAIL") {
+         // 此处应该更新一下订单状态，商户自行增删操作
+         } elseif ($wxQrcodePay->data ["result_code"] == "FAIL") {
+         // 此处应该更新一下订单状态，商户自行增删操作
+         } else {**/
+         //$this->log_ex('log44.txt', date('Y-m-d H:i:s') . '---return_code:--debug---' . json_encode($wxQrcodePay->data["return_code"]) . PHP_EOL);
+         // 此处应该更新一下订单状态，商户自行增删操作
+         $order = $wxQrcodePay->getData();
+         //支付订单
+         $attach = explode('@', $order['attach']);
+         log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '---xml--global:--debug---' .json_encode($attach) . PHP_EOL);
      }
 
     /**
