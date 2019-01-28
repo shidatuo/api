@@ -1160,6 +1160,28 @@ class ApiController extends Controller{
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
+     * @description 获取订单数量
+     */
+     public function wxOrderDetaile(Request $req){
+         $dsh = $dfh = 0;
+         $params = $req->all();
+         if(isset($params['openid']) && NotEstr($params['openid']))
+             $data['openid'] = $params['openid'];
+         else
+             jsonReturn(201,"无效的openid");
+         $data['count'] = true;
+         $da = $data;
+         $da['state'] = 2;
+         $data['state'] = 1;
+         $dfh = get("jy_order",$data);
+         $dsh = get("jy_order",$da);
+         jsonReturn(200,"请求成功",compact("dfh","dsh"));
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
      * @description 物流列表
      */
      public function wxExpressList(jy_express $exModel){
