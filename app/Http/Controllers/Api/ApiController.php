@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use \App\Model\User;
+use \App\Model\jy_express;
 use WxPayConf;
 use WxQrcodePay;
 
@@ -1079,6 +1080,32 @@ class ApiController extends Controller{
          $KdNiao = new KdNiaoManager();
          $result = $KdNiao->getOrderTracesByJson($kd);
          jsonReturn(200,"请求成功",$result);
+     }
+
+     public function wxComplaint(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         if(isset($params['openid']) && NotEstr($params['openid']))
+             $data['openid'] = $params['openid'];
+         else
+             jsonReturn(201,"无效的openid");
+         if(isset($params['Reason']) && NotEstr($params['Reason']))
+             $data['Reason'] = $params['Reason'];
+         else
+             jsonReturn(201,"无效的Reason");
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 物流列表
+     */
+     public function wxExpressList(jy_express $exModel){
+         jsonReturn(200,"请求成功",$exModel::all());
      }
 
     /**

@@ -294,6 +294,8 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxpayment', 'ApiController@wxpayment');
     Route::any('wxnotifyurl', 'ApiController@wxnotifyurl');
     Route::any('wxseeExpress', 'ApiController@wxseeExpress');
+    Route::any('wxComplaint', 'ApiController@wxComplaint');
+    Route::any('wxExpressList', 'ApiController@wxExpressList');
 });
 
 
