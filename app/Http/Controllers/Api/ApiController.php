@@ -1076,10 +1076,10 @@ class ApiController extends Controller{
              log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '订单号 : ' .$attach[0] . PHP_EOL);
              $order_info = get("jy_order","id={$attach[0]}&single=true");//actual_stock
              if(isset($order_info['goods_id']) && isINT($order_info['goods_id'])){
-                 $actual = get("jy_sale_goods","id={$order_info['goods_id']}&single=true&fields=actual_stock,num");
+                 $actual = get("jy_sale_goods","id={$order_info['goods_id']}&single=true&fields=actual_stock");
                  if(isset($actual['actual_stock'])){
                      //修改活动状态
-                     if($actual['actual_stock'] == $actual['num'])
+                     if($actual['actual_stock'] == $order_info['num'])
                          $state = 2;
                      else
                          $state = 1;
