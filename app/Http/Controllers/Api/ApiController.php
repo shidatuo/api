@@ -590,30 +590,6 @@ class ApiController extends Controller{
         jsonReturn(200,"请求成功",$resule);
     }
 
-
-    /**
-     * @param Request $req
-     * @throws \Exception
-     * @author shidatuo
-     * @description 获取商品信息
-     */
-//    public function backgetSale(Request $req){
-//        $params = $req->all();
-//        if(isset($params['id']) && isINT($params['id']))
-//            $data['id'] = $params['id'];
-//        else
-//            jsonReturn(201,"无效的id");
-//        $data['single'] = true;
-//        $rs = get("jy_sale_goods",$data);
-//        $resule = $rs ? $rs : [];
-//        jsonReturn(200,"请求成功",$resule);
-//    }
-
-
-//    Route::any('wxInsertBill', 'ApiController@wxInsertBill');
-//    Route::any('wxgetOrderList', 'ApiController@wxgetOrderList');
-//    Route::any('wxPurchaser', 'ApiController@wxPurchaser');
-
     /**
      * @param Request $req
      * @throws \Exception
@@ -1201,6 +1177,92 @@ class ApiController extends Controller{
      */
      public function wxExpressList(jy_express $exModel){
          jsonReturn(200,"请求成功",$exModel::all());
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取销售商列表
+     */
+     public function backgetSale(Request $req){
+         $params = $req->all();
+         if(isset($params['type']) && in_array($params['type'],[1,2])){
+             $data['status'] = $params['type'] == 1 ? "[in]1,2" : 0;
+             if(isset($params['type']) && $params['type'] == 1){
+                 $where = [1,2];
+             }else{
+                 $where = [0];
+             }
+         }else{
+             jsonReturn(201,"无效的type");
+         }
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         $rs = get("jy_sale",$data);
+         $list = $rs ? $rs : [];
+         $total = DB::table("jy_sale")->whereIn("status",$where)->count();
+         jsonReturn(200,"请求成功",compact("list","total"));
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取销售商详情
+     */
+     public function backgetSaleInfo(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         $data['single'] = true;
+         $rs = get("jy_sale",$data);
+         $result = $rs ? $rs : [];
+         jsonReturn(200,"请求成功",$result);
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 审核销售商
+     */
+     public function backupdataSale(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         if(isset($params['status']) && in_array($params['status'],[1,2]))
+             $data['status'] = $params['status'];//1通过 2拒绝
+         else
+             jsonReturn(201,"无效的status");
+         if(isset($params['reason']) && in_array($params['reason'],[1,2])){
+             $data['reason'] = $params['reason'];//1:身份证照片不清晰 2:身份证号与身份证不匹配
+         }else{
+             if(isset($data['status']) && $data['status'] == 2)
+                 jsonReturn(201,"无效的reason");
+         }
+         $rs = save("jy_sale",$data);
+         if($rs){
+             //获取审核人的openid
+             $sale_info = get("jy_sale","id={$data['id']}&single=true&fields=openid");
+             if(isset($sale_info['openid']) && !checkEmpty($sale_info['openid']) && $data['status'] == 1){
+                 $user_info = get("jy_user","openid={$sale_info['openid']}&single=true&fields=id");
+                 if(isset($user_info['id']) && isINT($user_info['id'])){
+                     save("jy_user","id={$user_info['id']}&status=2");
+                 }
+             }
+         }
+         jsonReturn(200,"操作成功");
      }
 
     /**

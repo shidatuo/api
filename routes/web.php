@@ -297,6 +297,10 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxComplaint', 'ApiController@wxComplaint');
     Route::any('wxExpressList', 'ApiController@wxExpressList');
     Route::any('wxOrderDetaile', 'ApiController@wxOrderDetaile');
+
+    Route::any('backgetSale', 'ApiController@backgetSale');
+    Route::any('backgetSaleInfo', 'ApiController@backgetSaleInfo');
+    Route::any('backupdataSale', 'ApiController@backupdataSale');
 });
 
 
