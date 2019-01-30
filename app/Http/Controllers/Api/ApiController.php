@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\URL;
 use \App\Model\User;
 use \App\Model\jy_express;
 use \App\Model\jy_token;
+use \App\Model\jy_back_user;
+use \App\Model\jy_user;
 use WxPayConf;
 use WxQrcodePay;
 use Illuminate\Support\Facades\DB;
@@ -1326,7 +1328,7 @@ class ApiController extends Controller{
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
-     * @description 后台登陆
+     * @description 退出登录
      */
      public function backSignOut(Request $req){
          $params = $req->all();
@@ -1349,9 +1351,150 @@ class ApiController extends Controller{
          }
      }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 添加账户
+     */
      public function backadduser(Request $req){
          $params = $req->all();
+         if(isset($params['userName']) && NotEstr($params['userName']))
+             $data['userName'] = $params['userName'];
+         else
+             jsonReturn(201,"无效的userName");
+         if(isset($params['password']) && NotEstr($params['password']))
+             $data['password'] = $params['password'];
+         else
+             jsonReturn(201,"无效的password");
+         if(isset($params['role']) && isINT($params['role'])){
+             $data['role'] = $params['role'];
+             $rs = get("jy_back_role","id={$data['role']}&single=true&status=1&type=2");
+             if(!$rs)
+                 jsonReturn(201,"无效的role");
+             $data['role_title'] = $rs['title'];
+         }else{
+             jsonReturn(201,"无效的role");
+         }
+         $result = save("jy_back_user",$data);
+         if($result)
+             jsonReturn(200,"请求成功");
+         jsonReturn(201,"请求失败");
      }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 添加角色 与 权限
+     */
+     public function backaddjuese(Request $req){
+         $params = $req->all();
+         if(isset($params['title']) && NotEstr($params['title']))
+             $data['title'] = $params['title'];
+         else
+             jsonReturn(201,"无效的title");
+         if(isset($params['type']) && in_array($params['type'],[1,2]))
+             $data['type'] = $params['type'];
+         else
+             jsonReturn(201,"无效的type");
+         $result = save("jy_back_role",$data);
+         if($result)
+             jsonReturn(200,"请求成功");
+         jsonReturn(201,"请求失败");
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 开启或者关闭账户
+     */
+     public function backupjuese(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && NotEstr($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         if(isset($params['status']) && in_array($params['status'],[1,2]))
+             $data['status'] = $params['status'];
+         else
+             jsonReturn(201,"无效的status");
+         $result = save("jy_back_role",$data);
+         if($result)
+             jsonReturn(200,"请求成功");
+         jsonReturn(201,"请求失败");
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 开启或者关闭账户
+     */
+     public function backCloseuser(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && NotEstr($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         if(isset($params['status']) && in_array($params['status'],[1,2]))
+             $data['status'] = $params['status'] > 1 ? 0 : 1;
+         else
+             jsonReturn(201,"无效的status");
+         $result = save("jy_back_user",$data);
+         if($result)
+             jsonReturn(200,"请求成功");
+         jsonReturn(201,"请求失败");
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 返回后台账户列表数据
+     */
+     public function backgetuser(Request $req){
+         $params = $req->all();
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         $rs = get("jy_back_user",$data);
+         $result = $rs ? $rs : [];
+         jsonReturn(200,"请求成功",$result);
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序的用户列表
+     */
+     public function backgetUserlist(Request $req){
+         $params = $req->all();
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         $rs = get("jy_user",$data);
+         $result = $rs ? $rs : [];
+         jsonReturn(200,"请求成功",$result);
+     }
+
+
+//Route::any('backadduser', 'ApiController@backadduser')->middleware('VerifyToken');
+//Route::any('backaddjuese', 'ApiController@backaddjuese')->middleware('VerifyToken');
+//Route::any('backupjuese', 'ApiController@backupjuese')->middleware('VerifyToken');
+//Route::any('backCloseuser', 'ApiController@backCloseuser')->middleware('VerifyToken');
 
     /**
      * @param $params

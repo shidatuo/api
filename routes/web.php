@@ -308,7 +308,14 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backgetSale', 'ApiController@backgetSale')->middleware('VerifyToken');
     Route::any('backgetSaleInfo', 'ApiController@backgetSaleInfo')->middleware('VerifyToken');
     Route::any('backupdataSale', 'ApiController@backupdataSale')->middleware('VerifyToken');
+
     Route::any('backadduser', 'ApiController@backadduser')->middleware('VerifyToken');
+    Route::any('backaddjuese', 'ApiController@backaddjuese')->middleware('VerifyToken');
+    Route::any('backupjuese', 'ApiController@backupjuese')->middleware('VerifyToken');
+    Route::any('backCloseuser', 'ApiController@backCloseuser')->middleware('VerifyToken');
+
+    Route::any('backgetuser', 'ApiController@backgetuser')->middleware('VerifyToken');
+    Route::any('backgetUserlist', 'ApiController@backgetUserlist')->middleware('VerifyToken');
 });
 
 
