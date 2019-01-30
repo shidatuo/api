@@ -1491,8 +1491,15 @@ class ApiController extends Controller{
              $data['limit'] = $params['limit'];
          else
              $data['limit'] = 10;
+         if(isset($params['nickName']) && NotEstr($params['nickName']))
+             $data['nickName'] = "[like]" . $params['nickName'];
          $rs = get("jy_user",$data);
-         $result = $rs ? $rs : [];
+         $list = $rs ? $rs : [];
+         unset($data['current_page']);
+         unset($data['limit']);
+         $data['count'] = "id";
+         $total = get("jy_user",$data);
+         $result = compact("list","total");
          jsonReturn(200,"请求成功",$result);
      }
 
