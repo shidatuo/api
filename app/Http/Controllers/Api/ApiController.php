@@ -1594,7 +1594,7 @@ class ApiController extends Controller{
         if(isset($params['state']) && in_array($params['state'],[1,2,3])){
             $data['state'] = $params['state'];
         }
-        $data['fields'] = "openid,title,price,stock,end_time";
+        $data['fields'] = "id,openid,title,price,stock,end_time";
         $rs = get("jy_sale_goods",$data);
         $list = $rs ? $rs : [];
         foreach ($list as $item=>$value){
