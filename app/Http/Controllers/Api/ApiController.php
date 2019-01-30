@@ -1317,9 +1317,36 @@ class ApiController extends Controller{
          $data['fields'] = "id";
          $user_info = get("jy_back_user",$data);
          if(!$user_info)
-             jsonReturn(201,"该用户不存在");
+             jsonReturn(201,"该用户不存在 , 或者用户名密码错误 !!!");
          save("jy_token","uid={$user_info['id']}&token={$d_t}");
          jsonReturn(200,"操作成功",compact("d_t","userName"));
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 后台登陆
+     */
+     public function backSignOut(Request $req){
+         $params = $req->all();
+         if(isset($params['d_t']) && NotEstr($params['d_t']))
+             $data['token'] = $params['d_t'];
+         else
+             jsonReturn(201,"无效的d_t");
+         $data['single'] = true;
+         $data['fields'] = 'id';
+         $token = get("jy_token",$data);
+         if(isset($token['id']) && isINT($token['id'])){
+             $s['id'] = $token['id'];
+             $s['status'] = 0;
+             $rs = save("jy_token",$s);
+             if($rs)
+                 jsonReturn(200,"退出成功");
+             jsonReturn(201,"退出失败");
+         }else{
+             jsonReturn(201,"无效的d_t");
+         }
      }
 
     /**
