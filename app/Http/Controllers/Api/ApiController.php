@@ -1674,6 +1674,26 @@ class ApiController extends Controller{
     }
 
     /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 重置后台密码 12345678
+     */
+    public function backresetPassword(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];//用户id
+        else
+            jsonReturn(201,"无效的id");
+        $data['password'] = md5(12345678);
+        $result = save("jy_back_user",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(200,"请求失败");
+    }
+
+
+    /**
      * @param $params
      * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]
      * @throws \Exception
