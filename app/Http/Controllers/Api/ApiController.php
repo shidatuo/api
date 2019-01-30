@@ -1612,10 +1612,66 @@ class ApiController extends Controller{
     }
 
 
-//Route::any('backadduser', 'ApiController@backadduser')->middleware('VerifyToken');
-//Route::any('backaddjuese', 'ApiController@backaddjuese')->middleware('VerifyToken');
-//Route::any('backupjuese', 'ApiController@backupjuese')->middleware('VerifyToken');
-//Route::any('backCloseuser', 'ApiController@backCloseuser')->middleware('VerifyToken');
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取商品的订单详情
+     */
+    public function backgetOrderinfo(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['goods_id'] = $params['id'];//商品id
+        else
+            jsonReturn(201,"无效的id");
+        $data['no_limit'] = true;
+        $rs = get("jy_order",$data);
+        $result = $rs ? $rs : [];
+        jsonReturn(200,"请求成功",$result);
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序投诉列表
+     */
+    public function backgetcomplaintList(Request $req){
+        $params = $req->all();
+        if(isset($params['current_page']) && isINT($params['current_page']))
+            $data['current_page'] = $params['current_page'];
+        else
+            $data['current_page'] = 1;
+        if(isset($params['limit']) && isINT($params['limit']))
+            $data['limit'] = $params['limit'];
+        else
+            $data['limit'] = 10;
+        $rs = get("jy_complaint",$data);
+        $list = $rs ? $rs : [];
+        unset($data['current_page']);
+        unset($data['limit']);
+        $data['count'] = "id";
+        $total = get("jy_complaint",$data);
+        $result = compact("list","total");
+        jsonReturn(200,"请求成功",$result);
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序投诉详情
+     */
+    public function backgetcomplaintinfo(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];//商品id
+        else
+            jsonReturn(201,"无效的id");
+        $data['single'] = true;
+        $result = get("jy_complaint",$data);
+        jsonReturn(200,"请求成功",$result);
+    }
 
     /**
      * @param $params
