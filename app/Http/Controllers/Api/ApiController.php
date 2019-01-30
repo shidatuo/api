@@ -658,7 +658,8 @@ class ApiController extends Controller{
              else
                  jsonReturn(201,"无效的postalCode");
          }
-         $data['is_deliver'] = isset($sale_goods['deliver']) ? $sale_goods['deliver'] : 1;
+//         $data['is_deliver'] = isset($sale_goods['deliver']) ? $sale_goods['deliver'] : 1;
+         $data['is_deliver'] = isset($params['is_deliver']) ? $params['is_deliver'] : 1;
          $result = save("jy_order",$data);
          if($result)
              jsonReturn(200,"请求成功",[$result]);
