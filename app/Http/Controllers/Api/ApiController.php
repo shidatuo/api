@@ -1321,6 +1321,7 @@ class ApiController extends Controller{
          $user_info = get("jy_back_user",$data);
          if(!$user_info)
              jsonReturn(201,"该用户不存在 , 或者用户名密码错误 !!!");
+         DB::table("jy_token")->where(['uid'=>$user_info['id']])->update(['status'=>0]);
          save("jy_token","uid={$user_info['id']}&token={$d_t}");
          jsonReturn(200,"操作成功",compact("d_t","userName"));
      }
@@ -1565,16 +1566,18 @@ class ApiController extends Controller{
             $data['openid'] = $params['openid'];
         else
             jsonReturn(201,"无效的openid");
-        if(isset($params['current_page']) && isINT($params['current_page']))
-            $data['current_page'] = $params['current_page'];
-        else
-            $data['current_page'] = 1;
-        if(isset($params['limit']) && isINT($params['limit']))
-            $data['limit'] = $params['limit'];
-        else
-            $data['limit'] = 10;
+        if(isset($params['state']) && in_array($params['state'],[1,4])){
+            $data['state'] = $params['state'];
+        }else{
+            jsonReturn(201,"无效的state");
+        }
+        $data['no_limit'] = true;
         $rs = get("jy_order",$data);
-        $result = $rs ? $rs : [];
+        $list = $rs ? $rs : [];
+        unset($data['no_limit']);
+        $data['count'] = "id";
+        $total = get("jy_order",$data);
+        $result = compact("list","total");
         jsonReturn(200,"请求成功",$result);
     }
 
