@@ -1302,27 +1302,13 @@ class ApiController extends Controller{
      * @description 后台登陆
      */
      public function backLogin(Request $req,jy_token $token_){
-//         $a = Hash::make(12345678);
-//         $b = Hash::make('admin123');
-//         $passwordHash = password_hash('admin123', PASSWORD_BCRYPT);
-//         $h = password_verify($b, $passwordHash);
-//         $F = Hash::check($b,$passwordHash);
-//         dump($a);
-//         dump($b);
-//         dump($passwordHash);
-//         dump($h);
-//         $b = bcrypt('admin123');
-//         dump($F);
-//         dd($h);
-//         $c = app('hash')->check($a, $b);
-//         dd($c);
          $params = $req->all();
          if(isset($params['userName']) && NotEstr($params['userName']))
              $userName = $data['userName'] = $params['userName'];
          else
              jsonReturn(201,"无效的userName");
          if(isset($params['password']) && NotEstr($params['password']))
-             $data['password'] = Hash::make($params['password']);
+             $data['password'] = md5($params['password']);
          else
              jsonReturn(201,"无效的password");
          $d_t = $token_->createToken($data);
