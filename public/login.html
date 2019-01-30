@@ -303,7 +303,7 @@
         }
 
 
-        $.post(`${host}/api/backLogin`,data)
+        axios.post(`${host}/api/backLogin`,data)
             .then(function (response) {
                 console.log(response.data)
                 if(response.data.data.code==200){
