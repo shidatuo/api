@@ -315,7 +315,10 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backCloseuser', 'ApiController@backCloseuser')->middleware('VerifyToken');
 
     Route::any('backgetuser', 'ApiController@backgetuser')->middleware('VerifyToken');
+    Route::any('backgetjuese', 'ApiController@backgetjuese')->middleware('VerifyToken');
     Route::any('backgetUserlist', 'ApiController@backgetUserlist')->middleware('VerifyToken');
+    Route::any('backgetUserinfo', 'ApiController@backgetUserinfo')->middleware('VerifyToken');
+    Route::any('backgetUserOrderList', 'ApiController@backgetUserOrderList')->middleware('VerifyToken');
 });
 
 

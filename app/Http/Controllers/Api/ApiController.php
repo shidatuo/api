@@ -1490,6 +1490,72 @@ class ApiController extends Controller{
          jsonReturn(200,"请求成功",$result);
      }
 
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取角色 , 权限列表
+     */
+     public function backgetjuese(Request $req){
+         $params = $req->all();
+         if(isset($params['current_page']) && isINT($params['current_page']))
+             $data['current_page'] = $params['current_page'];
+         else
+             $data['current_page'] = 1;
+         if(isset($params['limit']) && isINT($params['limit']))
+             $data['limit'] = $params['limit'];
+         else
+             $data['limit'] = 10;
+         if(isset($params['type']) && in_array($params['type'],[1,2]))
+             $data['type'] = $params['type'];
+         else
+             jsonReturn(201,"无效的type");
+         $rs = get("jy_back_role",$data);
+         $result = $rs ? $rs : [];
+         jsonReturn(200,"请求成功",$result);
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序用户信息
+     */
+     public function backgetUserinfo(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         $data['single'] = true;
+         $rs = get("jy_user",$data);
+         $result = $rs ? $rs : [];
+         jsonReturn(200,"请求成功",$result);
+     }
+
+
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序订单列表
+     */
+    public function backgetUserOrderList(Request $req){
+        $params = $req->all();
+        if(isset($params['current_page']) && isINT($params['current_page']))
+            $data['current_page'] = $params['current_page'];
+        else
+            $data['current_page'] = 1;
+        if(isset($params['limit']) && isINT($params['limit']))
+            $data['limit'] = $params['limit'];
+        else
+            $data['limit'] = 10;
+        $rs = get("jy_order",$data);
+        $result = $rs ? $rs : [];
+        jsonReturn(200,"请求成功",$result);
+    }
+
 
 //Route::any('backadduser', 'ApiController@backadduser')->middleware('VerifyToken');
 //Route::any('backaddjuese', 'ApiController@backaddjuese')->middleware('VerifyToken');
