@@ -636,7 +636,7 @@ class ApiController extends Controller{
              jsonReturn(201,"无效的商品价格");
 //         $data['amount'] = bcpow($data['stock'],$sale_goods['price'],2);
          $data['amount'] = $data['num'] * $sale_goods['price'];
-         if(isset($sale_goods['deliver']) && isINT($sale_goods['deliver'])){
+         if(isset($params['is_deliver']) && isINT($params['is_deliver'])){
              if(isset($params['address']) && NotEstr($params['address']))
                  $data['address'] = $params['address'];
              else
