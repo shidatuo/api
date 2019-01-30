@@ -1465,7 +1465,12 @@ class ApiController extends Controller{
          else
              $data['limit'] = 10;
          $rs = get("jy_back_user",$data);
-         $result = $rs ? $rs : [];
+         $list = $rs ? $rs : [];
+         unset($data['current_page']);
+         unset($data['limit']);
+         $data['count'] = "id";
+         $total = get("jy_back_role",$data);
+         $result = compact("list","total");
          jsonReturn(200,"请求成功",$result);
      }
 
@@ -1511,7 +1516,12 @@ class ApiController extends Controller{
          else
              jsonReturn(201,"无效的type");
          $rs = get("jy_back_role",$data);
-         $result = $rs ? $rs : [];
+         $list = $rs ? $rs : [];
+         unset($data['current_page']);
+         unset($data['limit']);
+         $data['count'] = "id";
+         $total = get("jy_back_role",$data);
+         $result = compact("list","total");
          jsonReturn(200,"请求成功",$result);
      }
 
@@ -1539,10 +1549,14 @@ class ApiController extends Controller{
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
-     * @description 获取小程序订单列表
+     * @description 获取小程序用户订单列表
      */
     public function backgetUserOrderList(Request $req){
         $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $data['openid'] = $params['openid'];
+        else
+            jsonReturn(201,"无效的openid");
         if(isset($params['current_page']) && isINT($params['current_page']))
             $data['current_page'] = $params['current_page'];
         else
@@ -1553,6 +1567,47 @@ class ApiController extends Controller{
             $data['limit'] = 10;
         $rs = get("jy_order",$data);
         $result = $rs ? $rs : [];
+        jsonReturn(200,"请求成功",$result);
+    }
+
+
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序订单列表
+     */
+    public function backgetOrderList(Request $req){
+        $params = $req->all();
+        if(isset($params['current_page']) && isINT($params['current_page']))
+            $data['current_page'] = $params['current_page'];
+        else
+            $data['current_page'] = 1;
+        if(isset($params['limit']) && isINT($params['limit']))
+            $data['limit'] = $params['limit'];
+        else
+            $data['limit'] = 10;
+        if(isset($params['title']) && NotEstr($params['title']))
+            $data['title'] = "[like]{$params['title']}";
+        //0：未开始；1:进行中 2:已完成 3:已失败
+        if(isset($params['state']) && in_array($params['state'],[1,2,3])){
+            $data['state'] = $params['state'];
+        }
+        $data['fields'] = "openid,title,price,stock,end_time";
+        $rs = get("jy_sale_goods",$data);
+        $list = $rs ? $rs : [];
+        foreach ($list as $item=>$value){
+            if(isset($value['openid']) && NotEstr($value['openid'])){
+                $user_info = get("jy_user","openid={$value['openid']}&single=true&fields=nickName");
+                $list[$item]['nickName'] = isset($user_info['nickName']) && !checkEmpty($user_info['nickName']) ? $user_info['nickName'] : '匿名用户';
+            }
+        }
+        unset($data['current_page']);
+        unset($data['limit']);
+        $data['count'] = "id";
+        $total = get("jy_sale_goods",$data);
+        $result = compact("list","total");
         jsonReturn(200,"请求成功",$result);
     }
 

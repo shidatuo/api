@@ -78,6 +78,14 @@ function get($table,$params = null){
         $ttl = CACHE_TTL;
     }
     fields_map_filters($query,$field,$table);
+    //>组合where条件
+    if (is_array($field) && !empty($field)) {
+        foreach ($field as $k => $v) {
+            if(!in_array($k,['min','max','avg','sum','count'])){
+                $query = $query->where($table . '.' . $k, '=', $v);
+            }
+        }
+    }
     //>聚合
     if (isset($field['min']) && $field['min'])
         return $query->min($field['min']);
@@ -89,12 +97,6 @@ function get($table,$params = null){
         return $query->sum($field['sum']);
     if (isset($field['count']) && $field['count'])
         return $query->count($field['count']);
-    //>组合where条件
-    if (is_array($field) && !empty($field)) {
-        foreach ($field as $k => $v) {
-            $query = $query->where($table . '.' . $k, '=', $v);
-        }
-    }
     //>获取数据
     $data = $query->get();
     if(!$data)
