@@ -14,7 +14,8 @@ class VerifyToken
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next,jy_token $token){
+    public function handle($request, Closure $next){
+        $token = new jy_token;
         $d_t = $request->get("d_t","");
         if(!NotEstr($d_t))
             jsonReturn(201,"无效的token");
