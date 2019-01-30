@@ -1144,7 +1144,8 @@ class ApiController extends Controller{
          else
              jsonReturn(201,"无效的Reason");
          $user_info = get("jy_user","openid={$data['openid']}&single=true&fields=id,nickName,avatarUrl");
-
+         $order_info = get("jy_order","id={$data['orderid']}&single=true&fields=id,goods_id");
+         $data['goods_id'] = isset($order_info['goods_id']) ? $order_info['goods_id'] : 0;
          if(isset($user_info['nickName']) && !checkEmpty($user_info['nickName']))
              $data['nickName'] = $user_info['nickName'];
          if(isset($user_info['avatarUrl']) && !checkEmpty($user_info['avatarUrl']))
@@ -1605,7 +1606,6 @@ class ApiController extends Controller{
         if(isset($params['state']) && in_array($params['state'],[1,2,3])){
             $data['state'] = $params['state'];
         }
-        $data['fields'] = "id,openid,title,price,stock,end_time";
         $rs = get("jy_sale_goods",$data);
         $list = $rs ? $rs : [];
         foreach ($list as $item=>$value){
@@ -1635,6 +1635,12 @@ class ApiController extends Controller{
             $data['goods_id'] = $params['id'];//商品id
         else
             jsonReturn(201,"无效的id");
+        //0：未开始；1:进行中 2:已完成 3:已失败
+        if(isset($params['state']) && in_array($params['state'],[1,4])){
+            $data['state'] = $params['state'];
+        }else{
+            jsonReturn(200,"无效的state");
+        }
         $data['no_limit'] = true;
         $rs = get("jy_order",$data);
         $result = $rs ? $rs : [];
@@ -1659,6 +1665,16 @@ class ApiController extends Controller{
             $data['limit'] = 10;
         $rs = get("jy_complaint",$data);
         $list = $rs ? $rs : [];
+        foreach ($list as $k=>$item){
+            if(isset($item['goods_id']) && isINT($item['goods_id'])){
+                $sale_goods_info = get("jy_sale_goods","id={$item['goods_id']}&single=true&fields=openid");
+                if(isset($sale_goods_info['openid']) && !checkEmpty($sale_goods_info['openid'])){
+                    $user_info = get("jy_user","openid={$sale_goods_info['openid']}&single=true&fields=nickName,avatarUrl");
+                    $list[$k]['nickName_'] = isset($user_info['nickName']) ? $user_info['nickName'] : "";
+                    $list[$k]['avatarUrl_'] = isset($user_info['avatarUrl']) ? $user_info['avatarUrl'] : "";
+                }
+            }
+        }
         unset($data['current_page']);
         unset($data['limit']);
         $data['count'] = "id";
