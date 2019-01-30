@@ -301,6 +301,10 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backgetSale', 'ApiController@backgetSale');
     Route::any('backgetSaleInfo', 'ApiController@backgetSaleInfo');
     Route::any('backupdataSale', 'ApiController@backupdataSale');
+
+
+    Route::any('backLogin', 'ApiController@backLogin');
+    Route::any('backSignOut', 'ApiController@backSignOut');
 });
 
 
