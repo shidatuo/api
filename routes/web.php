@@ -308,6 +308,7 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backgetSale', 'ApiController@backgetSale')->middleware('VerifyToken');
     Route::any('backgetSaleInfo', 'ApiController@backgetSaleInfo')->middleware('VerifyToken');
     Route::any('backupdataSale', 'ApiController@backupdataSale')->middleware('VerifyToken');
+    Route::any('backadduser', 'ApiController@backadduser')->middleware('VerifyToken');
 });
 
 

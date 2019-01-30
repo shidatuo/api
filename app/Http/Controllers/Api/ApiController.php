@@ -1349,6 +1349,10 @@ class ApiController extends Controller{
          }
      }
 
+     public function backadduser(Request $req){
+         $params = $req->all();
+     }
+
     /**
      * @param $params
      * @return array|bool|\Illuminate\Database\Eloquent\Collection|static[]

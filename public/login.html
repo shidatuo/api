@@ -306,11 +306,11 @@
         axios.post(`${host}/api/backLogin`,data)
             .then(function (response) {
                 console.log(response.data)
-                if(response.data.data.code==200){
+                if(response.data.code==200){
                     success()
                     setTimeout(()=>{
-                        localStorage.setItem('d_t',response.data.data.data.d_t)
-                    localStorage.setItem('userName',response.data.data.data.userName)
+                        localStorage.setItem('d_t',response.data.data.d_t)
+                    localStorage.setItem('userName',response.data.data.userName)
                     if('localhost'==domain){
                         window.location.href =`http://localhost:8080`
                     }else{
