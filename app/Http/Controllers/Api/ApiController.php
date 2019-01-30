@@ -1417,7 +1417,7 @@ class ApiController extends Controller{
      */
      public function backupjuese(Request $req){
          $params = $req->all();
-         if(isset($params['id']) && NotEstr($params['id']))
+         if(isset($params['id']) && isINT($params['id']))
              $data['id'] = $params['id'];
          else
              jsonReturn(201,"无效的id");
@@ -1439,7 +1439,7 @@ class ApiController extends Controller{
      */
      public function backCloseuser(Request $req){
          $params = $req->all();
-         if(isset($params['id']) && NotEstr($params['id']))
+         if(isset($params['id']) && isINT($params['id']))
              $data['id'] = $params['id'];
          else
              jsonReturn(201,"无效的id");
@@ -1705,11 +1705,16 @@ class ApiController extends Controller{
     public function backgetcomplaintinfo(Request $req){
         $params = $req->all();
         if(isset($params['id']) && isINT($params['id']))
-            $data['id'] = $params['id'];//商品id
+            $data['id'] = $params['id'];//投诉id
         else
             jsonReturn(201,"无效的id");
         $data['single'] = true;
         $result = get("jy_complaint",$data);
+        $goods_info = self::getOrderGoods($result);
+        $result['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
+        $result['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
+        $result['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
+        $result['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
         jsonReturn(200,"请求成功",$result);
     }
 
