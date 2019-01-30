@@ -1715,6 +1715,12 @@ class ApiController extends Controller{
         $result['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
         $result['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
         $result['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
+        $sale_goods_info = get("jy_sale_goods","id={$result['goods_id']}&single=true&fields=openid");
+        if(isset($sale_goods_info['openid']) && !checkEmpty($sale_goods_info['openid'])){
+            $user_info = get("jy_user","openid={$sale_goods_info['openid']}&single=true&fields=nickName,avatarUrl");
+            $result['nickName_'] = isset($user_info['nickName']) ? $user_info['nickName'] : "";
+            $result['avatarUrl_'] = isset($user_info['avatarUrl']) ? $user_info['avatarUrl'] : "";
+        }
         jsonReturn(200,"请求成功",$result);
     }
 
