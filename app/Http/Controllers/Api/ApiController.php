@@ -3,9 +3,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use \App\Model\User;
 use \App\Model\jy_express;
+use \App\Model\jy_token;
 use WxPayConf;
 use WxQrcodePay;
 use Illuminate\Support\Facades\DB;
@@ -1291,6 +1293,47 @@ class ApiController extends Controller{
              }
          }
          jsonReturn(200,"操作成功");
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 后台登陆
+     */
+     public function backLogin(Request $req,jy_token $token_){
+//         $a = Hash::make(12345678);
+//         $b = Hash::make('admin123');
+//         $passwordHash = password_hash('admin123', PASSWORD_BCRYPT);
+//         $h = password_verify($b, $passwordHash);
+//         $F = Hash::check($b,$passwordHash);
+//         dump($a);
+//         dump($b);
+//         dump($passwordHash);
+//         dump($h);
+//         $b = bcrypt('admin123');
+//         dump($F);
+//         dd($h);
+//         $c = app('hash')->check($a, $b);
+//         dd($c);
+         $params = $req->all();
+         if(isset($params['userName']) && NotEstr($params['userName']))
+             $userName = $data['userName'] = $params['userName'];
+         else
+             jsonReturn(201,"无效的userName");
+         if(isset($params['password']) && NotEstr($params['password']))
+             $data['password'] = Hash::make($params['password']);
+         else
+             jsonReturn(201,"无效的password");
+         $d_t = $token_->createToken($data);
+         $data['status'] = 1;
+         $data['single'] = true;
+         $data['fields'] = "id";
+         $user_info = get("jy_back_user",$data);
+         if(!$user_info)
+             jsonReturn(201,"该用户不存在");
+         save("jy_token","uid={$user_info['id']}&token={$d_t}");
+         jsonReturn(200,"操作成功",compact("d_t","userName"));
      }
 
     /**

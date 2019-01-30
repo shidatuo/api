@@ -189,7 +189,8 @@ return [
         /**
          * JWT（Json Web Token） 实现基于API的用户认证
          */
-        Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class
+//        Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class,
+//        Tymon\JWTAuth\Providers\LaravelServiceProvider::class
     ],
 
     /*
@@ -240,8 +241,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Image' => Intervention\Image\Facades\Image::class,
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
-        'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
-        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class
+//        'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
+//        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class
     ],
 
 ];

@@ -299,13 +299,15 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxOrderDetaile', 'ApiController@wxOrderDetaile');
     Route::any('wxOnekeyfh', 'ApiController@wxOnekeyfh');
 
-    Route::any('backgetSale', 'ApiController@backgetSale');
-    Route::any('backgetSaleInfo', 'ApiController@backgetSaleInfo');
-    Route::any('backupdataSale', 'ApiController@backupdataSale');
+
 
 
     Route::any('backLogin', 'ApiController@backLogin');
     Route::any('backSignOut', 'ApiController@backSignOut');
+
+    Route::any('backgetSale', 'ApiController@backgetSale')->middleware('VerifyToken');
+    Route::any('backgetSaleInfo', 'ApiController@backgetSaleInfo')->middleware('VerifyToken');
+    Route::any('backupdataSale', 'ApiController@backupdataSale')->middleware('VerifyToken');
 });
 
 

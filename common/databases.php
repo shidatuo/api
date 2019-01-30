@@ -18,8 +18,12 @@ function M($table){
         return App\Model\jy_sale::query();
     elseif ($table == 'jy_order')
         return App\Model\jy_order::query();
-       elseif ($table == 'jy_complaint')
+    elseif ($table == 'jy_complaint')
         return App\Model\jy_complaint::query();
+    elseif ($table == 'jy_back_user')
+        return App\Model\jy_back_user::query();
+    elseif ($table == 'jy_token')
+        return App\Model\jy_token::query();
     return DB::table($table);
 }
 /**
