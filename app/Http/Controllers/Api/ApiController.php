@@ -620,7 +620,7 @@ class ApiController extends Controller{
              $data['num'] = $params['stock'];
          else
              jsonReturn(201,"无效的stock");
-         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price");
+         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price,deliver");
          if(!$sale_goods)
              jsonReturn(201,"商品不存在");
          if(isset($sale_goods['stock']) && !isINT($sale_goods['stock']))
@@ -631,26 +631,28 @@ class ApiController extends Controller{
              jsonReturn(201,"无效的商品价格");
 //         $data['amount'] = bcpow($data['stock'],$sale_goods['price'],2);
          $data['amount'] = $data['num'] * $sale_goods['price'];
-         if(isset($params['address']) && NotEstr($params['address']))
-             $data['address'] = $params['address'];
-         else
-             jsonReturn(201,"无效的address");
-         if(isset($params['detailInfo']) && NotEstr($params['detailInfo']))
-             $data['detailInfo'] = $params['detailInfo'];
-         else
-             jsonReturn(201,"无效的detailInfo");
-         if(isset($params['telNumber']) && NotEstr($params['telNumber']))
-             $data['telNumber'] = $params['telNumber'];
-         else
-             jsonReturn(201,"无效的telNumber");
-         if(isset($params['userName']) && NotEstr($params['userName']))
-             $data['userName'] = $params['userName'];
-         else
-             jsonReturn(201,"无效的userName");
-         if(isset($params['postalCode']) && NotEstr($params['postalCode']))
-             $data['postalCode'] = $params['postalCode'];
-         else
-             jsonReturn(201,"无效的postalCode");
+         if(isset($sale_goods['deliver']) && isINT($sale_goods['deliver'])){
+             if(isset($params['address']) && NotEstr($params['address']))
+                 $data['address'] = $params['address'];
+             else
+                 jsonReturn(201,"无效的address");
+             if(isset($params['detailInfo']) && NotEstr($params['detailInfo']))
+                 $data['detailInfo'] = $params['detailInfo'];
+             else
+                 jsonReturn(201,"无效的detailInfo");
+             if(isset($params['telNumber']) && NotEstr($params['telNumber']))
+                 $data['telNumber'] = $params['telNumber'];
+             else
+                 jsonReturn(201,"无效的telNumber");
+             if(isset($params['userName']) && NotEstr($params['userName']))
+                 $data['userName'] = $params['userName'];
+             else
+                 jsonReturn(201,"无效的userName");
+             if(isset($params['postalCode']) && NotEstr($params['postalCode']))
+                 $data['postalCode'] = $params['postalCode'];
+             else
+                 jsonReturn(201,"无效的postalCode");
+         }
          $result = save("jy_order",$data);
          if($result)
              jsonReturn(200,"请求成功",[$result]);
