@@ -1575,6 +1575,13 @@ class ApiController extends Controller{
         $data['no_limit'] = true;
         $rs = get("jy_order",$data);
         $list = $rs ? $rs : [];
+        foreach ($list as $item=>$value){
+            $goods_info = self::getOrderGoods($value);
+            $list[$item]['pic'] = isset($goods_info['pic']) ? $goods_info['pic'] : '';
+            $list[$item]['price'] = isset($goods_info['price']) ? $goods_info['price'] : 0;
+            $list[$item]['title'] = isset($goods_info['title']) ? $goods_info['title'] : '';
+            $list[$item]['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
+        }
         unset($data['no_limit']);
         $data['count'] = "id";
         $total = get("jy_order",$data);
@@ -1643,7 +1650,11 @@ class ApiController extends Controller{
         }
         $data['no_limit'] = true;
         $rs = get("jy_order",$data);
-        $result = $rs ? $rs : [];
+        $list = $rs ? $rs : [];
+        unset($data['no_limit']);
+        $data['count'] = "id";
+        $total = get("jy_order",$data);
+        $result = compact("list","total");
         jsonReturn(200,"请求成功",$result);
     }
 
