@@ -548,6 +548,7 @@ class ApiController extends Controller{
             $data['limit'] = $params['limit'];
         else
             $data['limit'] = 10;
+        $data['order_by'] = "id desc";
         $rs = get("jy_sale_goods",$data);
         $resule = $rs ? $rs : [];
         foreach ($resule as $item=>$value){
@@ -653,6 +654,7 @@ class ApiController extends Controller{
              else
                  jsonReturn(201,"无效的postalCode");
          }
+         $data['is_deliver'] = isset($sale_goods['deliver']) ? $sale_goods['deliver'] : 1;
          $result = save("jy_order",$data);
          if($result)
              jsonReturn(200,"请求成功",[$result]);
@@ -683,6 +685,7 @@ class ApiController extends Controller{
              $data['state'] = $params['state'];
          else
              $data['state'] = 1;
+         $data['order_by'] = "id desc";
          $rs = get("jy_order",$data);
          $resule = $rs ? $rs : [];
          foreach ($resule as $item=>$value){
@@ -831,14 +834,7 @@ class ApiController extends Controller{
              $data['goods_id'] = $params['id'];
          else
              jsonReturn(201,"无效的goods_id");
-         if(isset($params['current_page']) && isINT($params['current_page']))
-             $data['current_page'] = $params['current_page'];
-         else
-             $data['current_page'] = 1;
-         if(isset($params['limit']) && isINT($params['limit']))
-             $data['limit'] = $params['limit'];
-         else
-             $data['limit'] = 10;
+         $data['no_limit'] = true;
          $data['state'] = "[gte]1";
          $rs = get("jy_order",$data);
          $resule = $rs ? $rs : [];
@@ -1173,6 +1169,32 @@ class ApiController extends Controller{
          $dfh = DB::table("jy_order")->where($data)->count();
          $dsh = DB::table("jy_order")->where($da)->count();
          jsonReturn(200,"请求成功",compact("dfh","dsh"));
+     }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 一键发货
+     */
+     public function wxOnekeyfh(Request $req){
+         $params = $req->all();
+         if(isset($params['id']) && isINT($params['id']))
+             $data['goods_id'] = $params['id'];
+         else
+             jsonReturn(201,"无效的id");
+         $data['state'] = 1;//代发货
+         $data['fields'] = "id";//代发货
+         $order_list = get("jy_order",$data);
+         $rs = $order_list ? $order_list : [];
+         if(!is_arr($rs))
+             jsonReturn(201,"您没有代发货的订单!!");
+         foreach ($rs as $item){
+             if(isset($item['id']) && isINT($item['id'])){
+                 save("jy_order", "id={$item['id']}&state=2");
+             }
+         }
+         jsonReturn(200,"请求成功");
      }
 
     /**
