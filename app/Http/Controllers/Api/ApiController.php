@@ -556,6 +556,9 @@ class ApiController extends Controller{
         $rs = get("jy_sale_goods",$data);
         $resule = $rs ? $rs : [];
         foreach ($resule as $item=>$value){
+            $user_info = get("jy_user","openid={$value['openid']}&single=true&fields=avatarUrl,nickName");
+            $resule[$item]['avatarUrl'] = isset($user_info['avatarUrl']) ? $user_info['avatarUrl'] : '';
+            $resule[$item]['nickName'] = isset($user_info['nickName']) ? $user_info['nickName'] : '';
             $open_ids = get("jy_order","goods_id={$value['id']}&fields=openid&no_limit=true&state=[gte]1");
             $open_ids = $open_ids ? $open_ids : [];
             foreach ($open_ids as $v){
@@ -1748,6 +1751,11 @@ class ApiController extends Controller{
         if($result)
             jsonReturn(200,"请求成功");
         jsonReturn(200,"请求失败");
+    }
+
+
+    public function backstatistics(){
+
     }
 
 

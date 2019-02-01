@@ -324,6 +324,7 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backgetcomplaintList', 'ApiController@backgetcomplaintList')->middleware('VerifyToken');
     Route::any('backgetcomplaintinfo', 'ApiController@backgetcomplaintinfo')->middleware('VerifyToken');
     Route::any('backresetPassword', 'ApiController@backresetPassword')->middleware('VerifyToken');
+    Route::any('backstatistics', 'ApiController@backstatistics')->middleware('VerifyToken');
 });
 
 
