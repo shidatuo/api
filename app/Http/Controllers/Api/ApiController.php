@@ -594,6 +594,13 @@ class ApiController extends Controller{
         $data['single'] = true;
         $rs = get("jy_sale_goods",$data);
         $resule = $rs ? $rs : [];
+        if(isset($resule['openid']) && NotEstr($resule['openid'])){
+            $user_info = get("jy_user","openid={$resule['openid']}&single=true&fields=nickName,avatarUrl");
+            if($user_info){
+                $resule['nickName'] = $user_info['nickName'];
+                $resule['avatarUrl'] = $user_info['avatarUrl'];
+            }
+        }
         jsonReturn(200,"请求成功",$resule);
     }
 
