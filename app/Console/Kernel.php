@@ -69,6 +69,7 @@ class Kernel extends ConsoleKernel
 //                        log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}] ------ 退款成功 ------\n=========== 进入到订单退款方法  END =============\n");
 //                        save("jy_order","id={$value->id}&is_refund=1");
                         DB::table("jy_order")->where(['id'=>$value->id])->update(['is_refund'=>1]);
+                        unset($return_refundOrder['result_code']);
                     }else{
                         log_ex('getOrderRefund.log',"\n退款失败 ". PHP_EOL);
                         $description = isset($return_refundOrder['err_code_des']) ? $return_refundOrder['err_code_des'] : '';
