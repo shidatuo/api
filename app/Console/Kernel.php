@@ -40,6 +40,7 @@ class Kernel extends ConsoleKernel
                 foreach ($order_list as $value){
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
                     $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
+                    log_ex('getOrderRefund.log',"\n获取到订单信息 : " . json_encode($order_info) . PHP_EOL);
                     DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
                     log_ex('getOrderRefund.log',"\n接收到的退款订单号为 : [{$order_info->id}]" . PHP_EOL);
                     $refundOrder['refundNo'] = $order_info->id;//我们的订单id
