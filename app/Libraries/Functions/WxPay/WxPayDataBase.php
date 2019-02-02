@@ -1,5 +1,8 @@
 <?php
 namespace App\Libraries\Functions\WxPay;
+
+
+use App\Libraries\Functions\WxPay\WxPayRefundConfig as WxPayConfig;
 /**
  * Class WxPayDataBase
  * @author shidatuo
