@@ -4,7 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use WxPay;
+use App\Libraries\Functions\WxPay\WxPay;
 use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
@@ -52,7 +52,7 @@ class Kernel extends ConsoleKernel
                     $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
                     $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
                     $log .= "\n订单号[{$order_info->id}]  ------ config信息 ------" . PHP_EOL;
-                    $pay = new \WxPay($config);
+                    $pay = new WxPay($config);
                     $totalFee = (int)$refundOrder['totalFee'];//订单金额
                     $refundFee = (int)$refundOrder['refundFee'];//退款金额
                     $refundNo = $refundOrder['refundNo'];//商户退款单号
