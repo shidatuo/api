@@ -635,12 +635,12 @@ class ApiController extends Controller{
              $data['num'] = $params['stock'];
          else
              jsonReturn(201,"无效的stock");
-         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price,deliver");
+         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price,deliver,actual_stock");
          if(!$sale_goods)
              jsonReturn(201,"商品不存在");
-         if(isset($sale_goods['stock']) && !isINT($sale_goods['stock']))
+         if(isset($sale_goods['actual_stock']) && $sale_goods['actual_stock'] <= 0)
              jsonReturn(201,"库存不足 , 已售完");
-         if(isset($sale_goods['stock']) && $data['num'] > $sale_goods['stock'])
+         if(isset($sale_goods['actual_stock']) && $data['num'] > $sale_goods['actual_stock'])
              jsonReturn(202,"库存不足");
          if(!isset($sale_goods['price']) || (isset($sale_goods['price']) && !isINT($sale_goods['price'])))
              jsonReturn(201,"无效的商品价格");
@@ -1101,7 +1101,12 @@ class ApiController extends Controller{
                      save("jy_sale_goods",$s);
                  }
              }
-             $rs = save("jy_order","id={$attach[0]}&state=1");
+             $o['transaction_id'] = isset($order['transaction_id']) ? $order['transaction_id'] : '';
+             $o['id'] = $attach[0];
+             $o['state'] = 1;
+             $o['pay_time'] = date("Y-m-d H:i:s");
+             log_ex('wxnotifyurl', date('Y-m-d H:i:s') . PHP_EOL . json_encode($o) . PHP_EOL);
+             $rs = save("jy_order",$o);
              if (isset($rs) && $rs) {
                  log_ex('wxnotifyurl', date('Y-m-d H:i:s') . 'echo SUCCESS' . PHP_EOL);
                  echo 'SUCCESS';
