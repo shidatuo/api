@@ -38,7 +38,7 @@ class Kernel extends ConsoleKernel
                 $order_list = DB::table("jy_order")->where(["goods_id"=>$values->id])->get();
                 foreach ($order_list as $value){
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
-                    $order_info = DB::table("jy_order")->select("id","transaction_id")->where(['id'=>$value->id])->first();
+                    $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id])->first();
                     $log = "\n接收到的退款订单号为 : [{$order_info->id}]";
                     $refundOrder['refundNo'] = $order_info->id;//我们的订单id
                     $refundOrder['transactionId'] = $order_info->transaction_id;
