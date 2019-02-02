@@ -1,5 +1,7 @@
 <?php
-use App\Libraries\Functions\WxPay\WxPayDataBase;
+namespace App\Libraries\Functions\WxPay;
+
+use App\Libraries\Functions\WxPay\WxPayDataBase as WxPayDataBase;
 
 /**
  * Class WxPayNotifyReply

@@ -1,6 +1,8 @@
 <?php
 namespace App\Libraries\Functions\WxPay;
 
+use App\Libraries\Functions\WxPay\WxPayNotifyReply as WxPayNotifyReply;
+
 /**
  * Class WxPayNotify
  * @author shidatuo
