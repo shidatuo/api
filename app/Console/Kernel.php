@@ -40,27 +40,33 @@ class Kernel extends ConsoleKernel
                 foreach ($order_list as $value){
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
                     $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
-                    log_ex('getOrderRefund.log',"\n获取到订单信息 : " . json_encode($order_info) . PHP_EOL);
-                    DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
+
+                    if(count($order_info) > 0){
+                        log_ex('getOrderRefund.log',"\n获取到订单信息 : " . json_encode($order_info) . PHP_EOL);
+                        DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
 //                    log_ex('getOrderRefund.log',"\n接收到的退款订单号为 : [{$order_info->id}]" . PHP_EOL);
-                    $refundOrder['refundNo'] = $order_info->id;//我们的订单id
-                    $refundOrder['transactionId'] = $order_info->transaction_id;
-                    $refundOrder['totalFee'] = (int)((string)($order_info->amount * 100));
-                    $refundOrder['refundFee'] = (int)((string)($order_info->amount * 100)); //微信是以分为单位
-                    log_ex('getOrderRefund.log',"\n接收到的退款参数为 : ".json_encode($refundOrder) . PHP_EOL);
-                    $config['AppId'] = "wx6e75e53e4a50bf41";
-                    $config['wx_v3_key'] = "mykjsde34sdfmzf98342559kdshzx8as";
-                    $config['wx_v3_mhcid'] = "1525038701";
-                    $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
-                    $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
-                    log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}]  ------ config信息 ------" . json_encode($config) . PHP_EOL);
-                    $pay = new WxPay($config);
-                    $totalFee = (int)$refundOrder['totalFee'];//订单金额
-                    $refundFee = (int)$refundOrder['refundFee'];//退款金额
-                    $refundNo = $refundOrder['refundNo'];//商户退款单号
-                    $transactionIdOrOutTradeNo = $refundOrder['transactionId'];//微信订单号
-                    $return_refundOrder = $pay->refundOrder($totalFee,$refundFee,$refundNo,$transactionIdOrOutTradeNo);
-                    log_ex('getOrderRefund.log',"\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL);
+                        $refundOrder['refundNo'] = $order_info->id;//我们的订单id
+                        $refundOrder['transactionId'] = $order_info->transaction_id;
+                        $refundOrder['totalFee'] = (int)((string)($order_info->amount * 100));
+                        $refundOrder['refundFee'] = (int)((string)($order_info->amount * 100)); //微信是以分为单位
+                        log_ex('getOrderRefund.log',"\n接收到的退款参数为 : ".json_encode($refundOrder) . PHP_EOL);
+                        $config['AppId'] = "wx6e75e53e4a50bf41";
+                        $config['wx_v3_key'] = "mykjsde34sdfmzf98342559kdshzx8as";
+                        $config['wx_v3_mhcid'] = "1525038701";
+                        $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
+                        $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
+                        log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}]  ------ config信息 ------" . json_encode($config) . PHP_EOL);
+                        $pay = new WxPay($config);
+                        $totalFee = (int)$refundOrder['totalFee'];//订单金额
+                        $refundFee = (int)$refundOrder['refundFee'];//退款金额
+                        $refundNo = $refundOrder['refundNo'];//商户退款单号
+                        $transactionIdOrOutTradeNo = $refundOrder['transactionId'];//微信订单号
+                        $return_refundOrder = $pay->refundOrder($totalFee,$refundFee,$refundNo,$transactionIdOrOutTradeNo);
+                        log_ex('getOrderRefund.log',"\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL);
+                    }
+
+
+
                     //返回这个代表请求成功
                     if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
                         log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}] ------ 退款成功 ------\n=========== 进入到订单退款方法  END =============\n");
