@@ -1,4 +1,6 @@
 <?php
+use App\Libraries\Functions\WxPay\WxPayDataBase;
+
 /**
  * Class WxPayNotifyReply
  * @author shidatuo
