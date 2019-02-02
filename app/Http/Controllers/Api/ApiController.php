@@ -1856,9 +1856,11 @@ class ApiController extends Controller{
                 $config['AppId'] = "wx6e75e53e4a50bf41";
                 $config['wx_v3_key'] = "mykjsde34sdfmzf98342559kdshzx8as";
                 $config['wx_v3_mhcid'] = "1525038701";
-                $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
-                $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
-                $log .= "\n订单号[{$order_info->id}]  ------ config信息 ------" . json_encode($config) . PHP_EOL;
+//                $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
+                $config['wx_v3_apiclient_cert_path'] = "/usr/local/nginx/html/api/public/cert/apiclient_cert.pem";
+//                $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
+                $config['wx_v3_apiclient_key_path'] = "/usr/local/nginx/html/api/public/cert/apiclient_key.pem";
+                log_ex('getOrderRefund.log',"\n配置文件 : ".json_encode($config) . PHP_EOL);
                 $pay = new WxPay($config);
                 $totalFee = (int)$refundOrder['totalFee'];//订单金额
                 $refundFee = (int)$refundOrder['refundFee'];//退款金额
