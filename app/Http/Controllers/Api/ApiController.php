@@ -27,13 +27,13 @@ class ApiController extends Controller{
     const API_WX_LOGIN = "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code";
 
     public function __construct($app = null){
-        if (!is_object($this->app)) {
-            if (is_object($app)) {
-                $this->app = $app;
-            } else {
-                $this->app = xn();
-            }
-        }
+//        if (!is_object($this->app)) {
+//            if (is_object($app)) {
+//                $this->app = $app;
+//            } else {
+//                $this->app = xn();
+//            }
+//        }
     }
 
     public function api(){
