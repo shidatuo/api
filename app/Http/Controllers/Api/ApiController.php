@@ -1837,10 +1837,15 @@ class ApiController extends Controller{
         }
         $order_list = DB::table("jy_order")->whereIn("goods_id",$rs)->get();
         $log = '';
+        log_ex('getOrderRefund.log',"\n订单列表 : ".json_encode($order_list) . PHP_EOL);
         foreach ($order_list as $value){
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
             $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
             if(!is_null($order_info)){
+
+
+                log_ex('getOrderRefund.log',"\n订单详情不等于null的 : ".json_encode($order_info) . PHP_EOL);
+
                 DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
                 $log .= "\n接收到的退款订单号为 : [{$order_info->id}]";
                 $refundOrder['refundNo'] = $order_info->id;//我们的订单id
@@ -1860,8 +1865,8 @@ class ApiController extends Controller{
                 $refundNo = $refundOrder['refundNo'];//商户退款单号
                 $transactionIdOrOutTradeNo = $refundOrder['transactionId'];//微信订单号
                 $return_refundOrder = $pay->refundOrder($totalFee,$refundFee,$refundNo,$transactionIdOrOutTradeNo);
+                log_ex('getOrderRefund.log',"\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL);
             }
-//                 log_ex('getOrderRefund.log',"\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL);
             //返回这个代表请求成功
             if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
                 $log .= "\n订单号[{$order_info->id}] ------ 退款成功 ------" . PHP_EOL;
