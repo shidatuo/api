@@ -58,7 +58,7 @@ class Kernel extends ConsoleKernel
                     $refundNo = $refundOrder['refundNo'];//商户退款单号
                     $transactionIdOrOutTradeNo = $refundOrder['transactionId'];//微信订单号
                     $return_refundOrder = $pay->refundOrder($totalFee,$refundFee,$refundNo,$transactionIdOrOutTradeNo);
-                    $log .= "\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL;
+                    log_ex('getOrderRefund.log',"\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL);
                     //返回这个代表请求成功
                     if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
                         $log .= "\n订单号[{$order_info->id}] ------ 退款成功 ------" . PHP_EOL;
