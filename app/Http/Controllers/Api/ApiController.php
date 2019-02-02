@@ -1873,7 +1873,8 @@ class ApiController extends Controller{
             if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
                 $log .= "\n订单号[{$order_info->id}] ------ 退款成功 ------" . PHP_EOL;
                 log_ex('getOrderRefund.log',"$log\n=========== 进入到订单退款方法  END =============\n");
-                save("jy_order","id={$value->id}&is_refund=1");
+//                save("jy_order","id={$value->id}&is_refund=1");
+                DB::table("jy_order")->where(['id'=>$value->id])->update(['is_refund'=>1]);
             }else{
 //                 $description = isset($return_refundOrder['err_code_des']) ? $return_refundOrder['err_code_des'] : '';
 //                 $log .= "\n订单号[{$order_info->id}] ------ 退款失败 {$order_info->amount} (单位:元) " . PHP_EOL;
