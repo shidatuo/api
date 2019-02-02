@@ -1,4 +1,6 @@
 <?php
+namespace App\Libraries\Functions\WxPay;
+
 /**
  * Class WxPayException
  * @author shidatuo

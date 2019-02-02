@@ -3,6 +3,8 @@ namespace App\Libraries\Functions\WxPay;
 
 
 use App\Libraries\Functions\WxPay\WxPayRefundConfig as WxPayConfig;
+use App\Libraries\Functions\WxPay\WxPayException as WxPayException;
+
 /**
  * Class WxPayApi
  * @author shidatuo
