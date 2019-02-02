@@ -40,7 +40,6 @@ class Kernel extends ConsoleKernel
                 foreach ($order_list as $value){
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
                     $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
-
                     if(count($order_info) > 0){
                         log_ex('getOrderRefund.log',"\n获取到订单信息 : " . json_encode($order_info) . PHP_EOL);
                         DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
@@ -64,17 +63,17 @@ class Kernel extends ConsoleKernel
                         $return_refundOrder = $pay->refundOrder($totalFee,$refundFee,$refundNo,$transactionIdOrOutTradeNo);
                         log_ex('getOrderRefund.log',"\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL);
                     }
-
-
-
                     //返回这个代表请求成功
                     if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
-                        log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}] ------ 退款成功 ------\n=========== 进入到订单退款方法  END =============\n");
-                        save("jy_order","id={$value->id}&is_refund=1");
+                        log_ex('getOrderRefund.log',"\n退款成功 ". PHP_EOL);
+//                        log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}] ------ 退款成功 ------\n=========== 进入到订单退款方法  END =============\n");
+//                        save("jy_order","id={$value->id}&is_refund=1");
+                        DB::table("jy_order")->where(['id'=>$value->id])->update(['is_refund'=>1]);
                     }else{
+                        log_ex('getOrderRefund.log',"\n退款失败 ". PHP_EOL);
                         $description = isset($return_refundOrder['err_code_des']) ? $return_refundOrder['err_code_des'] : '';
-                        $log = "\n订单号[{$order_info->id}] ------ 退款失败 {$order_info->amount} (单位:元) \n订单号[{$order_info->id}] ------ 失败原因 : {$description} " . PHP_EOL;
-                        log_ex('getOrderRefund.log',"$log\n=========== 进入到订单退款方法  END =============\n");
+//                        $log = "\n订单号[{$order_info->id}] ------ 退款失败 {$order_info->amount} (单位:元) \n订单号[{$order_info->id}] ------ 失败原因 : {$description} " . PHP_EOL;
+//                        log_ex('getOrderRefund.log',"$log\n=========== 进入到订单退款方法  END =============\n");
                     }
                 }
             }
