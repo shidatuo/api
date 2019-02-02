@@ -26,13 +26,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule){
         $schedule->call(function (){
-
+            log_ex('getOrderRefund.log',"134544545" . PHP_EOL);
             $date = date("Y-m-d H:i:s");
             $result = DB::table("jy_sale_goods")
                 ->select("id")
                 ->where("end_time","<=",$date)
 //                ->where(["state"=>1])
                 ->get();
+            log_ex('getOrderRefund.log',"\n" . json_encode($result) . PHP_EOL);
             foreach ($result as $values){
                 DB::table("jy_sale_goods")->where(['id'=>$values->id])->update(['state'=>3]);
 //                save("jy_sale_goods","id={$values->id}&state=3");
