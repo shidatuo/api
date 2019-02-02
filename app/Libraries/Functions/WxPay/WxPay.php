@@ -2,6 +2,12 @@
 
 namespace App\Libraries\Functions\WxPay;
 
+use  App\Libraries\Functions\WxPay\WxPayApi;
+use  App\Libraries\Functions\WxPay\WxPayRefundConfig;
+use  App\Libraries\Functions\WxPay\WxPayNotify;
+use  App\Libraries\Functions\WxPay\WxPayRefund;
+use  App\Libraries\Functions\WxPay\WxPayUnifiedOrder;
+
 /**
  * Class WxPay
  * @author shidatuo

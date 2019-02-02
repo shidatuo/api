@@ -1,7 +1,8 @@
 <?php
+namespace App\Libraries\Functions\WxPay;
 
 
-use WxPayRefundConfig;
+use App\Libraries\Functions\WxPay\WxPayRefundConfig as WxPayRefundConfig;
 /**
  * Class WxPayApi
  * @author shidatuo
@@ -9,6 +10,7 @@ use WxPayRefundConfig;
  * 每个接口有默认超时时间（除提交被扫支付为10s，上报超时时间为1s外，其他均为6s）
  */
 class WxPayApi{
+
     /**
      *
      * 统一下单，WxPayUnifiedOrder中out_trade_no、body、total_fee、trade_type必填

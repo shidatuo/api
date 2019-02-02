@@ -1,4 +1,6 @@
 <?php
+namespace App\Libraries\Functions\WxPay;
+
 /**
  * Class WxPayNotify
  * @author shidatuo

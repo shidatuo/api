@@ -1,4 +1,5 @@
 <?php
+namespace App\Libraries\Functions\WxPay;
 /**
  * Class WxPayRefund
  * @author shidatuo
