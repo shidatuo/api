@@ -2,7 +2,7 @@
 namespace App\Libraries\Functions\WxPay;
 
 
-use App\Libraries\Functions\WxPay\WxPayRefundConfig as WxPayRefundConfig;
+use App\Libraries\Functions\WxPay\WxPayRefundConfig as WxPayConfig;
 /**
  * Class WxPayApi
  * @author shidatuo
@@ -153,14 +153,14 @@ class WxPayApi{
             throw new WxPayException("退款申请接口中，缺少必填参数op_user_id！");
         }*/
         //>普通退款
-        if(isset(WxPayRefundConfig::$APPID) && WxPayRefundConfig::$APPID != ''){
-            $inputObj->SetAppid(WxPayRefundConfig::$APPID);//公众账号ID
-            $inputObj->SetMch_id(WxPayRefundConfig::$MCHID);//商户号
+        if(isset(WxPayConfig::$APPID) && WxPayConfig::$APPID != ''){
+            $inputObj->SetAppid(WxPayConfig::$APPID);//公众账号ID
+            $inputObj->SetMch_id(WxPayConfig::$MCHID);//商户号
         }else{
-            $inputObj->SetAppid(WxPayRefundConfig::$FWAPPID);
-            $inputObj->SetMch_id(WxPayRefundConfig::$FWMCHID);
-            $inputObj->SetsubAppid(WxPayRefundConfig::$SUBAPPID);
-            $inputObj->SetsubMch_id(WxPayRefundConfig::$SUBMCHID);
+            $inputObj->SetAppid(WxPayConfig::$FWAPPID);
+            $inputObj->SetMch_id(WxPayConfig::$FWMCHID);
+            $inputObj->SetsubAppid(WxPayConfig::$SUBAPPID);
+            $inputObj->SetsubMch_id(WxPayConfig::$SUBMCHID);
         }
         $inputObj->SetNonce_str(self::getNonceStr());//随机字符串
         $inputObj->SetSign();//签名
