@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Libraries\Functions\WxPay\WxPay;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\ApiController;
 
 class Kernel extends ConsoleKernel
 {
@@ -26,6 +27,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule){
         $schedule->call(function (){
+
+            $a = new ApiController();
+            $a->test_();
+            exit;
+
             log_ex('getOrderRefund.log',"134544545" . PHP_EOL);
             $date = date("Y-m-d H:i:s");
             $result = DB::table("jy_sale_goods")
