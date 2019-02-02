@@ -282,11 +282,9 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxgetOrderList', 'ApiController@wxgetOrderList');
     Route::any('wxPurchaser', 'ApiController@wxPurchaser');
 
-
     Route::any('wxgetOrderDetails', 'ApiController@wxgetOrderDetails');
     Route::any('wxtakeOver', 'ApiController@wxtakeOver');
     Route::any('wxgetOActive', 'ApiController@wxgetOActive');
-
 
     Route::any('wxgetuserReceiv', 'ApiController@wxgetuserReceiv');
     Route::any('wxDeliver', 'ApiController@wxDeliver');
@@ -298,9 +296,6 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxExpressList', 'ApiController@wxExpressList');
     Route::any('wxOrderDetaile', 'ApiController@wxOrderDetaile');
     Route::any('wxOnekeyfh', 'ApiController@wxOnekeyfh');
-
-
-
 
     Route::any('backLogin', 'ApiController@backLogin');
     Route::any('backSignOut', 'ApiController@backSignOut');

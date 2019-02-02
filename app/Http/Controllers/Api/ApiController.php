@@ -12,6 +12,7 @@ use \App\Model\jy_back_user;
 use \App\Model\jy_user;
 use WxPayConf;
 use WxQrcodePay;
+use WxPay;
 use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller{
@@ -526,6 +527,7 @@ class ApiController extends Controller{
             jsonReturn(201,"无效的end_time");
         if(isset($params['deliver']))
             $data['deliver'] = $params['deliver'];
+        $data['state'] = 1;
         $result = save("jy_sale_goods",$data);
         if($result)
             jsonReturn(200,"请求成功");
@@ -1759,8 +1761,59 @@ class ApiController extends Controller{
     }
 
 
+
+
+
     public function backstatistics(){
 
+    }
+
+    /**
+     * @param $params
+     * @return bool
+     * @throws \Exception
+     * @author shidatuo
+     * @description 订单退款接口
+     */
+    public function getOrderRefund($params){
+        log_ex('getOrderRefund.log',"\n===========进入到订单退款方法  START=============\n======  所有行业都可以调用  ======\n接收到调用退款打印参数 : " . json_encode($params) . "\n" );
+        if(isset($params['id']) && $params['id']){
+            $data['id'] = $params['id'];
+        }else{
+            return false;
+        }
+        $log = "\n接收到的退款订单号为 : [{$data['id']}]";
+        $order_info = get("jy_order",$data);
+        $refundOrder['refundNo'] = $order_info['id'];//我们的订单id
+        $refundOrder['transactionId'] = $order_info['transaction_id'];
+        $refundOrder['totalFee'] = (int)((string)($order_info['real_amount'] * 100));
+        $refundOrder['refundFee'] = (int)((string)($order_info['real_amount'] * 100)); //微信是以分为单位
+        $refundOrder['app_id'] = $order_info['app_id']; //小程序id
+        $log .= "\n接收到的退款参数为 : ".json_encode($refundOrder) . PHP_EOL;
+        $config['AppId'] = "wx6e75e53e4a50bf41";
+        $config['wx_v3_key'] = "mykjsde34sdfmzf98342559kdshzx8as";
+        $config['wx_v3_mhcid'] = "1525038701";
+//        $config['wx_v3_apiclient_cert_path'] = $appinfo['SSLCERT_PATH'];
+//        $config['wx_v3_apiclient_key_path'] = $appinfo['SSLKEY_PATH'];
+        $pay = new WxPay($config);
+        $totalFee = (int)$refundOrder['totalFee'];//订单金额
+        $refundFee = (int)$refundOrder['refundFee'];//退款金额
+        $refundNo = $refundOrder['refundNo'];//商户退款单号
+        $transactionIdOrOutTradeNo = $refundOrder['transactionId'];//微信订单号
+        $return_refundOrder = $pay->refundOrder($totalFee,$refundFee,$refundNo,$transactionIdOrOutTradeNo);
+        $log .= "\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL;
+        //返回这个代表请求成功
+        if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
+            $log .= "\n订单号[{$data['id']}] ------ 退款成功 ------" . PHP_EOL;
+            log_ex('getOrderRefund.log',"$log\n=========== 进入到订单退款方法  END =============\n");
+            jsonReturn(200,"退款成功");
+        }else{
+            $description = isset($return_refundOrder['err_code_des']) ? $return_refundOrder['err_code_des'] : '';
+            $log .= "\n订单号[{$data['id']}] ------ 退款失败 {$order_info['real_amount']} (单位:分) " . PHP_EOL;
+            $log .= "\n订单号[{$data['id']}] ------ 失败原因 : {$description} " . PHP_EOL;
+            log_ex('getOrderRefund.log',"$log\n=========== 进入到订单退款方法  END =============\n");
+            jsonReturn(200,"失败原因:{$description}");
+        }
     }
 
 
