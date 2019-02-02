@@ -39,6 +39,7 @@ class Kernel extends ConsoleKernel
                 foreach ($order_list as $value){
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
                     $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
+                    DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
                     $log = "\n接收到的退款订单号为 : [{$order_info->id}]";
                     $refundOrder['refundNo'] = $order_info->id;//我们的订单id
                     $refundOrder['transactionId'] = $order_info->transaction_id;
@@ -50,7 +51,8 @@ class Kernel extends ConsoleKernel
                     $config['wx_v3_mhcid'] = "1525038701";
                     $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
                     $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
-                    $pay = new WxPay($config);
+                    $log .= "\n订单号[{$order_info->id}]  ------ config信息 ------" . PHP_EOL;
+                    $pay = new \WxPay($config);
                     $totalFee = (int)$refundOrder['totalFee'];//订单金额
                     $refundFee = (int)$refundOrder['refundFee'];//退款金额
                     $refundNo = $refundOrder['refundNo'];//商户退款单号

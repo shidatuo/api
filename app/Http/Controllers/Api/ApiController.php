@@ -1764,7 +1764,7 @@ class ApiController extends Controller{
 
 
 
-    public function backstatistics(){
+    public function backgetIndexData(){
 
     }
 
