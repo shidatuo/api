@@ -1669,7 +1669,7 @@ class ApiController extends Controller{
         else
             jsonReturn(201,"无效的id");
         //0：未开始；1:进行中 2:已完成 3:已失败
-        if(isset($params['state']) && in_array($params['state'],[1,4])){
+        if(isset($params['state']) && in_array($params['state'],[1,3,4])){
             $data['state'] = $params['state'];
         }else{
             jsonReturn(200,"无效的state");
