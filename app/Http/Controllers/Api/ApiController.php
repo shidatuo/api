@@ -971,7 +971,19 @@ class ApiController extends Controller{
          else
              jsonReturn(201,"无效的openid");
          $notify_url = "https://shidatuos.cn/api/wxnotifyurl";
-         $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount");
+         $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount,goods_id,num");
+
+         if(isset($order_info['goods_id']) && isINT($order_info['goods_id'])){
+             $sale_goods_info = get("sale_goods","id={$order_info['goods_id']}&single=true&fields=actual_stock");
+             $sale_goods_info['actual_stock'];
+             if(!$sale_goods_info)
+                 jsonReturn(201,"商品不存在");
+             if(isset($sale_goods_info['actual_stock']) && $sale_goods_info['actual_stock'] <= 0)
+                 jsonReturn(201,"库存不足 , 已售完");
+             if(isset($sale_goods_info['actual_stock']) && $order_info['num'] > $sale_goods_info['actual_stock'])
+                 jsonReturn(202,"库存不足");
+         }
+
          $total_fee = isset($order_info['amount']) && $order_info['amount'] > 0 ? $order_info['amount'] : 0;
          $total_fee = $total_fee * 100;
          $this->wxpayConfig ['appid'] = 'wx6e75e53e4a50bf41'; // 微信公众号身份的唯一标识
