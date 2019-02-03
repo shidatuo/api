@@ -839,6 +839,7 @@ class ApiController extends Controller{
              $res[$item]['intro'] = isset($goods_info['intro']) ? $goods_info['intro'] : '';
              $res[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
              $res[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
+             $res[$item]['actual_stock'] = isset($goods_info['actual_stock']) ? $goods_info['actual_stock'] : 0;
              $res[$item]['deliver'] = isset($goods_info['deliver']) ? $goods_info['deliver'] : 1;
              $res[$item]['openid'] = $value['openid'];
              $res[$item]['avatarUrls'] = self::getOrderAvatarUrl($value);
