@@ -1769,11 +1769,56 @@ class ApiController extends Controller{
     }
 
 
-
-
-
+    /**
+     * @return array
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取首页信息
+     */
     public function backgetIndexData(){
-
+        $wc = get("jy_order","state=4&count=id");
+        $jxz = get("jy_order","state=[in]1,2&count=id");
+        $pd = compact("wc","jxz");
+        //今日订单数
+        $beginToday=mktime(0,0,0,date('m'),date('d'),date('Y'));
+        $endToday=mktime(0,0,0,date('m'),date('d')+1,date('Y'))-1;
+        $beginToday = date("Y-m-d H:i:s",$beginToday);
+        $endToday = date("Y-m-d H:i:s",$endToday);
+        $o['state'] = "[gte]1";
+        $o['count'] = "id";
+        $o['between'] = "created_at|{$beginToday},{$endToday}";
+        $dds = get("jy_order",$o);
+        //今日订单金额
+//        $o['state'] = "[gte]1";
+//        $o['sum'] = "amount";
+//        $o['between'] = "created_at|{$beginToday},{$endToday}";
+//        $je = get("jy_order",$o);
+        $je = DB::table("jy_order")
+            ->where('state','>=','1')
+            ->where('created_at','>',$beginToday)
+            ->where('created_at','<',$endToday)
+            ->sum("amount");
+        $today = compact("dds","je");
+        //月订单数
+        $start_time = date('Y-m-d',strtotime("-30 days"));
+        $end_time = date("Y-m-d H:i:s");
+        $s['state'] = "[gte]1";
+        $s['count'] = "id";
+        $s['between'] = "created_at|{$start_time},{$end_time}";
+        $dds = get("jy_order",$s);
+        //月订单金额
+//        $h['state'] = "[gte]1";
+//        $h['sum'] = "amount";
+//        $h['between'] = "created_at|{$start_time},{$end_time}";
+//        $je = get("jy_order",$h);
+        $je = DB::table("jy_order")
+            ->where('state','>=','1')
+            ->where('created_at','>',$start_time)
+            ->where('created_at','<',$end_time)
+            ->sum("amount");
+        $month = compact("dds","je");
+        $result = ['pd'=>$pd,'jy'=>['today'=>$today,'month'=>$month]];
+        jsonReturn(200,"请求成功",$result);
     }
 
     /**
