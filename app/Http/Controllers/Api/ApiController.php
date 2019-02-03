@@ -974,7 +974,7 @@ class ApiController extends Controller{
          $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount,goods_id,num");
 
          if(isset($order_info['goods_id']) && isINT($order_info['goods_id'])){
-             $sale_goods_info = get("sale_goods","id={$order_info['goods_id']}&single=true&fields=actual_stock");
+             $sale_goods_info = get("jy_sale_goods","id={$order_info['goods_id']}&single=true&fields=actual_stock");
              $sale_goods_info['actual_stock'];
              if(!$sale_goods_info)
                  jsonReturn(201,"商品不存在");
