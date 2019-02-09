@@ -296,6 +296,7 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxExpressList', 'ApiController@wxExpressList');
     Route::any('wxOrderDetaile', 'ApiController@wxOrderDetaile');
     Route::any('wxOnekeyfh', 'ApiController@wxOnekeyfh');
+    Route::any('wxpaymentCallBack', 'ApiController@wxpaymentCallBack');
 
     Route::any('backLogin', 'ApiController@backLogin');
     Route::any('backSignOut', 'ApiController@backSignOut');
