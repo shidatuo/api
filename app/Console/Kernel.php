@@ -87,6 +87,25 @@ class Kernel extends ConsoleKernel
             }
 
         })->everyMinute();
+
+        $schedule->call(function (){
+            $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0])->get();
+            if(count($o_list) > 0){
+                foreach ($o_list as $item=>$value){
+                    DB::table('jy_sale_goods')->increment('actual_stock',$value->num,['state'=>1]);
+                    DB::table('jy_order')->where(["id"=>$value->id])->update(['is_back_stock'=>1]);
+                }
+            }
+        })->everyMinute();
+
+
+        $schedule->call(function (){
+            $date = date("Y-m-d H:i:s");
+            $result = DB::table("jy_sale_goods")
+                ->where("end_time","<=",$date)
+                ->where(["state"=>1])
+                ->update(['state'=>3]);
+        })->everyMinute();
     }
 
     /**
