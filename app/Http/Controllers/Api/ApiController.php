@@ -1970,7 +1970,7 @@ class ApiController extends Controller{
             $data['id'] = $params['id'];//订单id
         else
             jsonReturn(201,"无效的id");
-        $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0])->get();
+        $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0,'id'=>$data['id']])->get();
         if(count($o_list) > 0){
             foreach ($o_list as $item=>$value){
                 DB::table('jy_sale_goods')->increment('actual_stock',$value->num,['state'=>1]);
