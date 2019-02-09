@@ -638,13 +638,15 @@ class ApiController extends Controller{
              $data['num'] = $params['stock'];
          else
              jsonReturn(201,"无效的stock");
-         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price,deliver,actual_stock");
+         $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price,deliver,actual_stock,state");
          if(!$sale_goods)
              jsonReturn(201,"商品不存在");
          if(isset($sale_goods['actual_stock']) && $sale_goods['actual_stock'] <= 0)
              jsonReturn(201,"库存不足 , 已售完");
          if(isset($sale_goods['actual_stock']) && $data['num'] > $sale_goods['actual_stock'])
              jsonReturn(202,"库存不足");
+         if(isset($sale_goods['state']) && $sale_goods['state'] > 1)
+             jsonReturn(203,"此商品不能购买");
          if(!isset($sale_goods['price']) || (isset($sale_goods['price']) && !isINT($sale_goods['price'])))
              jsonReturn(201,"无效的商品价格");
 //         $data['amount'] = bcpow($data['stock'],$sale_goods['price'],2);
@@ -680,10 +682,11 @@ class ApiController extends Controller{
                  $state = 2;
              else
                  $state = 1;
-             $s['id'] = $result;
+             $s['id'] = $data['goods_id'];
              $s['state'] = $state;
              $s['actual_stock'] = $sale_goods['actual_stock'] - $data['num'];
              log_ex('wxnotifyurl', date('Y-m-d H:i:s') . '保存商品数据 : ' .json_encode($s) . PHP_EOL);
+//             dump($s);
              save("jy_sale_goods",$s);
              jsonReturn(200,"请求成功",[$result]);
          }
