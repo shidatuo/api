@@ -1959,6 +1959,27 @@ class ApiController extends Controller{
         }
     }
 
+    /**
+     * @param Request $req
+     * @author shidatuo
+     * @description payment failure 支付失败
+     */
+    public function wxpaymentCallBack(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];//订单id
+        else
+            jsonReturn(201,"无效的id");
+        $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0])->get();
+        if(count($o_list) > 0){
+            foreach ($o_list as $item=>$value){
+                DB::table('jy_sale_goods')->increment('actual_stock',$value->num,['state'=>1]);
+                DB::table('jy_order')->where(["id"=>$value->id])->update(['is_back_stock'=>1]);
+            }
+        }
+        jsonReturn(200,"请求成功");
+    }
+
 
     /**
      * @param $params
