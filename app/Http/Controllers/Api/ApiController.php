@@ -838,6 +838,7 @@ class ApiController extends Controller{
          else
              $data['limit'] = 10;
          $data['state'] = "[gte]1";
+         $data['order_by'] = "id desc";
          $rs = get("jy_order",$data);
          $resule = $rs ? $rs : [];
          $res = [];
@@ -947,6 +948,7 @@ class ApiController extends Controller{
              $data['limit'] = $params['limit'];
          else
              $data['limit'] = 10;
+         $data['order_by'] = "id desc";
          $rs = get("jy_order",$data);
          $orderlist = $rs ? $rs : [];
          foreach ($orderlist as $item=>$value){
