@@ -638,6 +638,8 @@ class ApiController extends Controller{
              $data['num'] = $params['stock'];
          else
              jsonReturn(201,"无效的stock");
+         if(isset($params['message']) && NotEstr($params['message']))
+             $data['message'] = $params['message'];
          $sale_goods = get("jy_sale_goods","id={$data['goods_id']}&single=true&fields=stock,price,deliver,actual_stock,state");
          if(!$sale_goods)
              jsonReturn(201,"商品不存在");
@@ -812,9 +814,53 @@ class ApiController extends Controller{
              jsonReturn(201,"无效的id");
          $data['state'] = 4;
          $result = save("jy_order",$data);
-         if($result)
+         if($result){
              jsonReturn(200,"请求成功",[$result]);
-         jsonReturn(201,"请求失败");
+         }else{
+             jsonReturn(201,"请求失败");
+         }
+     }
+
+    /**
+     * @param $id
+     * @throws \Exception
+     * @author shidatuo
+     * @description 是否打款到销售商
+     */
+     public function market_brokerage($id){
+//         $params = $req->all();
+//         $order_ = self::market_brokerage($params['id']);
+//         dd($order_);
+//         exit;
+         //订单详情
+         $order_info = get("jy_order","id={$id}&single=true&fields=amount,goods_id");
+         //获取配置文件
+         $config_info = get("jy_config","single=true&fields=COMM_RATE");
+         $res = $order_info['amount'] * (1 - $config_info['COMM_RATE']);
+         //获取销售商信息
+         $goods_info = get("jy_sale_goods","id={$order_info['goods_id']}&fields=openid&single=true");
+         DB::beginTransaction();
+//         $res = 0.01;
+         if($res < 0.01){}else{
+             $s['amount'] = $res;
+             $s['openid'] = isset($goods_info['openid']) ? $goods_info['openid'] : '';
+             $s['order_id'] = $id;
+             $result = save("jy_remit_record",$s);
+             if($result){
+                 $sale_info = get("jy_sale","openid={$s['openid']}&single=true&fields=id,amount");
+                 $sale['id'] = isset($sale_info['id']) ? $sale_info['id'] : 0;
+                 $sale['amount'] = $sale_info['amount'] + $res;
+                 $rs = save("jy_sale",$sale);
+                 if($rs){
+                     DB::commit();
+                     DB::table("jy_order")->where("id",$id)->update(['is_s'=>1]);
+                 }else{
+                     DB::rollBack();
+                 }
+             }else{
+                 DB::rollBack();
+             }
+         }
      }
 
     /**

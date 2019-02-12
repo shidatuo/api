@@ -24,6 +24,12 @@ function M($table){
         return App\Model\jy_back_user::query();
     elseif ($table == 'jy_token')
         return App\Model\jy_token::query();
+    elseif ($table == 'jy_remit_record')
+        return App\Model\jy_remit_record::query();
+    elseif ($table == 'jy_withdraw')
+        return App\Model\jy_withdraw::query();
+    elseif ($table == 'jy_config')
+        return App\Model\jy_config::query();
     return DB::table($table);
 }
 /**
@@ -106,7 +112,7 @@ function get($table,$params = null){
     if (isset($origin_params['single'])) {
         if (!isset($data[0]))
             return false;
-        if (is_object($data[0]) && isset($data[0]->id))
+        if (is_object($data[0]) || isset($data[0]->id))
             return (array)$data[0];
         return $data[0];
     }
