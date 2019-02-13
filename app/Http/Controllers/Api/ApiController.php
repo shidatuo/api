@@ -1930,6 +1930,30 @@ class ApiController extends Controller{
     }
 
     /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取后台全局配置
+     */
+    public function backgetFit(){
+        $result = get("jy_config","fields=MIN_T_MONEY,COMM_RATE&single=true");
+        jsonReturn(200,"请求成功",$result);
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 后台设置最小提现金额 , 佣金比例
+     */
+    public function backsetFit(Request $req){
+        $params = $req->all();
+        $data = array_trim($params);
+        DB::table("jy_config")->update($data);
+        jsonReturn(200,"请求成功");
+    }
+
+    /**
      * @param $params
      * @return bool
      * @throws \Exception
