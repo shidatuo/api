@@ -586,6 +586,18 @@ class ApiController extends Controller{
     }
 
     /**
+     * @param $openid
+     * @return \___PHPSTORM_HELPERS\static|mixed|string
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取用户信息
+     */
+    public function wxgetUserInfo($openid){
+        $user_info = get("jy_user","openid={$openid}&single=true&fields=avatarUrl,nickName");
+        return $user_info;
+    }
+
+    /**
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
@@ -1951,6 +1963,140 @@ class ApiController extends Controller{
         $data = array_trim($params);
         DB::table("jy_config")->update($data);
         jsonReturn(200,"请求成功");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 后台提现列表接口
+     */
+    public function backwithdrawList(Request $req){
+        $params = $req->all();
+        if(isset($params['status']) && in_array($params['status'],[0,1,2]))
+            $data['status'] = $params['status'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的status");
+        if(isset($params['current_page']) && isINT($params['current_page']))
+            $data['current_page'] = $params['current_page'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的current_page");
+        if(isset($params['limit']) && isINT($params['limit']))
+            $data['limit'] = $params['limit'];
+        else
+            $data['limit'] = 10;
+        $data['order_by'] = "id desc";
+        $data['fields'] = "openid,amount,status,failure_reason,succee_media,created_at";
+        $res = get("jy_withdraw",$data);
+        $list = $res ? $res : [];
+        foreach ($list as $item=>$value){
+            $userinfo = self::wxgetUserInfo($value['openid']);
+            $list[$item]['avatarUrl'] = $userinfo['avatarUrl'];
+            $list[$item]['nickName'] = $userinfo['nickName'];
+        }
+        unset($data['current_page']);
+        unset($data['limit']);
+        $data['count'] = "id";
+        $total = get("jy_withdraw",$data);
+        $result = compact("list","total");
+        jsonReturn(200,"请求成功",$result);
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 操作后台提现接口
+     */
+    public function backhandlewithdraw(Request $req){
+        $params = $req->all();
+        if(isset($params['status']) && in_array($params['status'],[0,1,2]))
+            $data['status'] = $params['status'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的status");
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];
+        else
+            jsonReturn(201,"无效的id");
+        if(isset($params['status']) && $params['status'] == 1){
+            if(isset($params['succee_media']) && NotEstr($params['succee_media']))
+                $data['succee_media'] = $params['succee_media'];//0:待审核1:体现通过2:提现失败
+            else
+                jsonReturn(201,"无效的succee_media");
+        }
+        if(isset($params['status']) && $params['status'] == 2){
+            if(isset($params['failure_reason']) && NotEstr($params['failure_reason']))
+                $data['failure_reason'] = $params['failure_reason'];//0:待审核1:体现通过2:提现失败
+            else
+                jsonReturn(201,"无效的succee_media");
+        }
+        $result = save("jy_withdraw",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(201,"请求失败");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 销售商申请提现
+     */
+    public function wxgetLaunchwithdraw(Request $req){
+        $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $data['openid'] = $params['openid'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的openid");
+        if(isset($params['amount']) && NotEstr($params['amount']))
+            $data['amount'] = $params['amount'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的amount");
+        $sale = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
+        if(!$sale)
+            jsonReturn(201,"无效的销售商");
+        if(isset($sale['amount']) && $sale['amount'] > $data['amount'])
+            jsonReturn(201,"余额不足{$data['amount']}");
+        $result = save("jy_sale",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(201,"请求失败");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 销售商的提现记录
+     */
+    public function wxgetWithdrawList(Request $req){
+        $params = $req->all();
+        if(isset($params['openid']) && NotEstr($params['openid']))
+            $data['openid'] = $params['openid'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的openid");
+        if(isset($params['status']) && in_array($params['status'],[0,1,2]))
+            $data['status'] = $params['status'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的status");
+        if(isset($params['current_page']) && isINT($params['current_page']))
+            $data['current_page'] = $params['current_page'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的current_page");
+        if(isset($params['limit']) && isINT($params['limit']))
+            $data['limit'] = $params['limit'];
+        else
+            $data['limit'] = 10;
+        $data['order_by'] = "id desc";
+        $data['fields'] = "openid,amount,status,failure_reason,succee_media,created_at";
+        $res = get("jy_withdraw",$data);
+        $result = $res ? $res : [];
+        foreach ($result as $item=>$value){
+            $userinfo = self::wxgetUserInfo($value['openid']);
+            $result[$item]['avatarUrl'] = $userinfo['avatarUrl'];
+            $result[$item]['nickName'] = $userinfo['nickName'];
+        }
+        jsonReturn(200,"请求成功",$result);
     }
 
     /**
