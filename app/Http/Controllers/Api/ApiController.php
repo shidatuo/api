@@ -766,12 +766,46 @@ class ApiController extends Controller{
                  'surplus'=>isset($sale_goods['stock']) ? $sale_goods['stock'] - $p : 0
              ]
          );
+     }
 
-
-
-
-
-
+    /**
+     * @param Request $req
+     * @author shiatuo
+     * @description 微信小程序绑定手机号
+     */
+     public function wxgetPhonenumber(Request $req){
+         $params = $req->all();
+         if(isset($params['openid']) && NotEstr($params['openid']))
+             $openid = $params['openid'];
+         else
+             jsonReturn(201,"无效的openid");
+         if(isset($params['encryptedData']) && NotEstr($params['encryptedData']))
+             $encryptedData = $params['encryptedData'];
+         else
+             jsonReturn(201,"无效的encryptedData");
+         if(isset($params['iv']) && strlen($params['iv']) == 24){
+             $iv = $params['iv'];
+         }else{
+             jsonReturn(201,"无效的iv");
+         }
+         if(isset($params['session_key']) && strlen($params['session_key']) == 24){
+             $session_key = $params['session_key'];
+         }else{
+             jsonReturn(201,"无效的session_key");
+         }
+         $encryptedData = str_replace(' ', '+',$encryptedData);
+         $encryptedData = base64_decode($encryptedData);
+         $aesKey = base64_decode($session_key);
+         $aesIV = str_replace(' ','+',$iv);
+         $aesIV = base64_decode($aesIV);
+         $result = openssl_decrypt($encryptedData,'AES-128-CBC',$aesKey,1,$aesIV);
+         $res = json_decode($result,true);
+         if(isset($res['watermark']['appid']) == 'wx6e75e53e4a50bf41') {
+             //成功获取手机号
+             DB::table("jy_user")->where(['openid'=>$openid])->update(["phoneNumber"=>$res['phoneNumber']]);
+             jsonReturn(200,"绑定成功");
+         }
+         jsonReturn(201,"绑定失败");
      }
 
     /**
