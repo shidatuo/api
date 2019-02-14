@@ -1351,6 +1351,16 @@ class ApiController extends Controller{
      }
 
     /**
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序全局配置
+     */
+     public function wxgetConfig(){
+         $result = get("jy_config","fields=MIN_T_MONEY,COMM_RATE&single=true");
+         jsonReturn(200,"请求成功",$result);
+     }
+
+    /**
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
