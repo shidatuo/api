@@ -1046,7 +1046,7 @@ class ApiController extends Controller{
              jsonReturn(201,"无效的type");
          if(isset($params['openid']) && NotEstr($params['openid'])){
              $openid = $params['openid'];
-             $s = get("jy_sale","openid={$openid}&fields=amount");
+             $s = get("jy_sale","openid={$openid}&fields=amount&single=true");
              $f = get("jy_sale_goods","openid={$openid}&fields=id");
              if(!$f){
                  $orderlist = [];
