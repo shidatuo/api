@@ -1112,7 +1112,7 @@ class ApiController extends Controller{
              $orderlist[$item]['spec'] = isset($goods_info['spec']) ? $goods_info['spec'] : '';
              $orderlist[$item]['dis_price'] = isset($goods_info['dis_price']) ? $goods_info['dis_price'] : 0;
              $orderlist[$item]['end_time'] = isset($goods_info['end_time']) ? $goods_info['end_time'] : '';
-             $orderlist[$item]['id'] = isset($goods_info['id']) ? $goods_info['id'] : 0;
+//             $orderlist[$item]['id'] = isset($goods_info['id']) ? $goods_info['id'] : 0;
              $orderlist[$item]['intro'] = isset($goods_info['intro']) ? $goods_info['intro'] : '';
              $orderlist[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
              $orderlist[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
