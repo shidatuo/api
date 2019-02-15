@@ -894,6 +894,7 @@ class ApiController extends Controller{
          $data['state'] = 4;
          $result = save("jy_order",$data);
          if($result){
+             self::market_brokerage($data['id']);
              jsonReturn(200,"请求成功",[$result]);
          }else{
              jsonReturn(201,"请求失败");
