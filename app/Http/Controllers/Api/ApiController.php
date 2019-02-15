@@ -2104,7 +2104,7 @@ class ApiController extends Controller{
         $sale = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
         if(!$sale)
             jsonReturn(201,"无效的销售商");
-        if(isset($sale['amount']) && $sale['amount'] > $data['amount'])
+        if(isset($sale['amount']) && $sale['amount'] < $data['amount'])
             jsonReturn(201,"余额不足{$data['amount']}");
         $result = save("jy_sale",$data);
         if($result)
