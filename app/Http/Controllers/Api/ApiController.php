@@ -415,6 +415,36 @@ class ApiController extends Controller{
         }
     }
 
+
+    public function backgetuploadImg(){
+        ini_set('upload_max_filesize', '2500M');
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 0);
+        ini_set('post_max_size', '2500M');
+        ini_set('max_input_time', 9999999);
+        $allowedExts = array('jpg', 'jpeg', 'gif', 'png', 'bmp','pem','txt','mp4','xls');
+        foreach ($_FILES as $key => $item) {
+            if(isset($item['size']) && $item['size'] > 31457280)
+                jsonReturn(201,"上传文件不能大于30M");
+            $efile = explode('.', $item['name']);
+            $extension = end($efile);
+            $extension = strtolower($extension);
+            if (in_array($extension, $allowedExts)) {
+                if ($item['error'] > 0){
+                    jsonReturn(201,$item['error']);
+                } else {
+                    $rs = [];
+                    $f = $_SERVER['DOCUMENT_ROOT'] . DS . 'api' . DS . md5(uniqid()) . '.png';
+                    if (move_uploaded_file($item['tmp_name'], $f)) {
+                        $rs[] = str_replace(public_path(),Config("config.DNS"),$f);
+                    }
+                    jsonReturn(200,"请求成功",is_arr($rs) ? $rs : []);
+                }
+            }
+        }
+    }
+
+
     /**
      * @param Request $req
      * @throws \Exception
