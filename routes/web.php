@@ -301,6 +301,7 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxgetLaunchwithdraw', 'ApiController@wxgetLaunchwithdraw');
     Route::any('wxgetWithdrawList', 'ApiController@wxgetWithdrawList');
     Route::any('wxgetConfig', 'ApiController@wxgetConfig');
+    Route::any('wxgetCarousel', 'ApiController@wxgetCarousel');
 
     Route::any('backLogin', 'ApiController@backLogin');
     Route::any('backSignOut', 'ApiController@backSignOut');

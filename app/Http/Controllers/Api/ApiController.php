@@ -1391,6 +1391,16 @@ class ApiController extends Controller{
      }
 
     /**
+     * @throws \Exception
+     * @author shidatuo
+     * @description 获取小程序轮播
+     */
+     public function wxgetCarousel(){
+         $result = get("jy_carousel","no_limit=true&is_delete=0");
+         jsonReturn(200,"请求成功",$result);
+     }
+
+    /**
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
