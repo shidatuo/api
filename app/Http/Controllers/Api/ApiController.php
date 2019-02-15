@@ -2097,19 +2097,30 @@ class ApiController extends Controller{
             $data['openid'] = $params['openid'];//0:待审核1:体现通过2:提现失败
         else
             jsonReturn(201,"无效的openid");
-        if(isset($params['amount']) && NotEstr($params['amount']))
+        if(isset($params['amount']))
             $data['amount'] = $params['amount'];//0:待审核1:体现通过2:提现失败
         else
             jsonReturn(201,"无效的amount");
-        $sale = get("jy_sale","openid={$data['openid']}&single=true&fields=amount");
+        $sale = get("jy_sale","openid={$data['openid']}&single=true&fields=id,amount");
         if(!$sale)
             jsonReturn(201,"无效的销售商");
         if(isset($sale['amount']) && $sale['amount'] < $data['amount'])
             jsonReturn(201,"余额不足{$data['amount']}");
-        $result = save("jy_sale",$data);
-        if($result)
-            jsonReturn(200,"请求成功");
-        jsonReturn(201,"请求失败");
+        DB::beginTransaction();
+        $result = save("jy_withdraw",$data);
+        if($result){
+            $amount = $sale['amount'] - $data['amount'];
+            $rs = save("jy_sale","id={$sale['id']}&amount=$amount");
+            if($rs){
+                DB::commit();
+                jsonReturn(200,"请求成功");
+            }else{
+                DB::rollBack();
+                jsonReturn(201,"请求失败");
+            }
+        }else{
+            jsonReturn(201,"请求失败");
+        }
     }
 
     /**
