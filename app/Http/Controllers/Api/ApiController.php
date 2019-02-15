@@ -1016,14 +1016,29 @@ class ApiController extends Controller{
          else
              jsonReturn(201,"无效的id");
          if(isset($params['is_deliver']) && $params['is_deliver']){
-             if(isset($params['express']) && NotEstr($params['express']))
-                 $data['express'] = $params['express'];
-             else
-                 jsonReturn(201,"无效的express");
-             if(isset($params['express_num']) && isINT($params['express_num']))
-                 $data['express_num'] = $params['express_num'];
-             else
-                 jsonReturn(201,"无效的express_num");
+
+             if(isset($params['name']) && NotEstr($params['name'])
+                 && isset($params['phone']) && NotEstr($params['phone'])){
+
+                 if(isset($params['name']) && NotEstr($params['name']))
+                     $l['name'] = $params['name'];
+                 else
+                     jsonReturn(201,"无效的name");
+                 if(isset($params['phone']) && NotEstr($params['phone']))
+                     $l['phone'] = $params['phone'];
+                 else
+                     jsonReturn(201,"无效的phone");
+                 $data['logistics'] = json_encode($l);
+             }else{
+                 if(isset($params['express']) && NotEstr($params['express']))
+                     $data['express'] = $params['express'];
+                 else
+                     jsonReturn(201,"无效的express");
+                 if(isset($params['express_num']) && isINT($params['express_num']))
+                     $data['express_num'] = $params['express_num'];
+                 else
+                     jsonReturn(201,"无效的express_num");
+             }
          }
          $data['state'] = 2;
          $result = save("jy_order",$data);
