@@ -1000,6 +1000,15 @@ class ApiController extends Controller{
          $data['state'] = "[gte]1";
          $rs = get("jy_order",$data);
          $resule = $rs ? $rs : [];
+         foreach ($resule as $item=>$value){
+             if(isset($value['logistics']) && NotEstr($value['logistics']))
+                 $logistics = json_decode($value['logistics'],true);
+             if(isset($logistics['name'])){
+                 $resule[$item]['name'] = isset($logistics['name']) ? $logistics['name'] : '';
+                 $resule[$item]['phone'] = isset($logistics['phone']) ? $logistics['phone'] : '';
+                 unset($logistics);
+             }
+         }
          jsonReturn(200,"请求成功",$resule);
      }
 
