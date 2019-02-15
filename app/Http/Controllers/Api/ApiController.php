@@ -1049,6 +1049,8 @@ class ApiController extends Controller{
                      jsonReturn(201,"无效的express_num");
              }
          }
+         if(isset($params['telNumber']) && NotEstr($params['telNumber']))
+             $data['telNumber'] = $params['telNumber'];
          $data['state'] = 2;
          $result = save("jy_order",$data);
          if($result)
