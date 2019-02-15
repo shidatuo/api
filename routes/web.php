@@ -330,6 +330,10 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backsetFit', 'ApiController@backsetFit')->middleware('VerifyToken');
     Route::any('backwithdrawList', 'ApiController@backwithdrawList')->middleware('VerifyToken');
     Route::any('backhandlewithdraw', 'ApiController@backhandlewithdraw')->middleware('VerifyToken');
+
+    Route::any('backaddcarousel', 'ApiController@backaddcarousel')->middleware('VerifyToken');
+    Route::any('backcarouselList', 'ApiController@backcarouselList')->middleware('VerifyToken');
+    Route::any('backdeletecarousel', 'ApiController@backdeletecarousel')->middleware('VerifyToken');
 });
 
 

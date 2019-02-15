@@ -30,6 +30,8 @@ function M($table){
         return App\Model\jy_withdraw::query();
     elseif ($table == 'jy_config')
         return App\Model\jy_config::query();
+    elseif ($table == 'jy_carousel')
+        return App\Model\jy_carousel::query();
     return DB::table($table);
 }
 /**

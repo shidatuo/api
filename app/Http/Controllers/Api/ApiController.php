@@ -2140,6 +2140,81 @@ class ApiController extends Controller{
     }
 
     /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 添加(修改)后台轮播
+     */
+    public function backaddcarousel(Request $req){
+        $params = $req->all();
+        if(isset($params['title']) && NotEstr($params['title']))
+            $data['title'] = $params['title'];//标题
+        else
+            jsonReturn(201,"无效的title");
+        if(isset($params['description']) && NotEstr($params['description']))
+            $data['description'] = $params['description'];//简介
+        else
+            jsonReturn(201,"无效的description");
+        if(isset($params['content']) && NotEstr($params['content']))
+            $data['content'] = $params['content'];//内容
+        else
+            jsonReturn(201,"无效的content");
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];//ID
+        else
+            jsonReturn(201,"无效的id");
+        $result = save("jy_carousel",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(201,"请求失败");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 后台轮播列表
+     */
+    public function backcarouselList(Request $req){
+        $params = $req->all();
+        if(isset($params['current_page']) && isINT($params['current_page']))
+            $data['current_page'] = $params['current_page'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的current_page");
+        if(isset($params['limit']) && isINT($params['limit']))
+            $data['limit'] = $params['limit'];
+        else
+            $data['limit'] = 10;
+        $data['order_by'] = "id desc";
+        $data['is_delete'] = 0;
+        $rs = get("jy_carousel",$data);
+        $result = $rs ? $rs : [];
+        if($result)
+            jsonReturn(200,"请求成功",$result);
+        jsonReturn(201,"请求失败");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 删除后台轮播
+     */
+    public function backdeletecarousel(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];//0:待审核1:体现通过2:提现失败
+        else
+            jsonReturn(201,"无效的id");
+        $data['is_delete'] = 1;
+        $rs = get("jy_carousel",$data);
+        $result = $rs ? $rs : [];
+        if($result)
+            jsonReturn(200,"请求成功",$result);
+        jsonReturn(201,"请求失败");
+    }
+
+    /**
      * @param $params
      * @return bool
      * @throws \Exception
