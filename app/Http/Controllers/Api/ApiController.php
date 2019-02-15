@@ -1046,6 +1046,7 @@ class ApiController extends Controller{
              jsonReturn(201,"无效的type");
          if(isset($params['openid']) && NotEstr($params['openid'])){
              $openid = $params['openid'];
+             $s = get("jy_sale","openid={$openid}&fields=amount");
              $f = get("jy_sale_goods","openid={$openid}&fields=id");
              if(!$f){
                  $orderlist = [];
@@ -1087,7 +1088,7 @@ class ApiController extends Controller{
              $orderlist[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
              $orderlist[$item]['deliver'] = isset($goods_info['deliver']) ? $goods_info['deliver'] : 0;
          }
-         $amount = 0;
+         $amount = isset($s['amount']) ? $s['amount'] : 0;
          $result = compact("orderlist","amount");
          jsonReturn(200,"请求成功",$result);
      }
