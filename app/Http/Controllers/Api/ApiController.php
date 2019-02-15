@@ -2067,6 +2067,11 @@ class ApiController extends Controller{
             $data['id'] = $params['id'];
         else
             jsonReturn(201,"无效的id");
+        $w = get("jy_withdraw","id={$data['id']}&single=true&fields=amount,openid,status");
+        if(!$w)
+            jsonReturn(201,"无效的id");
+        if(isset($w['status']) && $w['status'] > 0)
+            jsonReturn(201,"该提现状态不在待审核状态");
         if(isset($params['status']) && $params['status'] == 1){
             if(isset($params['succee_media']) && NotEstr($params['succee_media']))
                 $data['succee_media'] = $params['succee_media'];//0:待审核1:体现通过2:提现失败
@@ -2078,6 +2083,11 @@ class ApiController extends Controller{
                 $data['failure_reason'] = $params['failure_reason'];//0:待审核1:体现通过2:提现失败
             else
                 jsonReturn(201,"无效的succee_media");
+            //把钱还回去
+            $sale_info = get("jy_sale","openid={$w['openid']}&single=true&fields=id,amount");
+            $s['id'] = $sale_info['id'];
+            $s['amount'] = $sale_info['amount'] + $w['amount'];
+            save("jy_sale",$s);
         }
         $result = save("jy_withdraw",$data);
         if($result)
