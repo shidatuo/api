@@ -1003,7 +1003,7 @@ class ApiController extends Controller{
          foreach ($resule as $item=>$value){
              if(isset($value['logistics']) && NotEstr($value['logistics']))
                  $logistics = json_decode($value['logistics'],true);
-             if(isset($logistics['name'])){
+             if(isset($logistics)){
                  $resule[$item]['name'] = isset($logistics['name']) ? $logistics['name'] : '';
                  $resule[$item]['phone'] = isset($logistics['phone']) ? $logistics['phone'] : '';
                  unset($logistics);
