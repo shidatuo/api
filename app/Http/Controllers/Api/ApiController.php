@@ -1077,7 +1077,7 @@ class ApiController extends Controller{
          if(isset($params['openid']) && NotEstr($params['openid'])){
              $openid = $params['openid'];
              $s = get("jy_sale","openid={$openid}&fields=amount&single=true");
-             $f = get("jy_sale_goods","openid={$openid}&fields=id");
+             $f = get("jy_sale_goods","openid={$openid}&fields=id&no_limit=true");
              if(!$f){
                  $orderlist = [];
                  $amount = 0;
@@ -1101,7 +1101,7 @@ class ApiController extends Controller{
              $data['limit'] = $params['limit'];
          else
              $data['limit'] = 10;
-         $data['order_by'] = "id desc";
+         $data['order_by'] = "updated_at desc";
          $rs = get("jy_order",$data);
          $orderlist = $rs ? $rs : [];
          foreach ($orderlist as $item=>$value){
