@@ -716,6 +716,9 @@ class ApiController extends Controller{
                  $data['postalCode'] = $params['postalCode'];
              else
                  jsonReturn(201,"无效的postalCode");
+         }else{
+             if(isset($params['telNumber']) && NotEstr($params['telNumber']))
+                 $data['telNumber'] = $params['telNumber'];
          }
 //         $data['is_deliver'] = isset($sale_goods['deliver']) ? $sale_goods['deliver'] : 1;
          $data['is_deliver'] = isset($params['is_deliver']) ? $params['is_deliver'] : 1;
