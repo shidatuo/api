@@ -2277,6 +2277,19 @@ class ApiController extends Controller{
     }
 
     /**
+     * @throws \Exception
+     * @author shidatuo
+     * @description 后台提现明细
+     */
+    public function backIncomedetails(){
+        $y = get("jy_withdraw","status=1&sum=amount");
+        $k = get("jy_sale","sum=amount");
+        $s = $y + $k;
+        $result = compact("y","k","s");
+        jsonReturn(201,"请求成功",$result);
+    }
+
+    /**
      * @param $params
      * @return bool
      * @throws \Exception

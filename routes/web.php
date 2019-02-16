@@ -298,8 +298,10 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxOnekeyfh', 'ApiController@wxOnekeyfh');
     Route::any('wxpaymentCallBack', 'ApiController@wxpaymentCallBack');
     Route::any('wxgetPhonenumber', 'ApiController@wxgetPhonenumber');
+
     Route::any('wxgetLaunchwithdraw', 'ApiController@wxgetLaunchwithdraw');
     Route::any('wxgetWithdrawList', 'ApiController@wxgetWithdrawList');
+
     Route::any('wxgetConfig', 'ApiController@wxgetConfig');
     Route::any('wxgetCarousel', 'ApiController@wxgetCarousel');
 
@@ -336,6 +338,9 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backaddcarousel', 'ApiController@backaddcarousel')->middleware('VerifyToken');
     Route::any('backcarouselList', 'ApiController@backcarouselList')->middleware('VerifyToken');
     Route::any('backdeletecarousel', 'ApiController@backdeletecarousel')->middleware('VerifyToken');
+
+    Route::any('backIncomedetails', 'ApiController@backIncomedetails');
+//        ->middleware('VerifyToken');
 });
 
 
