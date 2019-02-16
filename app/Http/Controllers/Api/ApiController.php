@@ -2286,7 +2286,7 @@ class ApiController extends Controller{
         $k = get("jy_sale","sum=amount");
         $s = $y + $k;
         $result = compact("y","k","s");
-        jsonReturn(201,"请求成功",$result);
+        jsonReturn(200,"请求成功",$result);
     }
 
     /**
