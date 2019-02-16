@@ -643,10 +643,11 @@ class ApiController extends Controller{
         $rs = get("jy_sale_goods",$data);
         $resule = $rs ? $rs : [];
         if(isset($resule['openid']) && NotEstr($resule['openid'])){
-            $user_info = get("jy_user","openid={$resule['openid']}&single=true&fields=nickName,avatarUrl");
+            $user_info = get("jy_user","openid={$resule['openid']}&single=true&fields=nickName,avatarUrl,phoneNumber");
             if($user_info){
                 $resule['nickName'] = $user_info['nickName'];
                 $resule['avatarUrl'] = $user_info['avatarUrl'];
+                $resule['phoneNumber'] = $user_info['phoneNumber'];
             }
         }
         jsonReturn(200,"请求成功",$resule);
