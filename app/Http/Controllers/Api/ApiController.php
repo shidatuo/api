@@ -2040,7 +2040,7 @@ class ApiController extends Controller{
      * @description 后台设置最小提现金额 , 佣金比例
      */
     public function backsetFit(Request $req){
-        $params = $req->all();
+        $params = $req->except('d_t');
         $data = array_trim($params);
         DB::table("jy_config")->update($data);
         jsonReturn(200,"请求成功");
@@ -2269,7 +2269,7 @@ class ApiController extends Controller{
         else
             jsonReturn(201,"无效的id");
         $data['is_delete'] = 1;
-        $rs = get("jy_carousel",$data);
+        $rs = save("jy_carousel",$data);
         $result = $rs ? $rs : [];
         if($result)
             jsonReturn(200,"请求成功",$result);
