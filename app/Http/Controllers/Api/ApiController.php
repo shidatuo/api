@@ -705,10 +705,10 @@ class ApiController extends Controller{
                  $data['detailInfo'] = $params['detailInfo'];
              else
                  jsonReturn(201,"无效的detailInfo");
-             if(isset($params['telNumber']) && NotEstr($params['telNumber']))
-                 $data['telNumber'] = $params['telNumber'];
-             else
-                 jsonReturn(201,"无效的telNumber");
+//             if(isset($params['telNumber']) && NotEstr($params['telNumber']))
+//                 $data['telNumber'] = $params['telNumber'];
+//             else
+//                 jsonReturn(201,"无效的telNumber");
              if(isset($params['userName']) && NotEstr($params['userName']))
                  $data['userName'] = $params['userName'];
              else
