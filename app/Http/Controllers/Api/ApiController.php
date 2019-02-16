@@ -2223,8 +2223,6 @@ class ApiController extends Controller{
             jsonReturn(201,"无效的content");
         if(isset($params['id']) && isINT($params['id']))
             $data['id'] = $params['id'];//ID
-        else
-            jsonReturn(201,"无效的id");
         $result = save("jy_carousel",$data);
         if($result)
             jsonReturn(200,"请求成功");
