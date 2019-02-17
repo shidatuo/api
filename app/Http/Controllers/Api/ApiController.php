@@ -1450,13 +1450,8 @@ class ApiController extends Controller{
      */
      public function backgetSale(Request $req){
          $params = $req->all();
-         if(isset($params['type']) && in_array($params['type'],[1,2])){
-             $data['status'] = $params['type'] == 1 ? "[in]1,2" : 0;
-             if(isset($params['type']) && $params['type'] == 1){
-                 $where = [1,2];
-             }else{
-                 $where = [0];
-             }
+         if(isset($params['type']) && in_array($params['type'],[0,1,2])){
+             $data['status'] = $where = $params['type'];
          }else{
              jsonReturn(201,"无效的type");
          }
@@ -1470,7 +1465,7 @@ class ApiController extends Controller{
              $data['limit'] = 10;
          $rs = get("jy_sale",$data);
          $list = $rs ? $rs : [];
-         $total = DB::table("jy_sale")->whereIn("status",$where)->count();
+         $total = DB::table("jy_sale")->whereIn("status",[$where])->count();
          jsonReturn(200,"请求成功",compact("list","total"));
      }
 
