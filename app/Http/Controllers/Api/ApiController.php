@@ -2285,10 +2285,16 @@ class ApiController extends Controller{
      * @description 后台提现明细
      */
     public function backIncomedetails(){
-        $y = get("jy_withdraw","status=1&sum=amount");
+        //提现(待审核和审核成功)
+        $y = get("jy_withdraw","status=[in]0,1&sum=amount");
+        //销售商余额
         $k = get("jy_sale","sum=amount");
+        //服务费
+        $e = get("jy_sale","sum=serviceFee");
+        //总收入 = 服务费 + 余额 + 提现(待审核和审核成功)
+        $w = bcadd($e + $k,$y);
         $s = $y + $k;
-        $result = compact("y","k","s");
+        $result = compact("y","k","s","e","w");
         jsonReturn(200,"请求成功",$result);
     }
 
