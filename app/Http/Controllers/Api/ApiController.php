@@ -2072,7 +2072,7 @@ class ApiController extends Controller{
         else
             $data['limit'] = 10;
         $data['order_by'] = "id desc";
-        $data['fields'] = "id,openid,amount,status,failure_reason,succee_media,created_at";
+        $data['fields'] = "id,openid,amount,status,trasaction_id,failure_reason,succee_media,created_at";
         $res = get("jy_withdraw",$data);
         $list = $res ? $res : [];
         foreach ($list as $item=>$value){
@@ -2114,6 +2114,10 @@ class ApiController extends Controller{
                 $data['succee_media'] = $params['succee_media'];//0:待审核1:体现通过2:提现失败
             else
                 jsonReturn(201,"无效的succee_media");
+            if(isset($params['trasaction_id']) && NotEstr($params['trasaction_id']))
+                $data['trasaction_id'] = $params['trasaction_id'];//0:待审核1:体现通过2:提现失败
+            else
+                jsonReturn(201,"无效的trasaction_id");
         }
         if(isset($params['status']) && $params['status'] == 2){
             if(isset($params['failure_reason']) && NotEstr($params['failure_reason']))
