@@ -1114,6 +1114,10 @@ class ApiController extends Controller{
              $data['limit'] = 10;
          $data['order_by'] = "updated_at desc";
          $rs = get("jy_order",$data);
+         unset($data['current_page']);
+         unset($data['limit']);
+         $data['count'] = "id";
+         $total = get("jy_order",$data);
          $orderlist = $rs ? $rs : [];
          foreach ($orderlist as $item=>$value){
              $goods_info = self::getOrderGoods($value);
@@ -1132,7 +1136,8 @@ class ApiController extends Controller{
              $orderlist[$item]['v'] = bcsub($value['amount'],$value['service_fee'],2);
          }
          $amount = isset($s['amount']) ? $s['amount'] : 0;
-         $result = compact("orderlist","amount");
+
+         $result = compact("orderlist","amount","total");
          jsonReturn(200,"请求成功",$result);
      }
 
