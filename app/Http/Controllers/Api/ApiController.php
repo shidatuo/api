@@ -2091,7 +2091,7 @@ class ApiController extends Controller{
         else
             $data['limit'] = 10;
         $data['order_by'] = "id desc";
-        $data['fields'] = "id,openid,amount,status,trasaction_id,failure_reason,succee_media,created_at";
+        $data['fields'] = "id,openid,amount,status,trasaction_id,failure_reason,bank_card,bank_name,succee_media,created_at";
         $res = get("jy_withdraw",$data);
         $list = $res ? $res : [];
         foreach ($list as $item=>$value){
