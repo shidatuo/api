@@ -2290,14 +2290,14 @@ class ApiController extends Controller{
      */
     public function backIncomedetails(){
         //提现(待审核和审核成功)
-        $y = get("jy_withdraw","status=[in]0,1&sum=amount");
+        $y = bcadd(get("jy_withdraw","status=[in]0,1&sum=amount"),0,2);
         //销售商余额
-        $k = get("jy_sale","sum=amount");
+        $k = bcadd(get("jy_sale","sum=amount"),0,2);
         //服务费
-        $e = get("jy_sale","sum=serviceFee");
+        $e = bcadd(get("jy_sale","sum=serviceFee"),0,2);
         //总收入 = 服务费 + 余额 + 提现(待审核和审核成功)
-        $w = bcadd($e + $k,$y);
-        $s = $y + $k;
+        $w = bcadd($e + $k,$y,2);
+        $s = bcadd($y,$k,2);
         $result = compact("y","k","s","e","w");
         jsonReturn(200,"请求成功",$result);
     }
