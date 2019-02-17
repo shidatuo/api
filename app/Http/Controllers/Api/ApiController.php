@@ -2171,6 +2171,14 @@ class ApiController extends Controller{
             $data['amount'] = $params['amount'];//0:待审核1:体现通过2:提现失败
         else
             jsonReturn(201,"无效的amount");
+        if(isset($params['bank_name']) && NotEstr($params['bank_name']))
+            $data['bank_name'] = $params['bank_name'];
+        else
+            jsonReturn(201,"无效的bank_name");
+        if(isset($params['bank_card']) && NotEstr($params['bank_card']))
+            $data['bank_card'] = $params['bank_card'];
+        else
+            jsonReturn(201,"无效的bank_card");
         $sale = get("jy_sale","openid={$data['openid']}&single=true&fields=id,amount");
         if(!$sale)
             jsonReturn(201,"无效的销售商");
@@ -2218,7 +2226,7 @@ class ApiController extends Controller{
         else
             $data['limit'] = 10;
         $data['order_by'] = "id desc";
-        $data['fields'] = "openid,amount,status,failure_reason,succee_media,created_at";
+        $data['fields'] = "openid,amount,status,failure_reason,succee_media,bank_card,bank_name,created_at";
         $res = get("jy_withdraw",$data);
         $result = $res ? $res : [];
         foreach ($result as $item=>$value){
