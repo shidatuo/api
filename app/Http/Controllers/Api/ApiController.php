@@ -909,15 +909,13 @@ class ApiController extends Controller{
      * @description 是否打款到销售商
      */
      public function market_brokerage($id){
-//         $params = $req->all();
-//         $order_ = self::market_brokerage($params['id']);
-//         dd($order_);
-//         exit;
          //订单详情
          $order_info = get("jy_order","id={$id}&single=true&fields=amount,goods_id");
          //获取配置文件
          $config_info = get("jy_config","single=true&fields=COMM_RATE");
          $res = $order_info['amount'] * (1 - $config_info['COMM_RATE']);
+         //服务费
+         $service_fee = bcmul($order_info['amount'],$config_info['COMM_RATE'],2);
          //获取销售商信息
          $goods_info = get("jy_sale_goods","id={$order_info['goods_id']}&fields=openid&single=true");
          DB::beginTransaction();
@@ -928,13 +926,14 @@ class ApiController extends Controller{
              $s['order_id'] = $id;
              $result = save("jy_remit_record",$s);
              if($result){
-                 $sale_info = get("jy_sale","openid={$s['openid']}&single=true&fields=id,amount");
+                 $sale_info = get("jy_sale","openid={$s['openid']}&single=true&fields=id,amount,serviceFee");
                  $sale['id'] = isset($sale_info['id']) ? $sale_info['id'] : 0;
                  $sale['amount'] = $sale_info['amount'] + $res;
+                 $sale['serviceFee'] = $sale_info['serviceFee'] + $service_fee;
                  $rs = save("jy_sale",$sale);
                  if($rs){
                      DB::commit();
-                     DB::table("jy_order")->where("id",$id)->update(['is_s'=>1]);
+                     DB::table("jy_order")->where("id",$id)->update(['is_s'=>1,'service_fee'=>$service_fee]);
                  }else{
                      DB::rollBack();
                  }
@@ -1465,6 +1464,17 @@ class ApiController extends Controller{
              $data['limit'] = 10;
          $rs = get("jy_sale",$data);
          $list = $rs ? $rs : [];
+         foreach ($list as $item=>$value){
+             //提现
+             $withdraw_info = get("jy_withdraw","openid={$value['openid']}&status=[in]0,1&sum=amount");
+             //净收入 = 余额 + 提现
+             $list[$item]['j'] = bcadd($withdraw_info,$value['amount'],2);
+             //总收入 = 余额 + 提现 + 手续费
+             $list[$item]['z'] = bcadd($list[$item]['j'],$value['serviceFee'],2);
+             //已提现
+             $list[$item]['y'] = bcadd(get("jy_withdraw","openid={$value['openid']}&status=1&sum=amount"),0,2);
+         }
+         //总条数
          $total = DB::table("jy_sale")->whereIn("status",[$where])->count();
          jsonReturn(200,"请求成功",compact("list","total"));
      }
