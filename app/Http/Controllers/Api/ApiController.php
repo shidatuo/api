@@ -1070,10 +1070,21 @@ class ApiController extends Controller{
      */
      public function wxWallet(Request $req){
          $params = $req->all();
-         if(isset($params['type']) && in_array($params['type'],[1,2]))
-             $data['state'] = $params['type'] == 1 ? 4 : "[in]1,2,3";
-         else
+         if(isset($params['type']) && in_array($params['type'],[0,1,2])){
+             switch ($params['type']){
+                 case 0:
+                     $data['state'] = 0;
+                     break;
+                 case 1:
+                     $data['state'] = 4;
+                     break;
+                 case 2:
+                     $data['state'] = "[in]1,2,3";
+                     break;
+             }
+         }else{
              jsonReturn(201,"无效的type");
+         }
          if(isset($params['openid']) && NotEstr($params['openid'])){
              $openid = $params['openid'];
              $s = get("jy_sale","openid={$openid}&fields=amount&single=true");
@@ -1117,6 +1128,8 @@ class ApiController extends Controller{
              $orderlist[$item]['state'] = isset($goods_info['state']) ? $goods_info['state'] : 0;
              $orderlist[$item]['stock'] = isset($goods_info['stock']) ? $goods_info['stock'] : 0;
              $orderlist[$item]['deliver'] = isset($goods_info['deliver']) ? $goods_info['deliver'] : 0;
+             //净收入
+             $orderlist[$item]['v'] = bcsub($value['amount'],$value['service_fee'],2);
          }
          $amount = isset($s['amount']) ? $s['amount'] : 0;
          $result = compact("orderlist","amount");
@@ -1469,6 +1482,7 @@ class ApiController extends Controller{
              $withdraw_info = get("jy_withdraw","openid={$value['openid']}&status=[in]0,1&sum=amount");
              //净收入 = 余额 + 提现
              $list[$item]['j'] = bcadd($withdraw_info,$value['amount'],2);
+
              //总收入 = 余额 + 提现 + 手续费
              $list[$item]['z'] = bcadd($list[$item]['j'],$value['serviceFee'],2);
              //已提现
