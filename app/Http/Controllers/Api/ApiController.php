@@ -2091,7 +2091,7 @@ class ApiController extends Controller{
         else
             $data['limit'] = 10;
         $data['order_by'] = "id desc";
-        $data['fields'] = "id,openid,amount,status,trasaction_id,failure_reason,bank_card,bank_name,succee_media,created_at";
+        $data['fields'] = "id,openid,amount,status,trasaction_id,failure_reason,bank_card,bank_name,succee_media,created_at,bank_site,bank_payee";
         $res = get("jy_withdraw",$data);
         $list = $res ? $res : [];
         foreach ($list as $item=>$value){
@@ -2137,6 +2137,14 @@ class ApiController extends Controller{
                 $data['trasaction_id'] = $params['trasaction_id'];//0:待审核1:体现通过2:提现失败
             else
                 jsonReturn(201,"无效的trasaction_id");
+            if(isset($params['bank_site']) && NotEstr($params['bank_site']))
+                $data['bank_site'] = $params['bank_site'];//开户行地址
+            else
+                jsonReturn(201,"无效的bank_site");
+            if(isset($params['bank_payee']) && NotEstr($params['bank_payee']))
+                $data['bank_payee'] = $params['bank_payee'];//收款人姓名
+            else
+                jsonReturn(201,"无效的bank_payee");
         }
         if(isset($params['status']) && $params['status'] == 2){
             if(isset($params['failure_reason']) && NotEstr($params['failure_reason']))
@@ -2226,7 +2234,7 @@ class ApiController extends Controller{
         else
             $data['limit'] = 10;
         $data['order_by'] = "id desc";
-        $data['fields'] = "openid,amount,status,failure_reason,succee_media,bank_card,bank_name,created_at";
+        $data['fields'] = "openid,amount,status,failure_reason,succee_media,bank_card,bank_name,created_at,bank_site,bank_payee";
         $res = get("jy_withdraw",$data);
         $result = $res ? $res : [];
         foreach ($result as $item=>$value){
