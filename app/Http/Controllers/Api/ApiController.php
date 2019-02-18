@@ -2285,9 +2285,9 @@ class ApiController extends Controller{
         $data['is_delete'] = 0;
         $rs = get("jy_carousel",$data);
         $result = $rs ? $rs : [];
-        if($result)
+//        if($result)
             jsonReturn(200,"请求成功",$result);
-        jsonReturn(201,"请求失败");
+//        jsonReturn(201,"请求失败");
     }
 
     /**
