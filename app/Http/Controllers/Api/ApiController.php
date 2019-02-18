@@ -849,7 +849,7 @@ class ApiController extends Controller{
          if(isset($res['watermark']['appid']) == 'wx6e75e53e4a50bf41') {
              //成功获取手机号
              DB::table("jy_user")->where(['openid'=>$openid])->update(["phoneNumber"=>$res['phoneNumber']]);
-             jsonReturn(200,"绑定成功");
+             jsonReturn(200,"绑定成功",$res['phoneNumber']);
          }
          jsonReturn(201,"绑定失败");
      }
