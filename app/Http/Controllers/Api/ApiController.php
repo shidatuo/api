@@ -1541,11 +1541,11 @@ class ApiController extends Controller{
          $rs = save("jy_sale",$data);
          if($rs){
              //获取审核人的openid
-             $sale_info = get("jy_sale","id={$data['id']}&single=true&fields=openid");
+             $sale_info = get("jy_sale","id={$data['id']}&single=true&fields=openid,phoneNumber");
              if(isset($sale_info['openid']) && !checkEmpty($sale_info['openid']) && $data['status'] == 1){
                  $user_info = get("jy_user","openid={$sale_info['openid']}&single=true&fields=id");
                  if(isset($user_info['id']) && isINT($user_info['id'])){
-                     save("jy_user","id={$user_info['id']}&status=2");
+                     save("jy_user","id={$user_info['id']}&status=2&phoneNumber={$sale_info['phoneNumber']}");
                  }
              }
          }
