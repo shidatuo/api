@@ -13,6 +13,7 @@ use \App\Model\jy_user;
 use WxPayConf;
 use WxQrcodePay;
 //use WxPay;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use \App\Libraries\Functions\WxPay\WxPay as WxPay;
 
@@ -918,6 +919,11 @@ class ApiController extends Controller{
          //服务费
          $service_fee = bcmul($order_info['amount'],$config_info['COMM_RATE'],2);
          //获取销售商信息
+         if(!is_null(Cache::get($id))){
+             return;
+         }else{
+             Cache::put($id,1,0.1);
+         }
          $goods_info = get("jy_sale_goods","id={$order_info['goods_id']}&fields=openid&single=true");
          DB::beginTransaction();
 //         $res = 0.01;
