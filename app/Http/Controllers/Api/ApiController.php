@@ -705,10 +705,6 @@ class ApiController extends Controller{
                  $data['detailInfo'] = $params['detailInfo'];
              else
                  jsonReturn(201,"无效的detailInfo");
-//             if(isset($params['telNumber']) && NotEstr($params['telNumber']))
-//                 $data['telNumber'] = $params['telNumber'];
-//             else
-//                 jsonReturn(201,"无效的telNumber");
              if(isset($params['userName']) && NotEstr($params['userName']))
                  $data['userName'] = $params['userName'];
              else
@@ -718,9 +714,14 @@ class ApiController extends Controller{
              else
                  jsonReturn(201,"无效的postalCode");
          }else{
-             if(isset($params['telNumber']) && NotEstr($params['telNumber']))
-                 $data['telNumber'] = $params['telNumber'];
+//             if(isset($params['telNumber']) && NotEstr($params['telNumber']))
+//                 $data['telNumber'] = $params['telNumber'];
+
          }
+         if(isset($params['telNumber']) && NotEstr($params['telNumber']))
+             $data['telNumber'] = $params['telNumber'];
+         else
+             jsonReturn(201,"无效的telNumber");
 //         $data['is_deliver'] = isset($sale_goods['deliver']) ? $sale_goods['deliver'] : 1;
          $data['is_deliver'] = isset($params['is_deliver']) ? $params['is_deliver'] : 1;
          $result = save("jy_order",$data);
