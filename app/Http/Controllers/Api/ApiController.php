@@ -1143,6 +1143,10 @@ class ApiController extends Controller{
              $orderlist[$item]['deliver'] = isset($goods_info['deliver']) ? $goods_info['deliver'] : 0;
              //净收入
              $orderlist[$item]['v'] = bcsub($value['amount'],$value['service_fee'],2);
+             //获取支付人手机号
+             $user_info = get("jy_user","openid={$value['openid']}&single=true&fields=phoneNumber,nickName");
+             $orderlist[$item]['pay_phone'] = isset($user_info['phoneNumber']) ? $user_info['phoneNumber'] : '';
+             $orderlist[$item]['pay_nickName'] = isset($user_info['nickName']) ? $user_info['nickName'] : '';
          }
          $amount = isset($s['amount']) ? $s['amount'] : 0;
 
