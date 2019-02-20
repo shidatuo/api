@@ -670,6 +670,8 @@ class ApiController extends Controller{
              $data['avatarUrl'] = $params['avatarUrl'];
          else
              jsonReturn(201,"无效的avatarUrl");
+         if(isset($params['nickName']) && $params['nickName'] == 'undefined')
+             jsonReturn(204,"请重新登陆");
          if(isset($params['nickName']) && NotEstr($params['nickName']))
              $data['nickName'] = $params['nickName'];
          else
