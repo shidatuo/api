@@ -1633,7 +1633,7 @@ class ApiController extends Controller{
          else
              jsonReturn(201,"无效的userName");
          if(isset($params['password']) && NotEstr($params['password']))
-             $data['password'] = $params['password'];
+             $data['password'] = md5($params['password']);
          else
              jsonReturn(201,"无效的password");
          if(isset($params['role']) && isINT($params['role'])){
