@@ -2405,6 +2405,8 @@ class ApiController extends Controller{
         foreach ($result as $v){
             $rs[] = $v->id;
         }
+        if(!isset($rs) || (isset($rs) && empty($rs)))
+            return;
         $order_list = DB::table("jy_order")->whereIn("goods_id",$rs)->get();
         $log = '';
         log_ex('getOrderRefund.log',"\n订单列表 : ".json_encode($order_list) . PHP_EOL);
