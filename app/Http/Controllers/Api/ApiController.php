@@ -314,7 +314,8 @@ class ApiController extends Controller{
     public function wxLogin(Request $req){
         log_ex("wxLogin",PHP_EOL . "============================== 微信小程序code换取session_key START =============================" . PHP_EOL);
         log_ex("wxLogin",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
-        $request_url = sprintf(self::API_WX_LOGIN,'wx6e75e53e4a50bf41','c716d92c8e4f2df7f54a73c563e24b57',$req->input("code",""));
+//        $request_url = sprintf(self::API_WX_LOGIN,'wx6e75e53e4a50bf41','c716d92c8e4f2df7f54a73c563e24b57',$req->input("code",""));
+        $request_url = sprintf(self::API_WX_LOGIN,'wx47102dcd005677d3','a3edbe21439b90a1ef0f6132a784ae2a',$req->input("code",""));
         log_ex("wxLogin",PHP_EOL . "请求微信服务器url : " . $request_url . PHP_EOL);
         $json = http_request($request_url);
         log_ex("wxLogin",PHP_EOL . "微信服务器返回值 : " . $json . PHP_EOL);
