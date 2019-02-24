@@ -2406,7 +2406,7 @@ class ApiController extends Controller{
         $result = DB::table("jy_sale_goods")
             ->select("id")
             ->where("end_time","<=",$date)
-//                ->where(["state"=>1])
+                ->where(["state"=>1])
             ->get();
         log_ex('getOrderRefund.log',"\n过期的活动商品 : ".json_encode($result) . PHP_EOL);
         foreach ($result as $v){
@@ -2423,10 +2423,7 @@ class ApiController extends Controller{
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
                 $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
                 if(!is_null($order_info)){
-
-
                     log_ex('getOrderRefund.log',"\n订单详情不等于null的 : ".json_encode($order_info) . PHP_EOL);
-
                     DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
                     $log .= "\n接收到的退款订单号为 : [{$order_info->id}]";
                     $refundOrder['refundNo'] = $order_info->id;//我们的订单id
