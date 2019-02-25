@@ -341,6 +341,8 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backdeletecarousel', 'ApiController@backdeletecarousel')->middleware('VerifyToken');
 
     Route::any('backIncomedetails', 'ApiController@backIncomedetails')->middleware('VerifyToken');
+    Route::any('backmodify', 'ApiController@backmodify')->middleware('VerifyToken');
+    Route::any('closeuser', 'ApiController@closeuser')->middleware('VerifyToken');
 });
 
 

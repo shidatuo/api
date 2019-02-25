@@ -487,9 +487,14 @@ class ApiController extends Controller{
             $data['phoneNumber'] = $params['phoneNumber'];
         else
             jsonReturn(201,"无效的phoneNumber");
-        $rs = get("jy_sale","openid={$data['openid']}&single=true&fields=id");
-        if(isset($rs['id']) && isINT($rs['id']))
+        $rs = get("jy_sale","openid={$data['openid']}&single=true&fields=id,status");
+        if(isset($rs['id']) && isINT($rs['id'])){
+            if(isset($rs['status']) && $rs['status'] == 1){
+                jsonReturn(201,"已经审核成功,请勿重新提交");
+            }
             $data['id'] = $params['id'];
+            $data['status'] = 0;
+        }
         $result = save("jy_sale",$data);
         if($result)
             jsonReturn(200,"请求成功");
@@ -1494,6 +1499,10 @@ class ApiController extends Controller{
              $data['limit'] = $params['limit'];
          else
              $data['limit'] = 10;
+         if(isset($params['phoneNumber']) && NotEstr($params['phoneNumber']))
+             $data['phoneNumber'] = "[like]{$params['phoneNumber']}";
+         if(isset($params['userName']) && NotEstr($params['userName']))
+             $data['userName'] = "[like]{$params['userName']}";
          $rs = get("jy_sale",$data);
          $list = $rs ? $rs : [];
          foreach ($list as $item=>$value){
@@ -1586,6 +1595,7 @@ class ApiController extends Controller{
          $data['status'] = 1;
          $data['single'] = true;
          $data['fields'] = "id";
+         $data['is_delete'] = 0;
          $user_info = get("jy_back_user",$data);
          if(!$user_info)
              jsonReturn(201,"该用户不存在 , 或者用户名密码错误 !!!");
@@ -1632,11 +1642,11 @@ class ApiController extends Controller{
          if(isset($params['userName']) && NotEstr($params['userName']))
              $data['userName'] = $params['userName'];
          else
-             jsonReturn(201,"无效的userName");
+             jsonReturn(204,"无效的userName");
          if(isset($params['password']) && NotEstr($params['password']))
              $data['password'] = md5($params['password']);
          else
-             jsonReturn(201,"无效的password");
+             jsonReturn(204,"无效的password");
          if(isset($params['role']) && isINT($params['role'])){
              $data['role'] = $params['role'];
              $rs = get("jy_back_role","id={$data['role']}&single=true&status=1&type=2");
@@ -1644,13 +1654,63 @@ class ApiController extends Controller{
                  jsonReturn(201,"无效的role");
              $data['role_title'] = $rs['title'];
          }else{
-             jsonReturn(201,"无效的role");
+             jsonReturn(204,"无效的role");
+         }
+         $u = get("jy_back_user","userName={$data['userName']}&single=true&fields=id&no_cache=true");
+         if($u){
+             jsonReturn(204,"用户名已存在");
          }
          $result = save("jy_back_user",$data);
          if($result)
              jsonReturn(200,"请求成功");
-         jsonReturn(201,"请求失败");
+         jsonReturn(204,"请求失败");
      }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 修改账户密码
+     */
+    public function backmodify(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];
+        else
+            jsonReturn(204,"无效的ID");
+        if(isset($params['password']) && NotEstr($params['password']))
+            $data['password'] = md5($params['password']);
+        else
+            jsonReturn(204,"无效的password");
+        $result = save("jy_back_user",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(204,"请求失败");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 修改账户密码
+     */
+    public function closeuser(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];
+        else
+            jsonReturn(204,"无效的ID");
+        if(isset($params['is_delete']) && in_array($params['is_delete'],[0,1]))
+            $data['is_delete'] = $params['is_delete'];
+        else
+            jsonReturn(204,"无效的is_delete");
+        $result = save("jy_back_user",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(204,"请求失败");
+    }
+
+
 
     /**
      * @param Request $req
@@ -1762,6 +1822,8 @@ class ApiController extends Controller{
              $data['limit'] = 10;
          if(isset($params['nickName']) && NotEstr($params['nickName']))
              $data['nickName'] = "[like]" . $params['nickName'];
+         $data['order_by'] = "id desc";
+         $data['is_delete'] = 0;
          $rs = get("jy_user",$data);
          $list = $rs ? $rs : [];
          unset($data['current_page']);
