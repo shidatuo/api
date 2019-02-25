@@ -100,6 +100,26 @@ class Kernel extends ConsoleKernel
         })->everyMinute();
 
 
+        $schedule->call(function(){
+            $api = new ApiController();
+            //自动确认收货
+            $local_time = date('Y-m-d H:i:s', strtotime("-7 day",time()));
+            $orderArr = DB::table('jy_order')
+                ->select('id')
+                ->where('state','=',2)
+                ->where('created_at','<=',$local_time)
+                ->get();
+            if(count($orderArr) > 0){
+                foreach ($orderArr as $item=>$value){
+                    $data['id'] = $value->id ? $value->id : 0;
+                    $data['state'] = 4;
+                    save("jy_order",$data);
+                    $api->market_brokerage($value->id);
+                }
+            }
+        });
+
+
         $schedule->call(function (){
             $date = date("Y-m-d H:i:s");
             $result = DB::table("jy_sale_goods")
