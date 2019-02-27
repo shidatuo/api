@@ -1510,14 +1510,29 @@ class ApiController extends Controller{
              $withdraw_info = get("jy_withdraw","openid={$value['openid']}&status=[in]0,1&sum=amount");
              //净收入 = 余额 + 提现
              $list[$item]['j'] = bcadd($withdraw_info,$value['amount'],2);
-
              //总收入 = 余额 + 提现 + 手续费
              $list[$item]['z'] = bcadd($list[$item]['j'],$value['serviceFee'],2);
              //已提现
              $list[$item]['y'] = bcadd(get("jy_withdraw","openid={$value['openid']}&status=1&sum=amount"),0,2);
+             //拼单量 + 拼单金额
+             $sale_goods = get("jy_sale_goods","openid={$value['openid']}&fields=id");
+             if(count($sale_goods) > 0){
+                 $ids = array_column($sale_goods,"id");
+                 $ids_str = implode(",",$ids);
+                 $order_count = get("jy_order","goods_id=[in]$ids_str&count=id");
+                 $completemoney = get("jy_order","goods_id=[in]$ids_str&sum=amount");
+                 $list[$item]['completenum'] = $order_count;
+                 $list[$item]['completemoney'] = round($completemoney,2);
+             }else{
+                 $list[$item]['completenum'] = 0;
+                 $list[$item]['completemoney'] = 0;
+             }
          }
+         unset($data['current_page']);
+         unset($data['limit']);
+         $data['count'] = "id";
          //总条数
-         $total = DB::table("jy_sale")->whereIn("status",[$where])->count();
+         $total = get("jy_sale",$data);
          jsonReturn(200,"请求成功",compact("list","total"));
      }
 
@@ -1763,19 +1778,32 @@ class ApiController extends Controller{
      * @description 开启或者关闭账户
      */
      public function backCloseuser(Request $req){
+//         $params = $req->all();
+//         if(isset($params['id']) && isINT($params['id']))
+//             $data['id'] = $params['id'];
+//         else
+//             jsonReturn(201,"无效的id");
+//         if(isset($params['status']) && in_array($params['status'],[1,2]))
+//             $data['status'] = $params['status'] > 1 ? 0 : 1;
+//         else
+//             jsonReturn(201,"无效的status");
+//         $result = save("jy_back_user",$data);
+//         if($result)
+//             jsonReturn(200,"请求成功");
+//         jsonReturn(201,"请求失败");
          $params = $req->all();
          if(isset($params['id']) && isINT($params['id']))
              $data['id'] = $params['id'];
          else
-             jsonReturn(201,"无效的id");
-         if(isset($params['status']) && in_array($params['status'],[1,2]))
-             $data['status'] = $params['status'] > 1 ? 0 : 1;
-         else
-             jsonReturn(201,"无效的status");
+             jsonReturn(204,"无效的ID");
+//         if(isset($params['is_delete']) && in_array($params['is_delete'],[0,1]))
+             $data['is_delete'] = 1;
+//         else
+//             jsonReturn(204,"无效的is_delete");
          $result = save("jy_back_user",$data);
          if($result)
              jsonReturn(200,"请求成功");
-         jsonReturn(201,"请求失败");
+         jsonReturn(204,"请求失败");
      }
 
     /**
@@ -1794,12 +1822,14 @@ class ApiController extends Controller{
              $data['limit'] = $params['limit'];
          else
              $data['limit'] = 10;
+         $data['is_delete'] = 0;
          $rs = get("jy_back_user",$data);
          $list = $rs ? $rs : [];
          unset($data['current_page']);
          unset($data['limit']);
          $data['count'] = "id";
-         $total = get("jy_back_role",$data);
+         $total = get("jy_back_user",$data);
+//         $total = DB::table("jy_back_role")->where("is_delete",0)->count();
          $result = compact("list","total");
          jsonReturn(200,"请求成功",$result);
      }
@@ -1823,7 +1853,6 @@ class ApiController extends Controller{
          if(isset($params['nickName']) && NotEstr($params['nickName']))
              $data['nickName'] = "[like]" . $params['nickName'];
          $data['order_by'] = "id desc";
-         $data['is_delete'] = 0;
          $rs = get("jy_user",$data);
          $list = $rs ? $rs : [];
          unset($data['current_page']);
@@ -2255,6 +2284,14 @@ class ApiController extends Controller{
             $data['amount'] = $params['amount'];//0:待审核1:体现通过2:提现失败
         else
             jsonReturn(201,"无效的amount");
+        if(isset($params['bank_payee']) && NotEstr($params['bank_payee']))
+            $data['bank_payee'] = $params['bank_payee'];
+        else
+            jsonReturn(201,"无效的bank_payee");
+        if(isset($params['bank_site']) && NotEstr($params['bank_site']))
+            $data['bank_site'] = $params['bank_site'];
+        else
+            jsonReturn(201,"无效的bank_site");
         if(isset($params['bank_name']) && NotEstr($params['bank_name']))
             $data['bank_name'] = $params['bank_name'];
         else
