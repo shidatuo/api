@@ -173,6 +173,7 @@ class ApiController extends Controller{
                 }
             }
 
+
             if ($mod_class_api and $mod_api_err == false) {
                 if (!class_exists($try_class, false)) {
                     $remove = $url_segs;
@@ -444,6 +445,7 @@ class ApiController extends Controller{
                 }
             }
         }
+        
     }
 
 
