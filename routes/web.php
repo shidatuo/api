@@ -343,6 +343,8 @@ Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('backIncomedetails', 'ApiController@backIncomedetails')->middleware('VerifyToken');
     Route::any('backmodify', 'ApiController@backmodify')->middleware('VerifyToken');
     Route::any('closeuser', 'ApiController@closeuser')->middleware('VerifyToken');
+    Route::any('getAccessToken', 'ApiController@getAccessToken');
+    Route::any('wxgetQcodeGoodsInfo', 'ApiController@wxgetQcodeGoodsInfo');
 });
 
 

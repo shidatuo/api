@@ -173,7 +173,6 @@ class ApiController extends Controller{
                 }
             }
 
-
             if ($mod_class_api and $mod_api_err == false) {
                 if (!class_exists($try_class, false)) {
                     $remove = $url_segs;
@@ -315,8 +314,8 @@ class ApiController extends Controller{
     public function wxLogin(Request $req){
         log_ex("wxLogin",PHP_EOL . "============================== 微信小程序code换取session_key START =============================" . PHP_EOL);
         log_ex("wxLogin",PHP_EOL . "获取请求的url : " . URL::current() . PHP_EOL);
-        $request_url = sprintf(self::API_WX_LOGIN,'wx6e75e53e4a50bf41','c716d92c8e4f2df7f54a73c563e24b57',$req->input("code",""));
-//        $request_url = sprintf(self::API_WX_LOGIN,'wx47102dcd005677d3','a3edbe21439b90a1ef0f6132a784ae2a',$req->input("code",""));
+//        $request_url = sprintf(self::API_WX_LOGIN,'wx6e75e53e4a50bf41','c716d92c8e4f2df7f54a73c563e24b57',$req->input("code",""));
+        $request_url = sprintf(self::API_WX_LOGIN,'wx47102dcd005677d3','a3edbe21439b90a1ef0f6132a784ae2a',$req->input("code",""));
         log_ex("wxLogin",PHP_EOL . "请求微信服务器url : " . $request_url . PHP_EOL);
         $json = http_request($request_url);
         log_ex("wxLogin",PHP_EOL . "微信服务器返回值 : " . $json . PHP_EOL);
@@ -444,14 +443,8 @@ class ApiController extends Controller{
                     jsonReturn(200,"请求成功",is_arr($rs) ? $rs : []);
                 }
             }
-
-
-            
         }
-
     }
-
-    
 
 
     /**
@@ -499,7 +492,7 @@ class ApiController extends Controller{
             if(isset($rs['status']) && $rs['status'] == 1){
                 jsonReturn(201,"已经审核成功,请勿重新提交");
             }
-            $data['id'] = $params['id'];
+            $data['id'] = $rs['id'];
             $data['status'] = 0;
         }
         $result = save("jy_sale",$data);
@@ -642,6 +635,49 @@ class ApiController extends Controller{
     }
 
     /**
+     * @return string
+     * @author shidatuo
+     * @description 获取微信小程序的token
+     */
+    public function getAccessToken(){
+        $url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx47102dcd005677d3&secret=a3edbe21439b90a1ef0f6132a784ae2a';
+        $access_token = http_request($url);
+        $result = json_decode($access_token);
+        return isset($result->access_token) ? $result->access_token : '';
+    }
+
+    /**
+     * @param Request $req
+     * @return array
+     * @author shidatuo
+     * @description 获取小程序的商品详情的二维码
+     */
+    public function wxgetQcodeGoodsInfo(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $id = $params['id'];
+        else
+            jsonReturn(201,"无效的id");
+        //>获取二维码
+        $url = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token='.self::getAccessToken();
+        //小程序二维码路径
+        $u['scene'] = "id={$id}";
+        $u['width'] = 150;
+        $u['path'] = '/pages/goods/goods';
+        $result = http_request($url,json_encode($u));
+        if(isset($result['errcode'])){
+            return ["errcode"=>70151,"errmsg"=>"图片获取错误"];
+            jsonReturn(203,"图片获取错误");
+        }
+        $qCodePath = $_SERVER['DOCUMENT_ROOT']."/qrcodes/wx47102dcd005677d3_{$id}.jpg";
+        $fp = fopen($qCodePath,"w+"); //将文件绑定到流
+        fwrite($fp, $result); //写入文件
+        $code = str_replace(public_path(),Config("config.DNS"),$qCodePath);
+        jsonReturn(200,"请求成功",$code);
+    }
+
+
+        /**
      * @param Request $req
      * @throws \Exception
      * @author shidatuo
@@ -863,7 +899,7 @@ class ApiController extends Controller{
          $aesIV = base64_decode($aesIV);
          $result = openssl_decrypt($encryptedData,'AES-128-CBC',$aesKey,1,$aesIV);
          $res = json_decode($result,true);
-         if(isset($res['watermark']['appid']) == 'wx6e75e53e4a50bf41') {
+         if(isset($res['watermark']['appid']) == 'wx47102dcd005677d3') {
              //成功获取手机号
              DB::table("jy_user")->where(['openid'=>$openid])->update(["phoneNumber"=>$res['phoneNumber']]);
              jsonReturn(200,"绑定成功",['phoneNumber'=>$res['phoneNumber']]);
@@ -1183,7 +1219,8 @@ class ApiController extends Controller{
              $api_key = $params['openid'];
          else
              jsonReturn(201,"无效的openid");
-         $notify_url = "https://shidatuos.cn/api/wxnotifyurl";
+        // $notify_url = "https://shidatuos.cn/api/wxnotifyurl";
+         $notify_url = "https://www.jianlelove.com/api/wxnotifyurl";
          $order_info = get("jy_order","id={$data['id']}&single=true&fields=amount,goods_id,num");
 
 //         if(isset($order_info['goods_id']) && isINT($order_info['goods_id'])){
@@ -1199,10 +1236,10 @@ class ApiController extends Controller{
 
          $total_fee = isset($order_info['amount']) && $order_info['amount'] > 0 ? $order_info['amount'] : 0;
          $total_fee = $total_fee * 100;
-         $this->wxpayConfig ['appid'] = 'wx6e75e53e4a50bf41'; // 微信公众号身份的唯一标识
-         $this->wxpayConfig ['appsecret'] = 'c716d92c8e4f2df7f54a73c563e24b57'; // JSAPI接口中获取openid
-         $this->wxpayConfig ['mchid'] = '1525038701'; // 受理商ID
-         $this->wxpayConfig ['key'] = 'mykjsde34sdfmzf98342559kdshzx8as'; // 商户支付密钥Key
+         $this->wxpayConfig ['appid'] = 'wx47102dcd005677d3'; // 微信公众号身份的唯一标识
+         $this->wxpayConfig ['appsecret'] = 'a3edbe21439b90a1ef0f6132a784ae2a'; // JSAPI接口中获取openid
+         $this->wxpayConfig ['mchid'] = '1525958851'; // 受理商ID
+         $this->wxpayConfig ['key'] = 'xykjd92c8e4f2df7f54a73c563e24588'; // 商户支付密钥Key
          $this->wxpayConfig ['notifyurl'] = $notify_url;
          $this->wxpayConfig ['returnurl'] = "";
          new WxPayConf ($this->wxpayConfig);
@@ -1217,7 +1254,7 @@ class ApiController extends Controller{
              $out_trade_no = "{$timeStamp}";
              $wxQrcodePay->setParameter("out_trade_no", "$out_trade_no"); // 商户订单号
              $wxQrcodePay->setParameter("body", "商品支付");//附加数据
-             $wxQrcodePay->setParameter("spbill_create_ip", "140.143.7.81"); //
+             $wxQrcodePay->setParameter("spbill_create_ip", "118.24.145.63"); //
              $wxQrcodePay->setParameter("trade_type", "JSAPI"); // 交易类型
              $wxQrcodePay->setParameter("fee_type", "CNY");//附加数据
              $wxQrcodePay->setParameter("total_fee", $total_fee); // 总金额
@@ -1526,8 +1563,8 @@ class ApiController extends Controller{
              if(count($sale_goods) > 0){
                  $ids = array_column($sale_goods,"id");
                  $ids_str = implode(",",$ids);
-                 $order_count = get("jy_order","goods_id=[in]$ids_str&count=id");
-                 $completemoney = get("jy_order","goods_id=[in]$ids_str&sum=amount");
+                 $order_count = get("jy_order","goods_id=[in]$ids_str&count=id&state=4");
+                 $completemoney = get("jy_order","goods_id=[in]$ids_str&sum=amount&state=4");
                  $list[$item]['completenum'] = $order_count;
                  $list[$item]['completemoney'] = round($completemoney,2);
              }else{
@@ -1626,6 +1663,50 @@ class ApiController extends Controller{
          jsonReturn(200,"操作成功",compact("d_t","userName"));
      }
 
+     /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 修改账户密码
+     */
+    public function backmodify(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];
+        else
+            jsonReturn(204,"无效的ID");
+        if(isset($params['password']) && NotEstr($params['password']))
+            $data['password'] = md5($params['password']);
+        else
+            jsonReturn(204,"无效的password");
+        $result = save("jy_back_user",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(204,"请求失败");
+    }
+
+    /**
+     * @param Request $req
+     * @throws \Exception
+     * @author shidatuo
+     * @description 修改账户密码
+     */
+    public function closeuser(Request $req){
+        $params = $req->all();
+        if(isset($params['id']) && isINT($params['id']))
+            $data['id'] = $params['id'];
+        else
+            jsonReturn(204,"无效的ID");
+        if(isset($params['is_delete']) && in_array($params['is_delete'],[0,1]))
+            $data['is_delete'] = $params['is_delete'];
+        else
+            jsonReturn(204,"无效的is_delete");
+        $result = save("jy_back_user",$data);
+        if($result)
+            jsonReturn(200,"请求成功");
+        jsonReturn(204,"请求失败");
+    }
+
     /**
      * @param Request $req
      * @throws \Exception
@@ -1678,7 +1759,7 @@ class ApiController extends Controller{
          }else{
              jsonReturn(204,"无效的role");
          }
-         $u = get("jy_back_user","userName={$data['userName']}&single=true&fields=id&no_cache=true");
+         $u = get("jy_back_user","userName={$data['userName']}&single=true&fields=id");
          if($u){
              jsonReturn(204,"用户名已存在");
          }
@@ -1687,52 +1768,6 @@ class ApiController extends Controller{
              jsonReturn(200,"请求成功");
          jsonReturn(204,"请求失败");
      }
-
-    /**
-     * @param Request $req
-     * @throws \Exception
-     * @author shidatuo
-     * @description 修改账户密码
-     */
-    public function backmodify(Request $req){
-        $params = $req->all();
-        if(isset($params['id']) && isINT($params['id']))
-            $data['id'] = $params['id'];
-        else
-            jsonReturn(204,"无效的ID");
-        if(isset($params['password']) && NotEstr($params['password']))
-            $data['password'] = md5($params['password']);
-        else
-            jsonReturn(204,"无效的password");
-        $result = save("jy_back_user",$data);
-        if($result)
-            jsonReturn(200,"请求成功");
-        jsonReturn(204,"请求失败");
-    }
-
-    /**
-     * @param Request $req
-     * @throws \Exception
-     * @author shidatuo
-     * @description 修改账户密码
-     */
-    public function closeuser(Request $req){
-        $params = $req->all();
-        if(isset($params['id']) && isINT($params['id']))
-            $data['id'] = $params['id'];
-        else
-            jsonReturn(204,"无效的ID");
-        if(isset($params['is_delete']) && in_array($params['is_delete'],[0,1]))
-            $data['is_delete'] = $params['is_delete'];
-        else
-            jsonReturn(204,"无效的is_delete");
-        $result = save("jy_back_user",$data);
-        if($result)
-            jsonReturn(200,"请求成功");
-        jsonReturn(204,"请求失败");
-    }
-
-
 
     /**
      * @param Request $req
@@ -1803,10 +1838,7 @@ class ApiController extends Controller{
              $data['id'] = $params['id'];
          else
              jsonReturn(204,"无效的ID");
-//         if(isset($params['is_delete']) && in_array($params['is_delete'],[0,1]))
-             $data['is_delete'] = 1;
-//         else
-//             jsonReturn(204,"无效的is_delete");
+         $data['is_delete'] = 1;
          $result = save("jy_back_user",$data);
          if($result)
              jsonReturn(200,"请求成功");
@@ -2375,12 +2407,8 @@ class ApiController extends Controller{
         $params = $req->all();
         if(isset($params['title']) && NotEstr($params['title']))
             $data['title'] = $params['title'];//标题
-        else
-            jsonReturn(201,"无效的title");
         if(isset($params['description']) && NotEstr($params['description']))
             $data['description'] = $params['description'];//简介
-        else
-            jsonReturn(201,"无效的description");
         if(isset($params['content']) && NotEstr($params['content']))
             $data['content'] = $params['content'];//内容
         else
@@ -2390,7 +2418,7 @@ class ApiController extends Controller{
         $result = save("jy_carousel",$data);
         if($result)
             jsonReturn(200,"请求成功");
-        jsonReturn(201,"请求失败");
+        jsonReturn(204,"请求失败");
     }
 
     /**
@@ -2480,9 +2508,9 @@ class ApiController extends Controller{
         $refundOrder['refundFee'] = (int)((string)($order_info['real_amount'] * 100)); //微信是以分为单位
         $refundOrder['app_id'] = $order_info['app_id']; //小程序id
         $log .= "\n接收到的退款参数为 : ".json_encode($refundOrder) . PHP_EOL;
-        $config['AppId'] = "wx6e75e53e4a50bf41";
-        $config['wx_v3_key'] = "mykjsde34sdfmzf98342559kdshzx8as";
-        $config['wx_v3_mhcid'] = "1525038701";
+        $config['AppId'] = "wx47102dcd005677d3";
+        $config['wx_v3_key'] = "xykjd92c8e4f2df7f54a73c563e24588";
+        $config['wx_v3_mhcid'] = "1525958851";
 //        $config['wx_v3_apiclient_cert_path'] = $appinfo['SSLCERT_PATH'];
 //        $config['wx_v3_apiclient_key_path'] = $appinfo['SSLKEY_PATH'];
         $pay = new WxPay($config);
@@ -2511,8 +2539,8 @@ class ApiController extends Controller{
         $date = date("Y-m-d H:i:s");
         $result = DB::table("jy_sale_goods")
             ->select("id")
-            ->where("end_time","<=",$date)
-                ->where(["state"=>1])
+            ->where("end_time","<=",$date) 
+            ->where("state","<>",2)
             ->get();
         log_ex('getOrderRefund.log',"\n过期的活动商品 : ".json_encode($result) . PHP_EOL);
         foreach ($result as $v){
@@ -2529,7 +2557,10 @@ class ApiController extends Controller{
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
                 $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
                 if(!is_null($order_info)){
+
+
                     log_ex('getOrderRefund.log',"\n订单详情不等于null的 : ".json_encode($order_info) . PHP_EOL);
+
                     DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
                     $log .= "\n接收到的退款订单号为 : [{$order_info->id}]";
                     $refundOrder['refundNo'] = $order_info->id;//我们的订单id
@@ -2537,9 +2568,9 @@ class ApiController extends Controller{
                     $refundOrder['totalFee'] = (int)((string)($order_info->amount * 100));
                     $refundOrder['refundFee'] = (int)((string)($order_info->amount * 100)); //微信是以分为单位
                     $log .= "\n接收到的退款参数为 : ".json_encode($refundOrder) . PHP_EOL;
-                    $config['AppId'] = "wx6e75e53e4a50bf41";
-                    $config['wx_v3_key'] = "mykjsde34sdfmzf98342559kdshzx8as";
-                    $config['wx_v3_mhcid'] = "1525038701";
+                    $config['AppId'] = "wx47102dcd005677d3";
+                    $config['wx_v3_key'] = "xykjd92c8e4f2df7f54a73c563e24588";
+                    $config['wx_v3_mhcid'] = "1525958851";
 //                $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
                     $config['wx_v3_apiclient_cert_path'] = "/usr/local/nginx/html/api/public/cert/apiclient_cert.pem";
 //                $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
