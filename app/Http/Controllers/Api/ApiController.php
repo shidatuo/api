@@ -663,10 +663,9 @@ class ApiController extends Controller{
         //小程序二维码路径
         $u['scene'] = "id={$id}";
         $u['width'] = 150;
-        $u['path'] = '/pages/goods/goods';
+        $u['page'] = 'pages/goods/goods';
         $result = http_request($url,json_encode($u));
         if(isset($result['errcode'])){
-            return ["errcode"=>70151,"errmsg"=>"图片获取错误"];
             jsonReturn(203,"图片获取错误");
         }
         $qCodePath = $_SERVER['DOCUMENT_ROOT']."/qrcodes/wx47102dcd005677d3_{$id}.jpg";
