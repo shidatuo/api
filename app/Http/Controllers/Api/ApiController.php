@@ -2261,39 +2261,31 @@ class ApiController extends Controller{
         if(isset($params['status']) && in_array($params['status'],[0,1,2]))
             $data['status'] = $params['status'];//0:待审核1:体现通过2:提现失败
         else
-            jsonReturn(201,"无效的status");
+            jsonReturn(203,"无效的status");
         if(isset($params['id']) && isINT($params['id']))
             $data['id'] = $params['id'];
         else
-            jsonReturn(201,"无效的id");
+            jsonReturn(203,"无效的id");
         $w = get("jy_withdraw","id={$data['id']}&single=true&fields=amount,openid,status");
         if(!$w)
-            jsonReturn(201,"无效的id");
+            jsonReturn(203,"无效的id");
         if(isset($w['status']) && $w['status'] > 0)
-            jsonReturn(201,"该提现状态不在待审核状态");
+            jsonReturn(203,"该提现状态不在待审核状态");
         if(isset($params['status']) && $params['status'] == 1){
             if(isset($params['succee_media']) && NotEstr($params['succee_media']))
                 $data['succee_media'] = $params['succee_media'];//0:待审核1:体现通过2:提现失败
             else
-                jsonReturn(201,"无效的succee_media");
+                jsonReturn(203,"无效的succee_media");
             if(isset($params['trasaction_id']) && NotEstr($params['trasaction_id']))
                 $data['trasaction_id'] = $params['trasaction_id'];//0:待审核1:体现通过2:提现失败
             else
-                jsonReturn(201,"无效的trasaction_id");
-            if(isset($params['bank_site']) && NotEstr($params['bank_site']))
-                $data['bank_site'] = $params['bank_site'];//开户行地址
-            else
-                jsonReturn(201,"无效的bank_site");
-            if(isset($params['bank_payee']) && NotEstr($params['bank_payee']))
-                $data['bank_payee'] = $params['bank_payee'];//收款人姓名
-            else
-                jsonReturn(201,"无效的bank_payee");
+                jsonReturn(203,"无效的trasaction_id");
         }
         if(isset($params['status']) && $params['status'] == 2){
             if(isset($params['failure_reason']) && NotEstr($params['failure_reason']))
                 $data['failure_reason'] = $params['failure_reason'];//0:待审核1:体现通过2:提现失败
             else
-                jsonReturn(201,"无效的succee_media");
+                jsonReturn(203,"无效的succee_media");
             //把钱还回去
             $sale_info = get("jy_sale","openid={$w['openid']}&single=true&fields=id,amount");
             $s['id'] = $sale_info['id'];
@@ -2303,7 +2295,7 @@ class ApiController extends Controller{
         $result = save("jy_withdraw",$data);
         if($result)
             jsonReturn(200,"请求成功");
-        jsonReturn(201,"请求失败");
+        jsonReturn(203,"请求失败");
     }
 
     /**
