@@ -8,6 +8,8 @@ use App\Libraries\Functions\WxPay\WxPay;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\ApiController;
 
+include_once __DIR__ . DIRECTORY_SEPARATOR . '../Libraries/Functions/helpers.php';
+
 class Kernel extends ConsoleKernel
 {
     /**
@@ -52,9 +54,9 @@ class Kernel extends ConsoleKernel
                 ->get();
             if(count($orderArr) > 0){
                 foreach ($orderArr as $item=>$value){
-                    $data['id'] = $value->id ? $value->id : 0;
-                    $data['state'] = 4;
-                    save("jy_order",$data);
+//                    $data['id'] = $value->id ? $value->id : 0;
+//                    $data['state'] = 4;
+                    DB::table("jy_order")->where("id",$value->id)->update(["state"=>4]);
                     $api->market_brokerage($value->id);
                 }
             }
