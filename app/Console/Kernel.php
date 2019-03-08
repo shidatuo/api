@@ -27,67 +27,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule){
         $schedule->call(function (){
-
             $a = new ApiController();
             $a->test_();
-            exit;
-
-            log_ex('getOrderRefund.log',"134544545" . PHP_EOL);
-            $date = date("Y-m-d H:i:s");
-            $result = DB::table("jy_sale_goods")
-                ->select("id")
-                ->where("end_time","<=",$date)
-//                ->where(["state"=>1])
-                ->get();
-            log_ex('getOrderRefund.log',"\n" . json_encode($result) . PHP_EOL);
-            foreach ($result as $values){
-                DB::table("jy_sale_goods")->where(['id'=>$values->id])->update(['state'=>3]);
-//                save("jy_sale_goods","id={$values->id}&state=3");
-                $order_list = DB::table("jy_order")->where(["goods_id"=>$values->id])->get();
-                foreach ($order_list as $value){
-//                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
-                    $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
-                    if(count($order_info) > 0){
-                        log_ex('getOrderRefund.log',"\n获取到订单信息 : " . json_encode($order_info) . PHP_EOL);
-                        DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
-//                    log_ex('getOrderRefund.log',"\n接收到的退款订单号为 : [{$order_info->id}]" . PHP_EOL);
-                        $refundOrder['refundNo'] = $order_info->id;//我们的订单id
-                        $refundOrder['transactionId'] = $order_info->transaction_id;
-                        $refundOrder['totalFee'] = (int)((string)($order_info->amount * 100));
-                        $refundOrder['refundFee'] = (int)((string)($order_info->amount * 100)); //微信是以分为单位
-                        log_ex('getOrderRefund.log',"\n接收到的退款参数为 : ".json_encode($refundOrder) . PHP_EOL);
-                        $config['AppId'] = "wx6e75e53e4a50bf41";
-                        $config['wx_v3_key'] = "mykjsde34sdfmzf98342559kdshzx8as";
-                        $config['wx_v3_mhcid'] = "1525038701";
-                        $config['wx_v3_apiclient_cert_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_cert.pem';
-                        $config['wx_v3_apiclient_key_path'] = $_SERVER['DOCUMENT_ROOT'] . '/cert/apiclient_key.pem';
-                        log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}]  ------ config信息 ------" . json_encode($config) . PHP_EOL);
-                        $pay = new WxPay($config);
-                        $totalFee = (int)$refundOrder['totalFee'];//订单金额
-                        $refundFee = (int)$refundOrder['refundFee'];//退款金额
-                        $refundNo = $refundOrder['refundNo'];//商户退款单号
-                        $transactionIdOrOutTradeNo = $refundOrder['transactionId'];//微信订单号
-                        $return_refundOrder = $pay->refundOrder($totalFee,$refundFee,$refundNo,$transactionIdOrOutTradeNo);
-                        log_ex('getOrderRefund.log',"\n调用退款接口返回值为 : ".json_encode($return_refundOrder) . PHP_EOL);
-                    }
-                    //返回这个代表请求成功
-                    if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
-                        log_ex('getOrderRefund.log',"\n退款成功 ". PHP_EOL);
-//                        log_ex('getOrderRefund.log',"\n订单号[{$order_info->id}] ------ 退款成功 ------\n=========== 进入到订单退款方法  END =============\n");
-//                        save("jy_order","id={$value->id}&is_refund=1");
-                        DB::table("jy_order")->where(['id'=>$value->id])->update(['is_refund'=>1]);
-                        unset($return_refundOrder['result_code']);
-                    }else{
-                        log_ex('getOrderRefund.log',"\n退款失败 ". PHP_EOL);
-                        $description = isset($return_refundOrder['err_code_des']) ? $return_refundOrder['err_code_des'] : '';
-//                        $log = "\n订单号[{$order_info->id}] ------ 退款失败 {$order_info->amount} (单位:元) \n订单号[{$order_info->id}] ------ 失败原因 : {$description} " . PHP_EOL;
-//                        log_ex('getOrderRefund.log',"$log\n=========== 进入到订单退款方法  END =============\n");
-                    }
-                }
-            }
-
         })->everyMinute();
-
 
         $schedule->call(function (){
             $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0])->get();
@@ -98,7 +40,6 @@ class Kernel extends ConsoleKernel
                 }
             }
         })->everyMinute();
-
 
         $schedule->call(function(){
             $api = new ApiController();
@@ -119,17 +60,12 @@ class Kernel extends ConsoleKernel
             }
         })->everyMinute();
 
-
         $schedule->call(function (){
             $date = date("Y-m-d H:i:s");
-            $result = DB::table("jy_sale_goods")
+            DB::table("jy_sale_goods")
                 ->where("end_time","<=",$date)
                 ->where(["state"=>1])
                 ->update(['state'=>3]);
-
-
-
-            log_ex('jy_sale_goods',"过期商品 : $result" . PHP_EOL);
         })->everyMinute();
     }
 

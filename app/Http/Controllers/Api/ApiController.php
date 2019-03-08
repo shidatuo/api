@@ -2181,6 +2181,7 @@ class ApiController extends Controller{
 //        $je = get("jy_order",$h);
         $je = DB::table("jy_order")
             ->where('state','>=','1')
+            ->where('state','<>','3')
             ->where('created_at','>',$start_time)
             ->where('created_at','<',$end_time)
             ->sum("amount");
@@ -2550,11 +2551,7 @@ class ApiController extends Controller{
 //                    $order_info = get("jy_order","id={$value->id}&single=true&fields=id,transaction_id");
                 $order_info = DB::table("jy_order")->select("id","transaction_id","amount")->where(['id'=>$value->id,'is_refund'=>0])->first();
                 if(!is_null($order_info)){
-
-
                     log_ex('getOrderRefund.log',"\n订单详情不等于null的 : ".json_encode($order_info) . PHP_EOL);
-
-                    DB::table("jy_order")->where(['id'=>$value->id])->update(['state'=>3]);
                     $log .= "\n接收到的退款订单号为 : [{$order_info->id}]";
                     $refundOrder['refundNo'] = $order_info->id;//我们的订单id
                     $refundOrder['transactionId'] = $order_info->transaction_id;
@@ -2579,10 +2576,11 @@ class ApiController extends Controller{
                 }
                 //返回这个代表请求成功
                 if(isset($return_refundOrder['result_code']) && $return_refundOrder['result_code'] == 'SUCCESS'){
-                    $log .= "\n订单号[{$order_info->id}] ------ 退款成功 ------" . PHP_EOL;
+                    $log .= "\n订单号[{$value->id}] ------ 退款成功 ------" . PHP_EOL;
                     log_ex('getOrderRefund.log',"$log\n=========== 进入到订单退款方法  END =============\n");
 //                save("jy_order","id={$value->id}&is_refund=1");
-                    DB::table("jy_order")->where(['id'=>$value->id])->update(['is_refund'=>1]);
+                    DB::table("jy_order")->where(['id'=>$value->id])->update(['is_refund'=>1,'state'=>3]);
+                    unset($return_refundOrder['result_code']);
                 }else{
 //                 $description = isset($return_refundOrder['err_code_des']) ? $return_refundOrder['err_code_des'] : '';
 //                 $log .= "\n订单号[{$order_info->id}] ------ 退款失败 {$order_info->amount} (单位:元) " . PHP_EOL;
