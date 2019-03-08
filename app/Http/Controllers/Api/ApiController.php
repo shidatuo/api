@@ -2170,7 +2170,7 @@ class ApiController extends Controller{
         //月订单数
         $start_time = date('Y-m-d',strtotime("-30 days"));
         $end_time = date("Y-m-d H:i:s");
-        $s['state'] = "[gte]1";
+        $s['state'] = "[in]1,2,4";
         $s['count'] = "id";
         $s['between'] = "created_at|{$start_time},{$end_time}";
         $dds = get("jy_order",$s);
