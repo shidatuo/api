@@ -117,7 +117,7 @@ class Kernel extends ConsoleKernel
                     $api->market_brokerage($value->id);
                 }
             }
-        });
+        })->everyMinute();
 
 
         $schedule->call(function (){
@@ -126,6 +126,10 @@ class Kernel extends ConsoleKernel
                 ->where("end_time","<=",$date)
                 ->where(["state"=>1])
                 ->update(['state'=>3]);
+
+
+
+            log_ex('jy_sale_goods',"过期商品 : $result" . PHP_EOL);
         })->everyMinute();
     }
 
