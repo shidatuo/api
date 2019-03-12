@@ -2603,7 +2603,7 @@ class ApiController extends Controller{
         else
             jsonReturn(201,"无效的id");
         log_ex('wxpaymentCallBack.log',"\n调用退款接口返回值为 : ".json_encode($params) . PHP_EOL);
-        $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0,'id'=>$data['id']])->get();
+        $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0,'id'=>$data['id']])->where("transaction_id","<>","")->get();
         if(count($o_list) > 0){
             foreach ($o_list as $item=>$value){
                 DB::table('jy_sale_goods')->where(['id'=>$value->goods_id])->increment('actual_stock',$value->num,['state'=>1]);

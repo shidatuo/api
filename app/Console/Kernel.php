@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function (){
             //>>未支付订单10分钟之后还库存
             $local_time = date('Y-m-d H:i:s', time() - 600);
-            $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0])->where("created_at","<=",$local_time)->get();
+            $o_list = DB::table("jy_order")->where(['is_back_stock'=>0,'state'=>0])->where("transaction_id","<>","")->where("created_at","<=",$local_time)->get();
             if(count($o_list) > 0){
                 foreach ($o_list as $item=>$value){
                     DB::table('jy_sale_goods')->where(['id'=>$value->goods_id])->increment('actual_stock',$value->num,['state'=>1]);
@@ -61,6 +61,11 @@ class Kernel extends ConsoleKernel
                     DB::table("jy_order")->where("id",$value->id)->update(["state"=>4]);
                     $api->market_brokerage($value->id);
                 }
+            }
+            //>打款到销售商
+            $res = DB::table("jy_order")->where(["state"=>4,"is_s"=>0])->get();
+            foreach ($res as $item=>$value){
+                $api->market_brokerage($value->id);
             }
         })->everyMinute();
 
