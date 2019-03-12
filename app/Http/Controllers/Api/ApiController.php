@@ -1558,7 +1558,7 @@ class ApiController extends Controller{
              //已提现
              $list[$item]['y'] = bcadd(get("jy_withdraw","openid={$value['openid']}&status=1&sum=amount"),0,2);
              //拼单量 + 拼单金额
-             $sale_goods = get("jy_sale_goods","openid={$value['openid']}&fields=id");
+             $sale_goods = get("jy_sale_goods","openid={$value['openid']}&fields=id&no_limit=true");
              if(count($sale_goods) > 0){
                  $ids = array_column($sale_goods,"id");
                  $ids_str = implode(",",$ids);
