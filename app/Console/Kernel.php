@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\ApiController;
 include_once __DIR__ . DIRECTORY_SEPARATOR . '../Libraries/Functions/helpers.php';
 include_once __DIR__ . DS . '../..' . DS . 'common' . DS . 'index.php';
 
+
 class Kernel extends ConsoleKernel
 {
     /**
