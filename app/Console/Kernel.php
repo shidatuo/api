@@ -34,6 +34,7 @@ class Kernel extends ConsoleKernel
             $a = new ApiController();
             $a->test_();
         })->everyMinute();
+
         
 
         $schedule->call(function (){
