@@ -49,8 +49,6 @@ function array_to_ul($arr, $ul_tag = 'ul', $li_tag = 'li'){
 }
 
 
-
-
     function replace_once($needle, $replace, $haystack)
     {
         $pos = strpos($haystack, $needle);
