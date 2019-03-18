@@ -4092,3 +4092,2327 @@ class KdNiaoManager{
         return $postcom;
     }
 }
+
+
+class SmsManager{
+
+    public $appid;
+    public $appkey;
+
+    public function __construct(){
+        $this->appid = '1400188710';
+        $this->appkey = 'af8e622f6a04acfacb8d35f768668928';
+    }
+
+    /**
+     * 指定模板单发
+     * @param string $nationCode 国家码，如 86 为中国
+     * @param string $phoneNumber 不带国家码的手机号
+     * @param int $templId 模板 id
+     * @param array $params 模板参数列表，如模板 {1}...{2}...{3}，那么需要带三个参数
+     * @param string $sign 签名，如果填空串，系统会使用默认签名
+     * @param string $extend 扩展码，可填空串
+     * @param string $ext 服务端原样返回的参数，可填空串
+     * @return string json string { "result": xxxxx, "errmsg": "xxxxxx"  ... }，被省略的内容参见协议文档
+     */
+    public function sendWithParam($nationCode, $phoneNumber, $templId, $params, $sign = "", $extend = "", $ext = ""){
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/sendsms";
+        $appid = $this->appid;
+        $appkey = $this->appkey;
+        // $this->util = new SmsSenderUtil();
+        $random = rand(100000, 999999);
+        $curTime = time();
+        $wholeUrl = $url . "?sdkappid=" . "$appid" . "&random=" . $random;
+        // 按照协议组织 post 包体
+        $data = new \stdClass();
+        $tel = new \stdClass();
+        $tel->nationcode = "" . $nationCode;
+        $tel->mobile = "" . $phoneNumber;
+        $data->tel = $tel;
+        $data->sig = $this->calculateSigForTempl($appkey, $random, $curTime, $phoneNumber);
+        $data->tpl_id = $templId;
+        $data->params = $params;
+        $data->sign = $sign;
+        $data->time = $curTime;
+        $data->extend = $extend;
+        $data->ext = $ext;
+        return $this->sendCurlPost($wholeUrl, $data);
+    }
+
+    public function calculateSigForTemplAndPhoneNumbers($appkey, $random, $curTime, $phoneNumbers){
+        $phoneNumbersString = $phoneNumbers[0];
+        for ($i = 1; $i < count($phoneNumbers); $i++) {
+            $phoneNumbersString .= ("," . $phoneNumbers[$i]);
+        }
+        return hash("sha256", "appkey=" . $appkey . "&random=" . $random
+            . "&time=" . $curTime . "&mobile=" . $phoneNumbersString);
+    }
+
+    public function calculateSigForTempl($appkey, $random, $curTime, $phoneNumber){
+        $phoneNumbers = array($phoneNumber);
+        return $this->calculateSigForTemplAndPhoneNumbers($appkey, $random, $curTime, $phoneNumbers);
+    }
+
+    public function sendCurlPost($url, $dataObj){
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_HEADER, 0);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_POST, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($dataObj));
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        $ret = curl_exec($curl);
+        if (false == $ret) {
+            // curl_exec failed
+            $result = "{ \"result\":" . -2 . ",\"errmsg\":\"" . curl_error($curl) . "\"}";
+        } else {
+            $rsp = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if (200 != $rsp) {
+                $result = "{ \"result\":" . -1 . ",\"errmsg\":\"" . $rsp . " " . curl_error($curl) . "\"}";
+            } else {
+                $result = $ret;
+            }
+        }
+        curl_close($curl);
+        return $result;
+    }
+
+    /**
+     * @param $params
+     * 绑定手机号
+     */
+    public function binding($params)
+    {
+        //验证码
+        if (isset($params['code'])) {
+            $code = $params['code'];
+        } else {
+            $status['status'] = -7;
+            $status['news'] = '验证码不存在!';
+            return $status;
+        }
+        //手机号
+        if (isset($params['phone'])) {
+            $phone = $params['phone'];
+        } else {
+            $status['status'] = -8;
+            $status['news'] = '手机号不存在!';
+            return $status;
+        }
+        //查询验证码
+        $li['table'] = 'sms';
+        $li['phone'] = $phone;
+        $li['limit'] = 1;
+        $li['orderby'] = 'id desc';
+        $re = xn()->database_manager->get($li);
+        $time = time();
+        $ti = strtotime($re[0]['endTime']);
+        //过期时间
+        if ($ti < $time) {
+            $status['status'] = -1;
+            $status['news'] = '验证码已过期!';
+            return $status;
+        }
+        $verify = $re[0]['verify'];
+        if ($verify != $code) {
+            $status['status'] = -2;
+            $status['news'] = '验证码不正确!';
+            return $status;
+        }
+        //用户id
+        $open_id = $params['api_key'];
+        $user['table'] = 'users';
+        $user['open_id'] = $open_id;
+        $user['status'] = 1;
+        $res = xn()->database_manager->get($user);
+        if (empty($res)) {
+            $status['status'] = -9;
+            $status['news'] = '账户不可用,请联系管理员!';
+            return $status;
+        }
+        $list['table'] = 'users';
+        $list['id'] = $res[0]['id'];
+        $list['status'] = 1;
+        $users = xn()->database_manager->get($list);
+        $list['iphone'] = $phone;
+        $list['is_verified'] = 1;
+        $sta = xn()->database_manager->save($list);
+        if (!empty($sta)) {
+            $status['status'] = 1;
+            $status['news'] = 'OK,绑定成功!';
+        } else {
+            $status['status'] = 0;
+            $status['news'] = '错误,绑定失败!';
+        }
+        /*}*/
+        return $status;
+    }
+
+    /**
+     * 指定模板群发
+     *
+     * @param  string $nationCode 国家码，如 86 为中国
+     * @param  array $phoneNumbers 不带国家码的手机号列表
+     * @param  int $templId 模板id
+     * @param  array $params 模板参数列表，如模板 {1}...{2}...{3}，那么需要带三个参数
+     * @param  string $sign 签名，如果填空串，系统会使用默认签名
+     * @param  string $extend 扩展码，可填空串
+     * @param  string $ext 服务端原样返回的参数，可填空串
+     * @return string 应答json字符串，详细内容参见腾讯云协议文档
+     */
+    public function sendWithParam2($app_id, $nationCode, $phoneNumbers, $templId, $params, $sign = "", $extend = "", $ext = ""){
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/sendmultisms2";
+        $appid = (int)$app_id['sms_id'];
+        $appkey = $app_id['sms_key'];
+        $random = rand(100000, 999999);
+        $curTime = time();
+        $phoneNumbers = explode(',', $phoneNumbers);
+        $wholeUrl = $url . "?sdkappid=" . $appid . "&random=" . $random;
+        $data = new \stdClass();
+        $data->tel = $this->phoneNumbersToArray($nationCode, $phoneNumbers);
+        $data->sign = $sign;
+        $data->tpl_id = $templId;
+        $data->params = $params;
+        $data->sig = $this->calculateSigForTemplAndPhoneNumbers($appkey, $random, $curTime, $phoneNumbers);
+        $data->time = $curTime;
+        $data->extend = $extend;
+        $data->ext = $ext;
+        return $this->sendCurlPost($wholeUrl, $data);
+    }
+
+    public function phoneNumbersToArray($nationCode, $phoneNumbers){
+        $i = 0;
+        $tel = array();
+        do {
+            $telElement = new \stdClass();
+            $telElement->nationcode = $nationCode;
+            $telElement->mobile = $phoneNumbers[$i];
+            array_push($tel, $telElement);
+        } while (++$i < count($phoneNumbers));
+
+        return $tel;
+    }
+
+
+    /**
+     * 指定模板群发
+     *
+     * @param  string $nationCode 国家码，如 86 为中国
+     * @param  array $phoneNumbers 不带国家码的手机号列表
+     * @param  int $templId 模板id
+     * @param  array $params 模板参数列表，如模板 {1}...{2}...{3}，那么需要带三个参数
+     * @param  string $sign 签名，如果填空串，系统会使用默认签名
+     * @param  string $extend 扩展码，可填空串
+     * @param  string $ext 服务端原样返回的参数，可填空串
+     * @return string 应答json字符串，详细内容参见腾讯云协议文档
+     */
+    public function get_v2_group_sms($data)
+    {
+        //手机号必须
+        if (isset($data['phone']) && !empty($data['phone'])) {
+            $phoneNumber = $data['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($data['app_id']) || empty($data['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($data['content']) || empty($data['content'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[content]不存在或为空';
+            return $status;
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $data['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+            $phone = explode(',',$data['phone']);
+            $phone = count($phone);
+            if($phone > (int)$res['sms_surplus']){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $sms['table'] = 'sms_config';
+            $sms['appId'] = $data['app_id'];
+            $sms['sms_surplus'] = 10;
+            xn()->database_manager->save($sms);
+        }
+        $content = $data['content'];
+        $cnum = mb_strlen($content,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '字数过多,请不要超出20个字';
+            return $status;
+        }
+        $params = array("$content");
+        $app['app_id'] = $data['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 77583;
+        }
+        $result = $this->sendWithParam2($app_id, "86", $phoneNumber, $templId, $params, "", "", "");
+        $res = json_decode($result,true);
+        if($res['result'] == 0){
+            $success = 0;
+            foreach ($res['detail'] as $key => $val){
+                $result = $val['result'];
+                $mobile = $val['mobile'];
+                //添加成功发送短信的记录
+                $list['table'] = 'sms';
+                //手机号
+                $list['phone'] = $mobile;
+                //发送时间
+                $list['appId'] = $data['app_id'];
+                $list['createTime'] = date("Y-m-d H:i:s", time());
+                //is_platform 1:平台 0:自己
+                $error = [];
+                if($result == 0){
+                    //判断是否发送成功
+                    if ($res['result'] == 0) {
+                        $list['status'] = 1;
+                        xn()->database_manager->save($list);
+                        $li['table'] = 'sms_config';
+                        $li['appId'] = $data['app_id'];
+                        $li['one'] = true;
+                        $li['fields'] = 'id,sms_surplus';
+                        $rs = xn()->database_manager->get($li);
+                        $sms_surplus = (int)$rs['sms_surplus'];
+                        $sms_surplus = $sms_surplus - 1;
+                        $li['id'] = $rs['id'];
+                        $li['sms_surplus'] = $sms_surplus;
+                        unset($li['one']);
+                        $sms = xn()->database_manager->save($li);
+                        $success++;
+                        if(empty($sms)){
+                            //没有减短信库存
+                            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+                        }else{
+                            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+                        }
+                    } else {
+                        $list['status'] = -1;
+                        xn()->database_manager->save($list);
+                        $error[] = $mobile;
+                        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+                    }
+                }
+            }
+            $status['errcode'] = 0;
+            $status['errmsg'] = '发送成功'."$success".'条';
+            $status['error'] = $error;
+            return $status;
+        }else{
+            $status['errcode'] = 60044;
+            $status['errmsg'] = $res['errmsg'];
+            return $status;
+        }
+    }
+
+    public function verification($data)
+    {
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $data['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+            $phone = explode(',',$data['phone']);
+            $phone = count($phone);
+            if($phone > (int)$res['sms_surplus']){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+    }
+
+    /**
+     * 查询短信的appid和appkey
+     */
+    public function get_v2_sms_data($param)
+    {
+        $list['table'] = 'options';
+        $list['appId'] = $param['app_id'];
+        $list['fields'] = 'id,option_key,option_value';
+        $list['option_key'] = '[in]sms_appid,sms_appkey';
+        $res = xn()->database_manager->get($list);
+        if (!empty($res)) {
+            $data = [];
+            foreach ($res as $k => $v) {
+                if ($v['option_key'] == 'sms_appid') {
+                    $data['sms_id'] = $v['option_value'];
+                }
+                if ($v['option_key'] == 'sms_appkey') {
+                    $data['sms_key'] = $v['option_value'];
+                }
+            }
+            return $data;
+        } else {
+            return [];
+        }
+        return [];
+    }
+
+    /**
+     * 保存短信appid和appkey
+     * @param $param ['app_id']
+     * @param $param ['sms_id']
+     * @param $param ['sms_key']
+     */
+    public function save_v2_sms_data($param)
+    {
+        if (!isset($param['app_id']) || empty($param['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        //腾讯短信appid
+        if (!isset($param['sms_id']) || empty($param['sms_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[sms_id]不存在或为空';
+            return $status;
+        }
+        //腾讯短信appkey
+        if (!isset($param['sms_key']) || empty($param['sms_key'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[sms_key]不存在或为空';
+            return $status;
+        }
+        $list['table'] = 'options';
+        $list['appId'] = $param['app_id'];
+        $list['fields'] = 'id,option_key';
+        $list['option_key'] = '[in]sms_appid,sms_appkey';
+        $data = xn()->database_manager->get($list);
+        unset($list['fields']);
+        unset($list['option_key']);
+        if (!empty($data)) {
+            foreach ($data as $k => $v) {
+                //appid
+                if (isset($v['option_key']) && $v['option_key'] == 'sms_appid') {
+                    $list['id'] = $v['id'];
+                    $list['option_value'] = $param['sms_id'];
+                    //修改
+                    $res = xn()->database_manager->save($list);
+                    if ($res <= 0) {
+                        $status['errcode'] = 60041;
+                        $status['errmsg'] = '保存appid失败';
+                        return $status;
+                    }
+                }
+                //appkey
+                if (isset($v['option_key']) && $v['option_key'] == 'sms_appkey') {
+                    $list['id'] = $v['id'];
+                    $list['option_value'] = $param['sms_key'];
+                    //修改
+                    $res = xn()->database_manager->save($list);
+                    if ($res <= 0) {
+                        $status['errcode'] = 60042;
+                        $status['errmsg'] = '保存appkey失败';
+                        return $status;
+                    }
+                }
+            }
+            $status['errcode'] = 0;
+            $status['errmsg'] = '保存成功';
+            return $status;
+        } else {
+            $list['option_key'] = 'sms_appid';
+            $list['option_value'] = $param['sms_id'];
+            $res = xn()->database_manager->save($list);
+            if ($res <= 0) {
+                $status['errcode'] = 60041;
+                $status['errmsg'] = '保存appid失败';
+                return $status;
+            }
+            $list['option_key'] = 'sms_appkey';
+            $list['option_value'] = $param['sms_key'];
+            $res = xn()->database_manager->save($list);
+            if ($res <= 0) {
+                $status['errcode'] = 60042;
+                $status['errmsg'] = '保存appkey失败';
+                return $status;
+            }
+            $status['errcode'] = 0;
+            $status['errmsg'] = '保存成功';
+            return $status;
+        }
+    }
+
+    /**
+     * 模板列表
+     * @param $param ['app_id']
+     */
+    public function get_template_list($params)
+    {
+        if (!isset($params['app_id']) || empty($params['app_id'])){
+            $status['result'] = -1;
+            $status['msg'] = '参数app_id不存在';
+            return $status;
+        }
+        if (isset($params['page']) && $params['page'] != ''){
+            $page = (int)$params['page'];
+            if($page <= 0){
+                $page = 0;
+            }
+        } else {
+            $page = 0;
+        }
+        if (isset($params['limit']) && $params['limit'] != ''){
+            $limit = (int)$params['limit'];
+            if($limit <= 0){
+                $limit = 10;
+            }
+        } else {
+            $limit = 10;
+        }
+        $limit = $limit - 1;
+        $num = $page * $limit;
+        $res = $this->get_v2_sms_data($params);
+        if(empty($res)){
+            $status['result'] = -1;
+            $status['msg'] = 'appid或appkey不存在';
+            return $status;
+        }
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/get_template";
+        $appid = $res['sms_id'];
+        $appkey = $res['sms_key'];
+        $random = rand(100000, 999999);
+        $curTime = time();
+        $wholeUrl = $url . "?sdkappid=" . $appid . "&random=" . $random;
+        $data = new \stdClass();
+        $tpl_page['offset'] = $num;
+        $tpl_page['max'] = $limit;
+        $data->tpl_page = $tpl_page;
+        $data->sig = hash("sha256", "appkey=" . $appkey . "&random=" . $random . "&time=" . $curTime);
+        $data->time = $curTime;
+        $res = $this->sendCurlPost($wholeUrl, $data);
+        return $res;
+    }
+
+    /**
+     * 新增模板
+     * @param $param ['app_id']
+     */
+    public function save_v2_template($params)
+    {
+        if (!isset($params['app_id']) || empty($params['app_id'])){
+            $status['result'] = -1;
+            $status['msg'] = '参数app_id不存在';
+            return $status;
+        }
+        $res = $this->get_v2_sms_data($params);
+        if (!isset($res['sms_id']) || empty($res['sms_id'])) {
+            $rs['result'] = -2;
+            $rs['msg'] = '你还没有设置短信appid';
+            return $rs;
+        }
+        if (!isset($res['sms_key']) || empty($res['sms_key'])) {
+            $rs['result'] = -3;
+            $rs['msg'] = '你还没有设置短信appkey';
+            return $rs;
+        }
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/add_template";
+        $appid = $res['sms_id'];
+        $appkey = $res['sms_key'];
+        $random = rand(100000, 999999);
+        $curTime = time();
+        //return $params;
+        $wholeUrl = $url . "?sdkappid=" . $appid . "&random=" . $random;
+        $data = new \stdClass();
+        $data->sig = hash("sha256", "appkey=" . $appkey . "&random=" . $random . "&time=" . $curTime);//app凭证，具体计算方式见下注
+        $data->time = $curTime;//unix时间戳，请求发起时间，如果和系统时间相差超过10分钟则会返回失败
+        $data->title = $params['title'];//模板名称，可选字段
+        $data->remark = $params['remark'];//模板备注，比如申请原因，使用场景等，可选字段
+        $data->text = $params['text'];//模板内容
+        $data->type = (int)$params['type'];//0：普通短信模板；1：营销短信模板；2：语音模板
+        return $this->sendCurlPost($wholeUrl, $data);
+    }
+
+    /**
+     * 修改模板
+     * @param $param ['app_id']
+     */
+    public function save_v2_template1($params)
+    {
+        if (!isset($params['app_id']) || empty($params['app_id'])){
+            $status['result'] = -1;
+            $status['msg'] = '参数app_id不存在';
+            return $status;
+        }
+        $res = $this->get_v2_sms_data($params);
+        if (!isset($res['sms_id']) || empty($res['sms_id'])) {
+            $rs['result'] = -2;
+            $rs['msg'] = '你还没有设置短信appid';
+            return $rs;
+        }
+        if (!isset($res['sms_key']) || empty($res['sms_key'])) {
+            $rs['result'] = -3;
+            $rs['msg'] = '你还没有设置短信appkey';
+            return $rs;
+        }
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/mod_template";
+        $appid = $res['sms_id'];
+        $appkey = $res['sms_key'];
+        $random = rand(100000, 999999);
+        $curTime = time();
+        $wholeUrl = $url . "?sdkappid=" . $appid . "&random=" . $random;
+        $data = new \stdClass();
+        $data->sig = hash("sha256", "appkey=" . $appkey . "&random=" . $random . "&time=" . $curTime);//app凭证，具体计算方式见下注
+        $data->time = $curTime;//unix时间戳，请求发起时间，如果和系统时间相差超过10分钟则会返回失败
+        $data->title = $params['title'];//模板名称，可选字段
+        $data->remark = $params['remark'];//模板备注，比如申请原因，使用场景等，可选字段
+        $data->text = $params['text'];//模板内容
+        $data->type = 1;//0：普通短信模板；1：营销短信模板；2：语音模板
+        //$data->tpl_id = 74273;
+        return $this->sendCurlPost($wholeUrl, $data);
+    }
+
+    /**
+     * 统计短信发送情况
+     * @param $params ['app_id']                    Required             加密后的应用ID
+     * @param $params ['begin_date']                Required             起始时间 如:2018010100(精确到小时)
+     * @param $params ['end_date']                  Required             结束时间 如:2018011000(精确到小时)
+     */
+    public function get_v2_tlssmssvr($params)
+    {
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['begin_date']) || empty($params['begin_date'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[begin_date]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['end_date']) || empty($params['end_date'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[end_date]不存在或为空';
+            return $status;
+        }
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/pullsendstatus";
+        $app['app_id'] = $params['app_id'];
+        $res = $this->get_v2_sms_data($app);
+        if (!isset($res['sms_id']) || empty($res['sms_id'])) {
+            $rs['errcode'] = 60039;
+            $rs['errmsg'] = '你还没有设置短信appid';
+            return $rs;
+        }
+        if (!isset($res['sms_key']) || empty($res['sms_key'])) {
+            $rs['errcode'] = 60040;
+            $rs['errmsg'] = '你还没有设置短信appkey';
+            return $rs;
+        }
+        $appid = $res['sms_id'];
+        $appkey = $res['sms_key'];
+        $random = rand(100000, 999999);
+        $curTime = time();
+        $wholeUrl = $url . "?sdkappid=" . $appid . "&random=" . $random;
+        $data = new \stdClass();
+        $data->sig = hash("sha256", "appkey=" . $appkey . "&random=" . $random . "&time=" . $curTime);;
+        $data->time = $curTime;
+        $data->begin_date = (int)$params['begin_date'];
+        $data->end_date = (int)$params['end_date'];
+        $result = $this->sendCurlPost($wholeUrl, $data);
+        $res = json_decode($result,true);
+        if($res['result'] == 0){
+            $status['errcode'] = $res['result'];
+            $status['errmsg'] = $res['msg'];
+            $status['data'] = $res['data'];
+            $status['time'] = date('Y-m-d H:i:s',time());
+            return $status;
+        }else{
+            $status['errcode'] = 60045;
+            $status['errmsg'] = '请求失败';
+            return $status;
+        }
+    }
+
+    /**
+     * 统计今日发送条数
+     * app_id
+     */
+    public function get_v2_statistics($params)
+    {
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        //表名
+        $list['table'] = 'sms';
+        //今天的起始时间
+        $a = date('Y-m-d');
+        $list['createTime'] = '[gte]' . $a . ' 00:00:00';
+        $list['appId'] = $params['app_id'];
+        $list['is_platform'] = 1;
+        //查询今天的所有短信发送情况
+        $s = xn()->database_manager->get($list);
+        if (!empty($s)) {
+            $s = count($s);
+        } else {
+            $s = 0;
+        }
+        //发送不成功的状态
+        $list['status'] = -1;
+        $x = xn()->database_manager->get($list);
+        if (!empty($x)) {
+            $x = count($x);
+        } else {
+            $x = 0;
+        }
+        //发送成功的状态
+        $list['status'] = 1;
+        $y = xn()->database_manager->get($list);
+        if (!empty($y)) {
+            $y = count($y);
+        } else {
+            $y = 0;
+        }
+        if($y <= 0 || $s <= 0){
+            $b = 0;
+        }else{
+            $b = $y / $s * 100;
+        }
+        if (empty($b)) {
+            //成功的百分比
+            $success = 0;
+        } else {
+            $success = sprintf("%.1f", $b);
+        }
+        //失败的百分比
+        if($x <= 0 || $s <= 0){
+            $c = 0;
+        }else{
+            $c = $x / $s * 100;
+        }
+        if (empty($c)) {
+            $fail = 0;
+        } else {
+            $fail = sprintf("%.1f", $c);
+        }
+        //成功
+        $data['success'] = $success;
+        //失败
+        $data['fail'] = $fail;
+        //失败条数
+        $data['x'] = $x;
+        //总条数
+        $data['s'] = $s;
+        $li['table'] = 'sms_config';
+        $li['appId'] = $params['app_id'];
+        $li['one'] = true;
+        $res = xn()->database_manager->get($li);
+        if(!empty($res)){
+            $data['surplus'] = (int)$res['sms_surplus'];
+        }else{
+            $data['surplus'] = 0;
+        }
+        return $data;
+    }
+
+    //删除模板
+    /*public function delWithParam($app_id)
+    {
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/del_template";
+        $appid = '1400037404';
+        $appkey = 'f0d56f79d797f200b8863b07d99f9d8f';
+        $random = rand(100000, 999999);
+        $curTime = time();
+        $wholeUrl = $url . "?sdkappid=" . $appid . "&random=" . $random;
+        $data = new \stdClass();
+        $data->tpl_id = 74273;
+        $data->sig = hash("sha256", "appkey=" . $appkey . "&random=" . $random . "&time=" . $curTime);
+        $data->time = $curTime;
+        return $this->sendCurlPost($wholeUrl, $data);
+    }*/
+
+    /**
+     * 短信列表
+     * @param $param ['app_id']
+     * @param $param ['ctime']
+     * @param $param ['etime']
+     * @param $param ['current_page']
+     * @param $param ['limit']
+     */
+    public function get_v2_sms_list($params)
+    {
+        if (isset($params['current_page']) && !empty($params['current_page'])){
+            $current_page = (int)$params['current_page'];
+            if($current_page <= 0){
+                $current_page = 0;
+            }
+        } else {
+            $current_page = 1;
+        }
+        if (isset($params['limit']) && !empty($params['limit'])){
+            $limit = (int)$params['limit'];
+            if($limit <= 0){
+                $limit = 0;
+            }
+        } else {
+            $limit = 10;
+        }
+        $page = $current_page - 1;
+        $page = $page * $limit;
+        if (!isset($params['app_id']) || empty($params['app_id'])){
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (isset($params['is_platform']) && !empty($params['is_platform'])){
+            $data['is_platform'] = $params['is_platform'];
+        }else{
+            $data['is_platform'] = 1;
+        }
+        if (isset($params['ctime']) && !empty($params['ctime']) && isset($params['etime']) && !empty($params['etime'])){
+            $ctime = $params['ctime'].' 00:00:00';
+            $etime = $params['etime'].' 23:59:59';
+            $data['app_id'] = (int)decode($params['app_id']);
+            $res = \DB::table('sms')->where($data)
+                ->whereBetween('createTime',[$ctime,$etime])
+                ->skip($page)
+                ->take($limit)
+                ->orderBy('createTime','desc')
+                ->get();
+            if(empty($res)){
+                $status['errcode'] = 0;
+                $status['errmsg'] = '没有数据';
+                $status['data'] = [
+                    'total_page' => 0,
+                    'current_page' => $current_page,
+                    'total_num' => 0,
+                    'list' => []
+                ];
+                return $status;
+            }
+            $num = \DB::table('sms')->where($data)
+                ->whereBetween('createTime',[$ctime,$etime])
+                ->get();
+            $total_num = count($num);
+            $total_page = $total_num / $limit;
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'OK';
+            $status['data'] = [
+                'total_page' => ceil($total_page),
+                'current_page' => $current_page,
+                'total_num' => $total_num,
+                'list' => $res
+            ];
+            return $status;
+        }
+        $data['table'] = 'sms';
+        $data['current_page'] = $current_page;
+        $data['limit'] = $limit;
+        $data['appId'] = $params['app_id'];
+        $data['order_by'] = 'createTime desc';
+        $res = xn()->database_manager->get($data);
+        if(empty($res)){
+            $status['errcode'] = 0;
+            $status['errmsg'] = '没有数据';
+            $status['data'] = [
+                'total_page' => 0,
+                'current_page' => $current_page,
+                'total_num' => 0,
+                'list' => []
+            ];
+            return $status;
+        }
+        $data['count'] = true;
+        unset($data['limit']);
+        unset($data['current_page']);
+        $num = xn()->database_manager->get($data);
+        $total_page = ceil($num / $limit);
+        $status['errcode'] = 0;
+        $status['errmsg'] = 'OK';
+        $status['data'] = [
+            'total_page' => ceil($total_page),
+            'current_page' => $current_page,
+            'total_num' => $num,
+            'list' => $res
+        ];
+        return $status;
+
+    }
+
+
+    /**
+     * 下单成功发短信 付款成功
+     * @param int $type 短信类型，0 为普通短信，1 营销短信
+     * @param string $nationCode 国家码，如 86 为中国
+     * @param string $phoneNumber 不带国家码的手机号
+     * @param string $msg 信息内容，必须与申请的模板格式一致，否则将返回错误
+     * @param string $extend 扩展码，可填空串
+     * @param string $ext 服务端原样返回的参数，可填空串
+     * @return string json string {"result": xxxxx, "errmsg": "xxxxxx"}，被省略的内容参见协议文档
+     * $params['order']   订单号
+     * $params['phone']   手机号
+     */
+    public function checkout_success($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- record request parameters-' .json_encode($params). PHP_EOL);
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['order']) || empty($params['order'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[order]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0005';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 78062;
+        }
+        $data[] = $params['order'];
+        $order = $params['order'];
+        $cnum = mb_strlen($order,'utf-8');
+        if($cnum > 15){
+            $status['errcode'] = 60054;
+            $status['errmsg'] = '订单号格式不正确';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * 订单失效通知
+     * @param int $type 短信类型，0 为普通短信，1 营销短信
+     * @param string $nationCode 国家码，如 86 为中国
+     * @param string $phoneNumber 不带国家码的手机号
+     * @param string $msg 信息内容，必须与申请的模板格式一致，否则将返回错误
+     * @param string $extend 扩展码，可填空串
+     * @param string $ext 服务端原样返回的参数，可填空串
+     * @return string json string {"result": xxxxx, "errmsg": "xxxxxx"}，被省略的内容参见协议文档
+     * $params['name']   名称
+     * $params['phone']  手机号
+     * $params['time']   过期时间
+     */
+    public function order_failure($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- record request parameters-' .json_encode($params). PHP_EOL);
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['name']) || empty($params['name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['time']) || empty($params['time'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[time]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0454';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 78086;
+        }
+        $data[] = $params['name'];
+        $data[] = $params['time'];
+        $name = $params['name'];
+        $time = $params['time'];
+        $cnum = mb_strlen($name,'utf-8');
+        if($cnum > 10){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '名字太长,请不要超出10个字';
+            return $status;
+        }
+        $cnum = mb_strlen($time,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '字数过多,请不要超出20个字';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * 发货通知
+     * $params['name']   名称
+     * $params['express']   快递
+     * $params['courier_number']   快递单号
+     */
+    public function deliver_goods($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- deliver_goods -' .json_encode($params). PHP_EOL);
+
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['name']) || empty($params['name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['express']) || empty($params['express'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[express]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['courier_number']) || empty($params['courier_number'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[courier_number]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0007';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 78109;
+        }
+        $data[] = $params['name']; //商品名称
+        $data[] = $params['express']; //快递
+        $data[] = $params['courier_number']; //快递单号
+        $courier_number = $params['courier_number']; //快递单号
+        $name = $params['name'];
+        $express = $params['express'];
+        $cnum = mb_strlen($name,'utf-8');
+        if($cnum > 10){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '名字太长,请不要超出10位';
+            return $status;
+        }
+        $cnum = mb_strlen($express,'utf-8');
+        if($cnum > 10){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '快递字数过多,请不要超出10位';
+            return $status;
+        }
+        $cnum = mb_strlen($courier_number,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '快递字数过多,请不要超出20位';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * @desc        拒绝订单
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_id']               Required             小程序app_id
+     * @param $params['phone']                Required             手机号码
+     * @param $params['shop_name']            Required             店铺名称
+     * @param $params['name']                 Required             商品名称
+     * @param $params['time']                 Required             时间
+     * 抱歉，您在{1}购买的{2}预定失败，款项将在{3}内退回至您的支付账户。
+     */
+    public function refuse_order($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- refuse_order -' .json_encode($params). PHP_EOL);
+
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['name']) || empty($params['name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['shop_name']) || empty($params['shop_name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[shop_name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['time']) || empty($params['time'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[time]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0375';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 78975;
+        }
+        $data[] = $params['shop_name']; //店铺名称
+        $data[] = $params['name']; //商品名称
+        $data[] = $params['time']; //时间
+        $shop_name = $params['shop_name']; //店铺名称
+        $name = $params['name'];//商品名称
+        $time = $params['time'];//时间
+        $cnum = mb_strlen($shop_name,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '店铺太长,请不要超出20位';
+            return $status;
+        }
+        $cnum = mb_strlen($name,'utf-8');
+        if($cnum > 10){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '商品名称字数过多,请不要超出10位';
+            return $status;
+        }
+        $cnum = mb_strlen($time,'utf-8');
+        if($cnum > 10){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '快递字数过多,请不要超出20位';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * @desc        下单成功提醒用户
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_id']               Required             小程序app_id
+     * @param $params['phone']                Required             手机号码
+     * @param $params['shop_name']            Required             店铺名称
+     * @param $params['name']                 Required             商品名称
+     * @param $params['tel']                  Required             商家电话
+     * 您好!您在{1}购买的{2}下单成功成功! 商家电话：{3}。
+     */
+    public function order_success($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- order_success -' .json_encode($params). PHP_EOL);
+
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['name']) || empty($params['name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['shop_name']) || empty($params['shop_name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[shop_name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['tel']) || empty($params['tel'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[tel]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0005';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 79029;
+        }
+        $data[] = $params['shop_name']; //店铺名称
+        $data[] = $params['name']; //商品名称
+        $data[] = $params['tel']; //时间
+        $shop_name = $params['shop_name']; //店铺名称
+        $name = $params['name'];//商品名称
+        $tel = $params['tel'];//时间
+        $cnum = mb_strlen($shop_name,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '店铺太长,请不要超出20位';
+            return $status;
+        }
+        $cnum = mb_strlen($name,'utf-8');
+        if($cnum > 10){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '商品名称字数过多,请不要超出10位';
+            return $status;
+        }
+        $cnum = mb_strlen($tel,'utf-8');
+        if($cnum > 11){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '快递字数过多,请不要超出11位';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * @desc        买家发起退款提醒
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_id']               Required             小程序app_id
+     * @param $params['phone']                Required             手机号码
+     * @param $params['shop_name']            Required             店铺名称
+     * @param $params['order']                Required             订单号
+     * 您好!您的买家发起退款，订单编号{1}，请尽快登录{2}后台处理。
+     */
+    public function refund($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- refund -' .json_encode($params). PHP_EOL);
+
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['order']) || empty($params['order'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[order]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['shop_name']) || empty($params['shop_name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[shop_name]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0637';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 79081;
+        }
+        $data[] = $params['order']; //订单号
+        $data[] = $params['shop_name']; //店铺名称
+        $shop_name = $params['shop_name']; //店铺名称
+        $order = $params['order'];//订单号
+        $cnum = mb_strlen($shop_name,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '店铺太长,请不要超出20位';
+            return $status;
+        }
+        $cnum = mb_strlen($order,'utf-8');
+        if($cnum > 15){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '订单字数过多,请不要超出15位';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * @desc        买家发起退货提醒
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_id']               Required             小程序app_id
+     * @param $params['phone']                Required             手机号码
+     * @param $params['shop_name']            Required             店铺名称
+     * @param $params['order']                Required             订单号
+     * 您好!您的买家发起退款，订单编号{1}，请尽快登录{2}后台处理。
+     */
+    public function return_goods($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- return_goods -' .json_encode($params). PHP_EOL);
+
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['order']) || empty($params['order'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[order]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['shop_name']) || empty($params['shop_name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[shop_name]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0637';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 79081;
+        }
+        $data[] = $params['order']; //订单号
+        $data[] = $params['shop_name']; //店铺名称
+        $shop_name = $params['shop_name']; //店铺名称
+        $order = $params['order'];//订单号
+        $cnum = mb_strlen($shop_name,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '店铺太长,请不要超出20位';
+            return $status;
+        }
+        $cnum = mb_strlen($order,'utf-8');
+        if($cnum > 15){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '订单字数过多,请不要超出15位';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * @desc        客服消息未及时回复提醒
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_id']               Required             小程序app_id
+     * @param $params['phone']                Required             手机号码
+     * @param $params['shop_name']            Required             店铺名称
+     * @param $params['open_id']              Required             微信用户id
+     * 你好，有用户<微信名>在小程序<店铺名称>客服中心提交问题，请您尽快登录https://mpkf.weixin.qq.com/回复
+     */
+    public function customer_reminding($params)
+    {
+
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- customer_reminding -' .json_encode($params). PHP_EOL);
+
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['shop_name']) || empty($params['shop_name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[shop_name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['open_id']) || empty($params['open_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[open_id]不存在或为空';
+            return $status;
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 79651;
+        }
+        $user['table'] = 'users';
+        $user['open_id'] = $params['open_id'];
+        $user['app_id'] = $params['app_id'];
+        $user['one'] = true;
+        $uid = xn()->database_manager->get($user);
+        if(empty($uid)){
+            $status['errcode'] = 60058;
+            $status['errmsg'] = '该用户不存在';
+            return $status;
+        }
+        $data[] = $uid['nickName']; //微信昵称
+        $data[] = $params['shop_name']; //店铺名称
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            $fee = (int)$res['fee'];
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            //计算短信计费条数
+            $sms_surplus = $sms_surplus - $fee;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * @desc        订单签收提醒
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_id']               Required             小程序app_id
+     * @param $params['phone']                Required             手机号码
+     * @param $params['shop_name']            Required             店铺名称
+     * @param $params['order']                Required             订单号
+     * 您好!您在<店铺名称>购买的订单号:<1XXXXXXX>的订单已签收,欢迎下次光临!
+     */
+    public function order_receipt($params)
+    {
+        $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- order_receipt -' .json_encode($params). PHP_EOL);
+
+        //手机号必须
+        if (isset($params['phone']) && !empty($params['phone'])) {
+            $phoneNumber = $params['phone'];
+        } else {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[phone]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['app_id']) || empty($params['app_id'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[app_id]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['shop_name']) || empty($params['shop_name'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[shop_name]不存在或为空';
+            return $status;
+        }
+        if (!isset($params['order']) || empty($params['order'])) {
+            $status['errcode'] = 60003;
+            $status['errmsg'] = '参数[order]不存在或为空';
+            return $status;
+        }
+        $atdata['at_id'] = 'AT0084';
+        $atdata['app_id'] = $params['app_id'];
+        $message = $this->verification_switch($atdata);
+        if(empty($message)){
+            $status['errcode'] = 60055;
+            $status['errmsg'] = '没找到该模板';
+            return $status;
+        }else{
+            if($message['sms_switch'] != 1){
+                $status['errcode'] = 60056;
+                $status['errmsg'] = '此功能没有开启';
+                return $status;
+            }
+        }
+        //是否有发送权限
+        $sms['table'] = 'sms_config';
+        $sms['appId'] = $params['app_id'];
+        $sms['one'] = true;
+        $res = xn()->database_manager->get($sms);
+        if(!empty($res)){
+            if((int)$res['sms_surplus'] <= 0){
+                $status['errcode'] = 60052;
+                $status['errmsg'] = '您的短信余量不足,请购买足够之后再发送';
+                return $status;
+            }
+        }else{
+            $status['errcode'] = 60050;
+            $status['errmsg'] = '你还没有购买,请购买后再使用';
+            return $status;
+        }
+        $app['app_id'] = $params['app_id'];
+        $apps = $this->get_v2_sms_data($app);
+        if (isset($apps['sms_id']) && empty($apps['sms_id']) && isset($apps['sms_key']) && !empty($apps['sms_key'])) {
+            $app_id['sms_id'] = $apps['sms_id'];
+            $app_id['sms_key'] = $apps['sms_key'];
+            $list['is_platform'] = 0;
+            $templId = '';
+        }else{
+            $app_id['sms_id'] = 1400037404;
+            $app_id['sms_key'] = 'f0d56f79d797f200b8863b07d99f9d8f';
+            $list['is_platform'] = 1;
+            $templId = 79641;
+        }
+        $data[] = $params['shop_name']; //店铺名称
+        $data[] = $params['order']; //订单编号
+        $shop_name = $params['shop_name']; //店铺名称
+        $order = $params['order'];//订单编号
+        $cnum = mb_strlen($shop_name,'utf-8');
+        if($cnum > 20){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '店铺太长,请不要超出20位';
+            return $status;
+        }
+        $order = mb_strlen($order,'utf-8');
+        if($order > 15){
+            $status['errcode'] = 60053;
+            $status['errmsg'] = '订单号格式不正确';
+            return $status;
+        }
+        $result = $this->sendWithParam3($app_id,"86", $phoneNumber, $templId, $data, "", "", "");
+        $res = json_decode($result, true);
+        //添加成功发送短信的记录
+        //表名
+        $list['table'] = 'sms';
+        //手机号
+        $list['phone'] = $phoneNumber;
+        $list['app_id'] = $params['app_id'];
+        //发送时间
+        $list['createTime'] = date("Y-m-d H:i:s", time());
+        //判断是否发送成功
+        if ($res['result'] == 0) {
+            $list['status'] = 1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = 'ok';
+            $li['table'] = 'sms_config';
+            $li['appId'] = $params['app_id'];
+            $li['one'] = true;
+            $li['fields'] = 'id,sms_surplus';
+            $rs = xn()->database_manager->get($li);
+            $sms_surplus = (int)$rs['sms_surplus'];
+            $sms_surplus = $sms_surplus - 1;
+            $li['id'] = $rs['id'];
+            $li['sms_surplus'] = $sms_surplus;
+            unset($li['one']);
+            $sms = xn()->database_manager->save($li);
+            if(empty($sms)){
+                //没有减短信库存
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- no reduction in inventory -' .json_encode($res). PHP_EOL);
+            }else{
+                $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- success -' .json_encode($res). PHP_EOL);
+            }
+        } else {
+            $list['status'] = -1;
+            xn()->database_manager->save($list);
+            $status['errcode'] = 0;
+            $status['errmsg'] = $res['errmsg'];
+            $this->log_ex('sms_message'.date('Y-m-d'), date('Y-m-d H:i:s') . '- sms sending failure -' .json_encode($res). PHP_EOL);
+        }
+        return $status;
+    }
+
+    /**
+     * 指定模板发送
+     *
+     * @param  string $nationCode 国家码，如 86 为中国
+     * @param  array $phoneNumbers 不带国家码的手机号列表
+     * @param  int $templId 模板id
+     * @param  array $params 模板参数列表，如模板 {1}...{2}...{3}，那么需要带三个参数
+     * @param  string $sign 签名，如果填空串，系统会使用默认签名
+     * @param  string $extend 扩展码，可填空串
+     * @param  string $ext 服务端原样返回的参数，可填空串
+     * @return string 应答json字符串，详细内容参见腾讯云协议文档
+     */
+    public function sendWithParam3($app_id, $nationCode, $phoneNumber, $templId, $params, $sign = "", $extend = "", $ext = "")
+    {
+        $url = "https://yun.tim.qq.com/v5/tlssmssvr/sendsms";
+        $appid = (int)$app_id['sms_id'];
+        $appkey = $app_id['sms_key'];
+        $random = rand(100000, 999999);
+        $curTime = time();
+        $wholeUrl = $url . "?sdkappid=" . "$appid" . "&random=" . $random;
+        // 按照协议组织 post 包体
+        $data = new \stdClass();
+        $tel = new \stdClass();
+        $tel->nationcode = "" . $nationCode;
+        $tel->mobile = "" . $phoneNumber;
+        $data->tel = $tel;
+        $data->sig = $this->calculateSigForTempl($appkey, $random, $curTime, $phoneNumber);
+        $data->tpl_id = $templId;
+        $data->params = $params;
+        $data->sign = $sign;
+        $data->time = $curTime;
+        $data->extend = $extend;
+        $data->ext = $ext;
+        return $this->sendCurlPost($wholeUrl, $data);
+    }
+
+    /**
+     * @param $params
+     * @return array|mixed
+     * @author shidatuo
+     * @description 是否设置了这个模板消息
+     */
+    public function verification_switch($params){
+        $li['table'] = 'message_template_set';
+        $li['appId'] = $params['app_id'];
+        $li['at_id'] = $params['at_id'];
+        $li['one'] = true;
+        $res = xn()->database_manager->get($li);
+        if(!empty($res)){
+            return $res;
+        }else{
+            return [];
+        }
+    }
+
+    /**
+     * 当前目录的cache目录记录日志
+     * @param $filename
+     * @param $msg
+     */
+    function log_ex($filename, $msg)
+    {
+        date_default_timezone_set('Asia/Shanghai');
+        if(is_cli()){
+            $file_path ="/vdb50g/log/";
+        }else{
+            $file_path = $_SERVER['DOCUMENT_ROOT'] . "/log/";
+        }
+        if (!file_exists($file_path)) @mkdir($file_path);
+        $file_path .= $filename;
+        file_put_contents($file_path, date("Y-m-d H:i:s") . "\t" . $msg . "\n", FILE_APPEND);
+    }
+
+    /**
+     * @desc        是否绑定
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_id']               Required             小程序app_id
+     * @param $params['app_key']              Required             用户
+     */
+    public function binding_phone($params)
+    {
+        $list['table'] = 'users';
+        $list['appId'] = $params['app_id'];
+        $list['open_id'] = $params['api_key'];
+        $list['one'] = true;
+        $res = xn()->database_manager->get($list);
+        if (!empty($res)) {
+            if (empty($res['iphone'])) {
+                return 0;
+            } else {
+                return 1;
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * @desc        是否绑定
+     *
+     * @author      yuluo
+     *
+     * @param $params['app_key']             Required             用户
+     */
+    public function get_v3_binding_phone($params){
+        $res = api_login($params['api_key']);
+        if (!empty($res)) {
+            if (empty($res['iphone'])) {
+                return -1;
+            } else {
+                return $res['iphone'];
+            }
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * @param int $type 短信类型，0 为普通短信，1 营销短信
+     * @param string $nationCode 国家码，如 86 为中国
+     * @param string $phoneNumber 不带国家码的手机号
+     * @param string $msg 信息内容，必须与申请的模板格式一致，否则将返回错误
+     * @param string $extend 扩展码，可填空串
+     * @param string $ext 服务端原样返回的参数，可填空串
+     * @return string json string {"result": xxxxx, "errmsg": "xxxxxx"}，被省略的内容参见协议文档
+     */
+    public function create_shops_message($params){
+        $this->log_ex('create_shops_message',"\n============ 店铺审核通过发送短信 START ===========\n 打印参数 : " . json_encode($params) . PHP_EOL);
+        $to = date("Y-m-d H:i:s",time());
+        if(isset($params['phone']) && check_mobile($params['phone'])){
+            $phoneNumber = $params['phone'];
+        }else{
+            $this->log_ex('create_shops_message',"\n请填写正确的手机号 \n============ 店铺审核通过发送短信 END ===========\n" . PHP_EOL);
+            return ['errcode'=>70154,'errmsg'=>'请填写正确的手机号'];
+        }
+        if(isset($params['shop_id']) && isINT($params['shop_id'])){
+            $shop_info = xn()->database_manager->get("shops","id=".$params['shop_id'] . "&single=true&fields=uid,title,app_id");
+            $this->log_ex('create_shops_message',"\n获取店铺信息 : " . json_encode($shop_info) . PHP_EOL);
+            if(!$shop_info){
+                $this->log_ex('create_shops_message',"\n该店铺不存在 \n============ 店铺审核通过发送短信 END ===========\n" . PHP_EOL);
+                return ['errcode'=>70117,'errmsg'=>'该店铺不存在'];
+            }
+            $app_info = xn()->app_manager->get_by_id($shop_info['app_id']);
+            $this->log_ex('create_shops_message',"\n获取小程序信息 : " . json_encode($app_info) . PHP_EOL);
+            $appName = isset($app_info['name']) ? $app_info['name'] : '沃土小程序';
+            $uid = isset($shop_info['uid']) ? $shop_info['uid'] : 0;
+            $user_info = xn()->user_manager->get_by_id($uid);
+            if(!$user_info){
+                $this->log_ex('create_shops_message',"\n用户不存在 \n============ 店铺审核通过发送短信 END ===========\n" . PHP_EOL);
+                return ['errcode'=>70117,'errmsg'=>'用户不存在'];
+            }
+            if(isset($user_info['username']) && NotEstr($user_info['username'])){
+                $username = $user_info['username'];
+            }else{
+                $this->log_ex('create_shops_message',"\n用户不存在 \n============ 店铺审核通过发送短信 END ===========\n" . PHP_EOL);
+                return ['errcode'=>70136,'errmsg'=>'无效用户'];
+            }
+            //>加密的appId
+            $appId = isset($shop_info['app_id']) ? encode($shop_info['app_id']) : '';
+        }else{
+            $this->log_ex('create_shops_message',"\n缺少必填参数shop_id \n============ 店铺审核通过发送短信 END ===========\n" . PHP_EOL);
+            return ['errcode'=>70001,'errmsg'=>'缺少必填参数shop_id'];
+        }
+        //>发送短信
+        $params = array($appName, $username, 12345678);
+        $this->log_ex('create_shops_message',"\n 打印发送短信参数 : " . json_encode($params) . PHP_EOL);
+        $result = $this->sendWithParam("86",$phoneNumber,245783,$params, "", "", "");
+        $result = json_decode($result, true);
+        $this->log_ex('create_shops_message',"\n 发送短信打印返回值 : " . json_encode($params) . PHP_EOL);
+        //>发送成功入库 , 发送失败入库
+        if (isset($result['result']) && $result['result'] == 0){
+            $rs = xn()->database_manager->save("sms","phone=$phoneNumber&createTime=$to&sendNum=1&appId=$appId");
+            $this->log_ex('create_shops_message',"\n 保存成功 返回 : " . $rs . " " .PHP_EOL);
+        }else{
+            $rs = xn()->database_manager->save("sms","phone=$phoneNumber&status=-1&createTime=$to&sendNum=1&appId=$appId");
+            $this->log_ex('create_shops_message',"\n 保存成功 返回 : " . $rs . " " .PHP_EOL);
+        }
+        return $result;
+    }
+}
