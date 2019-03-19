@@ -6004,6 +6004,7 @@ class SmsManager{
             $status['errmsg'] = '参数[shop_name]不存在或为空';
             return $status;
         }
+
         if (!isset($params['open_id']) || empty($params['open_id'])) {
             $status['errcode'] = 60003;
             $status['errmsg'] = '参数[open_id]不存在或为空';
