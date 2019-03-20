@@ -268,6 +268,7 @@ Route::any('/', function(){
 /**
  * 简约生活小程序  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
+
 Route::group(['namespace' => 'Api','prefix' => 'api'], function () {
     Route::any('wxLogin', 'ApiController@wxLogin');
     Route::any('wxgetUser', 'ApiController@wxgetUser');
