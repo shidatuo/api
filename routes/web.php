@@ -16,7 +16,6 @@ use Illuminate\Contracts\Routing\Registrar as RouteContract;
 |
 */
 
-
 //> Wechat 模块(小程序api)
 Route::group(['namespace' => 'Wechat','prefix' => 'wechat'], function () {
     //> 微信小程序登陆
@@ -249,7 +248,10 @@ Route::group(['namespace' => 'Admin', 'prefix' => 'admin', 'middleware' => 'admi
 
 
 Route::any('/apis/{all}', 'ApiController@api');
-Route::any('/', function(){
+
+Route::get('/',Api\ApiController::class."@index");
+
+//Route::any('/', function(){
 //    JWTAuth::setToken('foo.bar.baz');
 //      dd(JWTAuth::getToken());
 //    $user = User::first();
@@ -260,8 +262,8 @@ Route::any('/', function(){
 //    qrcode("http://www.shidatuos.cn/");
 //     exit;
 
-     echo htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>');
-});
+     //echo htmlspecialchars_decode('<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>史大坨<img class="emojione" alt="&#x1f4a9;" title=":poop:" src="https://cdn.jsdelivr.net/emojione/assets/3.1/png/32/1f4a9.png"/>');
+//});
 
 
 
