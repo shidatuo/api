@@ -646,8 +646,7 @@ class WxPayApi{
      * @param $filename
      * @param $msg
      */
-    public function log_ex($filename, $msg)
-    {
+    public function log_ex($filename, $msg){
         date_default_timezone_set('Asia/Shanghai');
         if(!is_cli()){
             $file_path = $_SERVER['DOCUMENT_ROOT'] . "/log/";

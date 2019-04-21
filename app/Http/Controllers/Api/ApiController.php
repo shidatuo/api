@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\TestJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
@@ -12,6 +13,7 @@ use \App\Model\jy_back_user;
 use \App\Model\jy_user;
 use WxPayConf;
 use WxQrcodePay;
+use App\Model\Article;
 //use WxPay;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +37,16 @@ class ApiController extends Controller{
 //                $this->app = xn();
 //            }
 //        }
+    }
+
+
+    public function index(){
+
+        $res = Article::where('id','<',7)->get();
+        foreach ($res as $item){
+            $this->dispatch(new TestJob());
+        }
+        return 'yes';
     }
 
     public function api(){
