@@ -44,7 +44,7 @@ class ApiController extends Controller{
 
         $res = Article::where('id','<',7)->get();
         foreach ($res as $item){
-            $this->dispatch(new TestJob());
+            $this->dispatch(new TestJob($item));
         }
         return 'yes';
     }
